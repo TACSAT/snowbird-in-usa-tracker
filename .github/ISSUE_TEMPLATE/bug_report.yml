@@ -1,0 +1,86 @@
+name: "🐞 Bug report / Signaler un bogue"
+description: "Report something that is not working correctly. / Signaler un problème de fonctionnement."
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem! Please fill in what you can —
+        no field is mandatory except the description.
+        Merci de prendre le temps de signaler un problème ! Remplissez ce que vous
+        pouvez — seule la description est obligatoire.
+
+        **Privacy note / Confidentialité :** this app keeps all your data on your
+        device. Please do **not** include personal trip dates or other private
+        information in this report.
+        Cette application conserve toutes vos données sur votre appareil. Veuillez **ne
+        pas** inclure de dates de voyage personnelles ni d'autres renseignements privés.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: "What happened? / Que s'est-il passé ?"
+      description: "Describe the problem in your own words. / Décrivez le problème dans vos propres mots."
+      placeholder: "When I tried to ... the app ... / Quand j'ai essayé de ... l'application ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "What did you expect instead? / À quoi vous attendiez-vous ?"
+      description: "What you thought should happen. / Ce qui aurait dû se produire."
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to reproduce / Étapes pour reproduire"
+      description: "How can we make the problem happen again? / Comment reproduire le problème ?"
+      placeholder: |
+        1. Go to ... / Aller à ...
+        2. Tap ... / Toucher ...
+        3. See ... / Constater ...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: "Device type / Type d'appareil"
+      description: "Which kind of phone or tablet? / Quel type de téléphone ou tablette ?"
+      options:
+        - "iPhone / iPad (Apple)"
+        - "Android"
+        - "Other / Autre"
+        - "Not sure / Je ne sais pas"
+    validations:
+      required: false
+
+  - type: input
+    id: os-version
+    attributes:
+      label: "Operating system version / Version du système d'exploitation"
+      description: "For example: iOS 18.2, Android 15. / Par exemple : iOS 18.2, Android 15."
+      placeholder: "iOS 18.2 / Android 15"
+    validations:
+      required: false
+
+  - type: input
+    id: app-version
+    attributes:
+      label: "App version / Version de l'application"
+      description: "Shown on the app's About screen. / Indiquée dans l'écran « À propos » de l'application."
+      placeholder: "1.0.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Anything else? / Autre chose ?"
+      description: "Screenshots or extra details welcome (no private data, please). / Captures d'écran ou détails bienvenus (sans données privées, s.v.p.)."
+    validations:
+      required: false

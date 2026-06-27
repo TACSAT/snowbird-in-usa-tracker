@@ -1,0 +1,7 @@
+# Require users to pick a template rather than opening an empty issue.
+# Oblige à choisir un modèle plutôt qu'à ouvrir un ticket vide.
+blank_issues_enabled: false
+contact_links:
+  - name: "Author's website / Site de l'auteur (Veiðimaður)"
+    url: "https://veidimadur.ca"
+    about: "Learn about the developer or get in touch. / En savoir plus sur le développeur ou le contacter."

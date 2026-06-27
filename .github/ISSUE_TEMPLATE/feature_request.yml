@@ -1,0 +1,53 @@
+name: "💡 Feature request / Demande de fonctionnalité"
+description: "Suggest an idea or improvement. / Proposer une idée ou une amélioration."
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea! Tell us what would make the app more useful for you.
+        Merci de partager une idée ! Dites-nous ce qui rendrait l'application plus utile
+        pour vous.
+
+        **Reminder / Rappel :** this app is intentionally a personal tracking tool — it
+        records and prints your trip dates and does **not** give legal, tax, or
+        immigration advice, and does not warn about limits. Suggestions that keep this
+        focus are easiest to adopt.
+        Cette application est volontairement un outil de suivi personnel — elle
+        enregistre et imprime vos dates de voyage et ne donne **aucun** avis juridique,
+        fiscal ou en matière d'immigration, et n'avertit d'aucune limite. Les
+        suggestions qui respectent cette orientation sont les plus faciles à adopter.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "What problem would this solve? / Quel problème cela résoudrait-il ?"
+      description: "What are you trying to do that is hard today? / Qu'essayez-vous de faire qui est difficile actuellement ?"
+      placeholder: "When planning my winter, I find it hard to ... / Quand je planifie mon hiver, j'ai du mal à ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "What would you like the app to do? / Que souhaiteriez-vous que l'application fasse ?"
+      description: "Describe the feature or change. / Décrivez la fonctionnalité ou le changement."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "How do you handle this today? / Comment gérez-vous cela actuellement ?"
+      description: "Workarounds you use now, or other apps you've tried. / Solutions de contournement actuelles ou autres applications essayées."
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Anything else? / Autre chose ?"
+      description: "Mockups, examples, or extra context. / Maquettes, exemples ou contexte supplémentaire."
+    validations:
+      required: false
