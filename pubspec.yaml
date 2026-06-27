@@ -1,0 +1,26 @@
+name: snowbird_in_usa_tracker
+description: "Privacy-first, on-device tracker so Canadian snowbirds (and anyone else) can see how many days they have spent in the United States in the last 365 days and stay under the 186-day limit."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  shared_preferences: ^2.2.0
+  path_provider: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+# Generate localizations from lib/l10n/*.arb (see l10n.yaml).
+flutter:
+  generate: true
+  uses-material-design: true
