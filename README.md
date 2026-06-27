@@ -37,6 +37,10 @@ Comments in this codebase are written in **both English and French** and are kep
 verbose (they explain the intent, not just the code). Please follow this convention in
 any contribution.
 
+## Author
+
+Created and maintained by **Veiðimaður** — [veidimadur.ca](https://veidimadur.ca).
+
 ## License
 
 Released under the MIT License — see [`LICENSE`](LICENSE).
@@ -80,6 +84,10 @@ fonctionne entièrement sur l'appareil et n'utilise que le stockage local.
 - **Soutenir le développeur :** cette application est gratuite. Si elle vous est utile
   et que vous souhaitez dire merci, un lien de don est disponible dans l'écran « À
   propos » de l'application.
+
+## Auteur
+
+Créé et maintenu par **Veiðimaður** — [veidimadur.ca](https://veidimadur.ca).
 
 ## Licence
 

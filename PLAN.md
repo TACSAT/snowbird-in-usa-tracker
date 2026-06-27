@@ -116,6 +116,9 @@ rules and avoids the store 30% cut.
   //     ne gonflent jamais le total.
   ```
 - This bilingual-verbose-comment rule applies to all Dart/code files in this project.
+- **Author attribution in documentation is always `Veiðimaður - veidimadur.ca`.** Use
+  this exact form (name + site) wherever documentation credits the author — README, the
+  in-app About screen, store listings, the `LICENSE` copyright line, etc.
 
 ## Distribution
 
