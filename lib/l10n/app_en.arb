@@ -1,0 +1,242 @@
+{
+  "@@locale": "en",
+  "@@author": "Veiðimaður - veidimadur.ca",
+
+  "appTitle": "SnowBird",
+  "@appTitle": {
+    "description": "The application name shown in the OS task switcher and title bar."
+  },
+
+  "appDisclaimerTitle": "A personal tracking tool — not advice",
+  "@appDisclaimerTitle": {
+    "description": "Title of the first-launch disclaimer dialog."
+  },
+
+  "appDisclaimerBody": "SnowBird counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is 'safe'. Verify your own situation with a qualified professional.",
+  "@appDisclaimerBody": {
+    "description": "Body of the first-launch disclaimer dialog."
+  },
+
+  "appDisclaimerAcknowledge": "I understand",
+  "@appDisclaimerAcknowledge": {
+    "description": "Button label to dismiss the disclaimer dialog."
+  },
+
+  "tripStatusActual": "Actual",
+  "@tripStatusActual": {
+    "description": "Label for a completed (already taken) trip."
+  },
+
+  "tripStatusPlanned": "Planned",
+  "@tripStatusPlanned": {
+    "description": "Label for a future, intended trip."
+  },
+
+  "daysCount": "{count, plural, =1{1 day} other{{count} days}}",
+  "@daysCount": {
+    "description": "Plural-aware count of days.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "tripListEmpty": "No trips recorded yet.\nTap + to add your first trip.",
+  "@tripListEmpty": {
+    "description": "Placeholder shown when the trip list is empty."
+  },
+
+  "addTrip": "Add trip",
+  "@addTrip": { "description": "FAB tooltip and screen title for adding a trip." },
+
+  "editTrip": "Edit trip",
+  "@editTrip": { "description": "Screen title when editing an existing trip." },
+
+  "deleteTrip": "Delete trip",
+  "@deleteTrip": { "description": "Confirm-delete dialog title." },
+
+  "deleteTripConfirm": "Delete this trip? This cannot be undone.",
+  "@deleteTripConfirm": { "description": "Confirm-delete dialog body." },
+
+  "cancel": "Cancel",
+  "@cancel": { "description": "Generic cancel button label." },
+
+  "delete": "Delete",
+  "@delete": { "description": "Generic delete/confirm button label." },
+
+  "save": "Save",
+  "@save": { "description": "Generic save button label." },
+
+  "fieldArrivalDate": "Arrival date",
+  "@fieldArrivalDate": { "description": "Label for the arrival date field." },
+
+  "fieldDepartureDate": "Departure date",
+  "@fieldDepartureDate": { "description": "Label for the departure date field." },
+
+  "fieldNotes": "Notes (optional)",
+  "@fieldNotes": { "description": "Label for the optional notes field." },
+
+  "errorDepartureBefore": "Departure must be on or after arrival.",
+  "@errorDepartureBefore": {
+    "description": "Validation error when departure precedes arrival."
+  },
+
+  "aboutTitle": "About SnowBird",
+  "@aboutTitle": { "description": "About screen title." },
+
+  "aboutBody": "SnowBird is a free, open-source, privacy-first trip tracker. Your data never leaves your device.",
+  "@aboutBody": { "description": "About screen description." },
+
+  "aboutAuthor": "Built by Veiðimaður — veidimadur.ca",
+  "@aboutAuthor": { "description": "Author credit line on the About screen." },
+
+  "feedbackButton": "Send feedback",
+  "@feedbackButton": { "description": "Button that opens the feedback link." },
+
+  "donateButton": "Support the developer",
+  "@donateButton": { "description": "Button that opens the donation link." },
+
+  "exportBackup": "Export backup",
+  "@exportBackup": { "description": "Menu item / button to export a backup file." },
+
+  "importBackup": "Import backup",
+  "@importBackup": { "description": "Menu item / button to import a backup file." },
+
+  "importBackupConfirm": "Importing will replace all current trip data. Continue?",
+  "@importBackupConfirm": {
+    "description": "Confirmation dialog body before overwriting data with a backup."
+  },
+
+  "importSuccess": "Backup imported successfully.",
+  "@importSuccess": { "description": "Snack bar message after a successful import." },
+
+  "importError": "Could not import backup: {reason}",
+  "@importError": {
+    "description": "Snack bar message when import fails.",
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+
+  "windowLast365": "Last 365 days",
+  "@windowLast365": { "description": "Day-count window label for rolling 365 days." },
+
+  "windowThisYear": "This calendar year",
+  "@windowThisYear": { "description": "Day-count window label for the current year." },
+
+  "windowLastYear": "Last calendar year",
+  "@windowLastYear": { "description": "Day-count window label for the previous year." },
+
+  "windowCustom": "Custom range",
+  "@windowCustom": { "description": "Day-count window label for a user-defined range." },
+
+  "alertsTitle": "My alerts",
+  "@alertsTitle": { "description": "Alerts screen title — 'my' stresses that every alert is user-created." },
+
+  "alertsTooltip": "My alerts",
+  "@alertsTooltip": { "description": "Tooltip for the alerts icon in the app bar." },
+
+  "alertsEmpty": "No alerts.\nSnowBird sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.",
+  "@alertsEmpty": { "description": "Empty state for the alerts screen; restates the zero-defaults positioning." },
+
+  "addAlert": "Add alert",
+  "@addAlert": { "description": "FAB tooltip and screen title for creating an alert." },
+
+  "editAlert": "Edit alert",
+  "@editAlert": { "description": "Screen title when editing an existing alert." },
+
+  "deleteAlert": "Delete alert",
+  "@deleteAlert": { "description": "Confirm-delete dialog title for an alert." },
+
+  "deleteAlertConfirm": "Delete this alert? Your trips are not affected.",
+  "@deleteAlertConfirm": { "description": "Confirm-delete dialog body for an alert." },
+
+  "alertLabelField": "Name (optional)",
+  "@alertLabelField": { "description": "Optional user-given name for an alert." },
+
+  "alertThresholdField": "Notify me at this many days",
+  "@alertThresholdField": { "description": "Numeric field: the user's own day target." },
+
+  "alertWindowField": "Counted within the last (days)",
+  "@alertWindowField": { "description": "Numeric field: rolling window length in days." },
+
+  "alertWindowHelper": "For example, 36 months is about 1095 days.",
+  "@alertWindowHelper": { "description": "Helper text converting months to days for the window field." },
+
+  "alertTimeField": "Delivery time",
+  "@alertTimeField": { "description": "Time-of-day picker label for when the notification is delivered." },
+
+  "alertLeadField": "Advance notice",
+  "@alertLeadField": { "description": "Section label for how far ahead of the reach date to notify." },
+
+  "alertLeadNone": "On the day itself",
+  "@alertLeadNone": { "description": "Lead option: notify on the reach day, no advance." },
+
+  "alertLeadDaysField": "Days before",
+  "@alertLeadDaysField": { "description": "Numeric field: whole days of advance notice." },
+
+  "alertLeadHoursField": "Hours before",
+  "@alertLeadHoursField": { "description": "Numeric field: additional hours of advance notice." },
+
+  "alertEnabledToggle": "Active",
+  "@alertEnabledToggle": { "description": "Switch label: whether the alert is scheduled." },
+
+  "alertSummary": "{threshold} days within the last {window} days",
+  "@alertSummary": {
+    "description": "One-line description of an alert's target on the list screen.",
+    "placeholders": {
+      "threshold": { "type": "int" },
+      "window": { "type": "int" }
+    }
+  },
+
+  "alertProjectedReach": "Projected to reach your target on {date}",
+  "@alertProjectedReach": {
+    "description": "Neutral projection line under an alert; date already formatted.",
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "alertNotReached": "Not reached with your current and planned trips",
+  "@alertNotReached": { "description": "Shown when the target is never reached with current data — neutral, not a pass/fail." },
+
+  "alertRangeError": "Enter a whole number between {min} and {max}.",
+  "@alertRangeError": {
+    "description": "Validation message for any numeric alert field outside its hard cap.",
+    "placeholders": {
+      "min": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+
+  "alertPermissionDenied": "Notifications are turned off for SnowBird in your device settings, so this alert cannot be delivered.",
+  "@alertPermissionDenied": { "description": "Shown when the OS notification permission is refused." },
+
+  "alertNotificationTitle": "Your day-count target",
+  "@alertNotificationTitle": { "description": "Default notification title when the alert has no user label. Neutral — the target is the user's." },
+
+  "alertNotificationBodyToday": "Today you reach {threshold} days within your {window}-day window — the target you set.",
+  "@alertNotificationBodyToday": {
+    "description": "Notification body when delivered on the reach day. Must stay neutral: no warning or judgment.",
+    "placeholders": {
+      "threshold": { "type": "int" },
+      "window": { "type": "int" }
+    }
+  },
+
+  "alertNotificationBodyAdvance": "On {date}, you will reach {threshold} days within your {window}-day window — the target you set.",
+  "@alertNotificationBodyAdvance": {
+    "description": "Notification body when delivered in advance of the reach date. Must stay neutral: no warning or judgment.",
+    "placeholders": {
+      "date": { "type": "String" },
+      "threshold": { "type": "int" },
+      "window": { "type": "int" }
+    }
+  },
+
+  "alertChannelName": "Your day-count targets",
+  "@alertChannelName": { "description": "Android notification channel name (visible in system settings)." },
+
+  "alertChannelDescription": "Reminders you created for day-count targets you set yourself.",
+  "@alertChannelDescription": { "description": "Android notification channel description (visible in system settings)." }
+}

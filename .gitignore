@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ / Android Studio
@@ -82,3 +84,15 @@ unlinked_spec.ds
 *.env
 credentials.json
 token.json
+
+# EN: build/ is a symlink to ~/development/builds/snowbird-in-usa-tracker so
+#     build artifacts live OUTSIDE the iCloud-synced ~/Documents tree. iCloud's
+#     file provider stamps com.apple.FinderInfo on directories it manages, and
+#     Xcode 26's codesign rejects framework bundles carrying that xattr
+#     ("resource fork, Finder information, or similar detritus not allowed").
+# FR: build/ est un lien symbolique vers ~/development/builds/snowbird-in-usa-tracker
+#     pour que les artefacts de build vivent HORS de l'arborescence ~/Documents
+#     synchronisee par iCloud. Le fournisseur de fichiers d'iCloud appose
+#     com.apple.FinderInfo sur les dossiers qu'il gere, et codesign de Xcode 26
+#     rejette les bundles de framework portant cet attribut.
+/build

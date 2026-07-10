@@ -1,5 +1,5 @@
 name: snowbird_in_usa_tracker
-description: "Privacy-first, on-device tracker so Canadian snowbirds (and anyone else) can see how many days they have spent in the United States in the last 365 days and stay under the 186-day limit."
+description: "Privacy-first, on-device US trip record-keeper and planner for snowbirds. No cloud, no account, no tracking — just accurate day counts and a printable trip log."
 publish_to: "none"
 version: 1.0.0+1
 
@@ -11,9 +11,38 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl: any
+  # EN: intl is pinned to align with the version shipped by flutter_localizations.
+  #     If `flutter pub get` reports a conflict, update this to match the SDK's pin.
+  # FR: intl est épinglé pour correspondre à la version livrée par flutter_localizations.
+  #     En cas de conflit au `flutter pub get`, mettre à jour pour correspondre au SDK.
+  intl: ^0.20.2
   shared_preferences: ^2.2.0
   path_provider: ^2.1.0
+  # EN: Local, on-device scheduled notifications for user-defined alert targets.
+  #     No push service, no network — notifications are computed and scheduled
+  #     entirely on the device, consistent with the privacy invariants.
+  #     timezone + flutter_timezone provide the IANA database and the device's
+  #     current zone so "09:00 local" stays correct across travel and DST.
+  # FR: Notifications locales planifiées sur l'appareil pour les cibles d'alerte
+  #     définies par l'utilisateur. Aucun service push, aucun réseau — les
+  #     notifications sont calculées et planifiées entièrement sur l'appareil,
+  #     conformément aux invariants de confidentialité. timezone +
+  #     flutter_timezone fournissent la base IANA et le fuseau courant de
+  #     l'appareil pour que « 9 h locale » reste correct malgré les voyages et
+  #     les changements d'heure.
+  flutter_local_notifications: ^19.0.0
+  timezone: ^0.10.0
+  flutter_timezone: ^4.1.1
+  # EN: Provider is the state-management layer between the UI and TripRepository.
+  #     Lightweight ChangeNotifier approach — no code generation, no magic.
+  # FR: Provider est la couche de gestion d'état entre l'interface et TripRepository.
+  #     Approche ChangeNotifier légère — pas de génération de code, pas de magie.
+  provider: ^6.1.2
+  # EN: UUID generates locally-created, collision-resistant trip IDs without any
+  #     network call or external service — required for the offline-first design.
+  # FR: UUID génère des identifiants de séjour locaux sans collision et sans appel
+  #     réseau ni service externe — indispensable pour la conception hors-ligne.
+  uuid: ^4.4.0
 
 dev_dependencies:
   flutter_test:

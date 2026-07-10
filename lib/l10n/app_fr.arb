@@ -1,0 +1,164 @@
+{
+  "@@locale": "fr",
+  "@@author": "Veiðimaður - veidimadur.ca",
+
+  "appTitle": "SnowBird",
+
+  "appDisclaimerTitle": "Outil de suivi personnel — pas un conseil",
+
+  "appDisclaimerBody": "SnowBird compte vos jours aux États-Unis et vous permet d'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d'un professionnel qualifié.",
+
+  "appDisclaimerAcknowledge": "Je comprends",
+
+  "tripStatusActual": "Réel",
+
+  "tripStatusPlanned": "Planifié",
+
+  "daysCount": "{count, plural, =1{1 jour} other{{count} jours}}",
+  "@daysCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "tripListEmpty": "Aucun séjour enregistré pour l'instant.\nAppuyez sur + pour ajouter votre premier séjour.",
+
+  "addTrip": "Ajouter un séjour",
+
+  "editTrip": "Modifier le séjour",
+
+  "deleteTrip": "Supprimer le séjour",
+
+  "deleteTripConfirm": "Supprimer ce séjour ? Cette action est irréversible.",
+
+  "cancel": "Annuler",
+
+  "delete": "Supprimer",
+
+  "save": "Enregistrer",
+
+  "fieldArrivalDate": "Date d'arrivée",
+
+  "fieldDepartureDate": "Date de départ",
+
+  "fieldNotes": "Notes (facultatif)",
+
+  "errorDepartureBefore": "La date de départ doit être égale ou postérieure à l'arrivée.",
+
+  "aboutTitle": "À propos de SnowBird",
+
+  "aboutBody": "SnowBird est un suivi de séjours gratuit, open source et respectueux de la vie privée. Vos données ne quittent jamais votre appareil.",
+
+  "aboutAuthor": "Développé par Veiðimaður — veidimadur.ca",
+
+  "feedbackButton": "Envoyer des commentaires",
+
+  "donateButton": "Soutenir le développeur",
+
+  "exportBackup": "Exporter la sauvegarde",
+
+  "importBackup": "Importer la sauvegarde",
+
+  "importBackupConfirm": "L'importation remplacera toutes les données de séjour actuelles. Continuer ?",
+
+  "importSuccess": "Sauvegarde importée avec succès.",
+
+  "importError": "Impossible d'importer la sauvegarde : {reason}",
+  "@importError": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+
+  "windowLast365": "365 derniers jours",
+
+  "windowThisYear": "Cette année civile",
+
+  "windowLastYear": "Année civile précédente",
+
+  "windowCustom": "Plage personnalisée",
+
+  "alertsTitle": "Mes alertes",
+
+  "alertsTooltip": "Mes alertes",
+
+  "alertsEmpty": "Aucune alerte.\nSnowBird ne fixe aucune limite de lui-même — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.",
+
+  "addAlert": "Ajouter une alerte",
+
+  "editAlert": "Modifier l'alerte",
+
+  "deleteAlert": "Supprimer l'alerte",
+
+  "deleteAlertConfirm": "Supprimer cette alerte ? Vos séjours ne sont pas touchés.",
+
+  "alertLabelField": "Nom (facultatif)",
+
+  "alertThresholdField": "M'aviser à ce nombre de jours",
+
+  "alertWindowField": "Comptés dans les derniers (jours)",
+
+  "alertWindowHelper": "Par exemple, 36 mois représentent environ 1095 jours.",
+
+  "alertTimeField": "Heure de livraison",
+
+  "alertLeadField": "Préavis",
+
+  "alertLeadNone": "Le jour même",
+
+  "alertLeadDaysField": "Jours avant",
+
+  "alertLeadHoursField": "Heures avant",
+
+  "alertEnabledToggle": "Active",
+
+  "alertSummary": "{threshold} jours dans les {window} derniers jours",
+  "@alertSummary": {
+    "placeholders": {
+      "threshold": { "type": "int" },
+      "window": { "type": "int" }
+    }
+  },
+
+  "alertProjectedReach": "Atteinte de votre cible projetée le {date}",
+  "@alertProjectedReach": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "alertNotReached": "Non atteinte avec vos séjours actuels et planifiés",
+
+  "alertRangeError": "Saisissez un nombre entier entre {min} et {max}.",
+  "@alertRangeError": {
+    "placeholders": {
+      "min": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+
+  "alertPermissionDenied": "Les notifications sont désactivées pour SnowBird dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.",
+
+  "alertNotificationTitle": "Votre cible de jours",
+
+  "alertNotificationBodyToday": "Aujourd'hui, vous atteignez {threshold} jours dans votre fenêtre de {window} jours — la cible que vous avez fixée.",
+  "@alertNotificationBodyToday": {
+    "placeholders": {
+      "threshold": { "type": "int" },
+      "window": { "type": "int" }
+    }
+  },
+
+  "alertNotificationBodyAdvance": "Le {date}, vous atteindrez {threshold} jours dans votre fenêtre de {window} jours — la cible que vous avez fixée.",
+  "@alertNotificationBodyAdvance": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "threshold": { "type": "int" },
+      "window": { "type": "int" }
+    }
+  },
+
+  "alertChannelName": "Vos cibles de jours",
+
+  "alertChannelDescription": "Rappels que vous avez créés pour des cibles de jours que vous avez fixées vous-même."
+}
