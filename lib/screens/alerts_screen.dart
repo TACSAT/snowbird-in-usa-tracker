@@ -61,8 +61,7 @@ class AlertsScreen extends StatelessWidget {
             )
           : ListView.builder(
               itemCount: alerts.length,
-              itemBuilder: (context, index) =>
-                  _AlertTile(alert: alerts[index]),
+              itemBuilder: (context, index) => _AlertTile(alert: alerts[index]),
             ),
       floatingActionButton: FloatingActionButton(
         tooltip: strings.addAlert,
@@ -89,28 +88,36 @@ class _AlertTile extends StatelessWidget {
     final strings = AppLocalizations.of(context);
     final repo = context.read<AlertRepository>();
 
+    // EN: Summary and the "no target yet" line both depend on the alert kind
+    //     (FR-9 vs FR-10). For since-last-visit, "not reached" means the user has
+    //     recorded no actual visit to measure from, not that a count fell short.
+    // FR: Le résumé et la ligne « pas encore de cible » dépendent tous deux du type
+    //     d'alerte (FR-9 vs FR-10). Pour « depuis le dernier séjour », « non
+    //     atteinte » signifie qu'aucun séjour réel n'est enregistré comme point de
+    //     départ, pas qu'un compte est insuffisant.
+    final isSince = alert.kind == AlertKind.sinceLastVisit;
+    final summary = isSince
+        ? strings.alertSummarySince(alert.thresholdDays)
+        : strings.alertSummary(alert.thresholdDays, alert.windowDays);
+    final noReachText =
+        isSince ? strings.alertNoVisits : strings.alertNotReached;
+
     final reachDate = repo.projectedReachDate(alert);
     final projection = reachDate == null
-        ? strings.alertNotReached
+        ? noReachText
         : strings.alertProjectedReach(
             DateFormat.yMMMMd(strings.localeName).format(reachDate),
           );
 
     return ListTile(
-      title: Text(
-        alert.label ??
-            strings.alertSummary(alert.thresholdDays, alert.windowDays),
-      ),
+      title: Text(alert.label ?? summary),
       subtitle: Text(
-        alert.label != null
-            ? '${strings.alertSummary(alert.thresholdDays, alert.windowDays)}\n$projection'
-            : projection,
+        alert.label != null ? '$summary\n$projection' : projection,
       ),
       isThreeLine: alert.label != null,
       trailing: Switch(
         value: alert.enabled,
-        onChanged: (value) =>
-            repo.updateAlert(alert.copyWith(enabled: value)),
+        onChanged: (value) => repo.updateAlert(alert.copyWith(enabled: value)),
       ),
       onTap: () => _openEditor(context, existing: alert),
     );
@@ -155,10 +162,17 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
   TimeOfDay? _time;
   bool _enabled = true;
 
+  // EN: Which kind of alert this is (FR-9 day-count vs FR-10 time-since-last-visit).
+  //     Defaults to the original day-count kind for a new alert.
+  // FR: Quel type d'alerte (compte de jours FR-9 vs temps depuis le dernier séjour
+  //     FR-10). Par défaut le type compte de jours d'origine pour une nouvelle alerte.
+  AlertKind _kind = AlertKind.dayCountThreshold;
+
   @override
   void initState() {
     super.initState();
     final e = widget.existing;
+    _kind = e?.kind ?? AlertKind.dayCountThreshold;
     _label = TextEditingController(text: e?.label ?? '');
     _threshold =
         TextEditingController(text: e == null ? '' : '${e.thresholdDays}');
@@ -208,29 +222,64 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // EN: Choose what the alert watches (FR-9 vs FR-10). Switching hides or
+            //     shows the rolling-window field below, since only the day-count
+            //     kind uses a window.
+            // FR: Choisir ce que l'alerte surveille (FR-9 vs FR-10). Le changement
+            //     masque ou affiche le champ de fenêtre glissante ci-dessous, car
+            //     seul le type compte de jours utilise une fenêtre.
+            Text(
+              strings.alertKindLabel,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<AlertKind>(
+              segments: [
+                ButtonSegment(
+                  value: AlertKind.dayCountThreshold,
+                  label: Text(strings.alertKindDayCount),
+                ),
+                ButtonSegment(
+                  value: AlertKind.sinceLastVisit,
+                  label: Text(strings.alertKindSinceVisit),
+                ),
+              ],
+              selected: {_kind},
+              onSelectionChanged: (s) => setState(() => _kind = s.first),
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _label,
               maxLength: kMaxAlertLabelLength,
-              decoration:
-                  InputDecoration(labelText: strings.alertLabelField),
+              decoration: InputDecoration(labelText: strings.alertLabelField),
             ),
             const SizedBox(height: 8),
             _numberField(
               controller: _threshold,
-              label: strings.alertThresholdField,
+              label: _kind == AlertKind.sinceLastVisit
+                  ? strings.alertThresholdSinceField
+                  : strings.alertThresholdField,
+              helper: _kind == AlertKind.sinceLastVisit
+                  ? strings.alertSinceHelper
+                  : null,
               min: InputLimits.minThresholdDays,
               max: InputLimits.maxThresholdDays,
               strings: strings,
             ),
-            const SizedBox(height: 16),
-            _numberField(
-              controller: _window,
-              label: strings.alertWindowField,
-              helper: strings.alertWindowHelper,
-              min: InputLimits.minWindowDays,
-              max: InputLimits.maxWindowDays,
-              strings: strings,
-            ),
+            // EN: The rolling-window field only applies to the day-count kind.
+            // FR: Le champ de fenêtre glissante ne s'applique qu'au type compte de
+            //     jours.
+            if (_kind == AlertKind.dayCountThreshold) ...[
+              const SizedBox(height: 16),
+              _numberField(
+                controller: _window,
+                label: strings.alertWindowField,
+                helper: strings.alertWindowHelper,
+                min: InputLimits.minWindowDays,
+                max: InputLimits.maxWindowDays,
+                strings: strings,
+              ),
+            ],
             const SizedBox(height: 16),
             // EN: Time picker row — shows "—" until a time is chosen.
             // FR: Rangée du sélecteur d'heure — affiche « — » tant qu'aucune
@@ -245,8 +294,10 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
               onTap: _pickTime,
             ),
             const Divider(),
-            Text(strings.alertLeadField,
-                style: Theme.of(context).textTheme.titleSmall,),
+            Text(
+              strings.alertLeadField,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -362,29 +413,47 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
       if (_time == null || !mounted) return;
     }
 
+    final threshold = int.parse(_threshold.text);
+    // EN: The since-last-visit kind has no window. The model still stores a valid
+    //     windowDays (it is never read for this kind), so we set it equal to the
+    //     threshold to satisfy the range check without inventing a meaningless
+    //     value the user did not choose.
+    // FR: Le type « depuis le dernier séjour » n'a pas de fenêtre. Le modèle stocke
+    //     quand même un windowDays valide (jamais lu pour ce type), donc on le met
+    //     égal au seuil pour satisfaire la validation de plage sans inventer une
+    //     valeur dénuée de sens que l'utilisateur n'a pas choisie.
+    final windowDays =
+        _kind == AlertKind.sinceLastVisit ? threshold : int.parse(_window.text);
+
     final existing = widget.existing;
     if (existing == null) {
-      await repo.addAlert(DayAlert.create(
-        thresholdDays: int.parse(_threshold.text),
-        windowDays: int.parse(_window.text),
-        hour: _time!.hour,
-        minute: _time!.minute,
-        leadDays: int.parse(_leadDays.text),
-        leadHours: int.parse(_leadHours.text),
-        enabled: _enabled,
-        label: _label.text,
-      ),);
+      await repo.addAlert(
+        DayAlert.create(
+          thresholdDays: threshold,
+          windowDays: windowDays,
+          hour: _time!.hour,
+          minute: _time!.minute,
+          leadDays: int.parse(_leadDays.text),
+          leadHours: int.parse(_leadHours.text),
+          enabled: _enabled,
+          kind: _kind,
+          label: _label.text,
+        ),
+      );
     } else {
-      await repo.updateAlert(existing.copyWith(
-        thresholdDays: int.parse(_threshold.text),
-        windowDays: int.parse(_window.text),
-        hour: _time!.hour,
-        minute: _time!.minute,
-        leadDays: int.parse(_leadDays.text),
-        leadHours: int.parse(_leadHours.text),
-        enabled: _enabled,
-        label: _label.text.trim().isEmpty ? null : _label.text,
-      ),);
+      await repo.updateAlert(
+        existing.copyWith(
+          thresholdDays: threshold,
+          windowDays: windowDays,
+          hour: _time!.hour,
+          minute: _time!.minute,
+          leadDays: int.parse(_leadDays.text),
+          leadHours: int.parse(_leadHours.text),
+          enabled: _enabled,
+          kind: _kind,
+          label: _label.text.trim().isEmpty ? null : _label.text,
+        ),
+      );
     }
 
     // EN: Ask for OS permission AFTER the user has expressed intent by saving

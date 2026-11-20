@@ -11,6 +11,9 @@
 
 import 'package:uuid/uuid.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
+import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
+
 // EN: Distinguishes trips that have already happened from those the user intends
 //     to take. UI and day-counter logic treat them differently — planned trips can
 //     be included or excluded from counts depending on the view.
@@ -24,7 +27,34 @@ class Trip {
   final DateTime arrivalDate;
   final DateTime departureDate;
   final TripStatus status;
+
+  // EN: Optional user-given name for the trip, recording its purpose so the user
+  //     can recognise it in the list (e.g. "Winter in Hallandale", "Golf week").
+  //     Only the two dates are mandatory (FR-1); this and every field below may be
+  //     null.
+  // FR: Nom optionnel donné par l'utilisateur au séjour, consignant son but pour
+  //     qu'il le reconnaisse dans la liste (p. ex. « Hiver à Hallandale »,
+  //     « Semaine de golf »). Seules les deux dates sont obligatoires (FR-1) ; ce
+  //     champ et tous ceux ci-dessous peuvent être null.
+  final String? name;
+
+  // EN: Free-text notes about the trip as a whole (trip-level, distinct from the
+  //     per-crossing carrier/location). Length-capped on entry and import (FR-5).
+  // FR: Notes en texte libre sur l'ensemble du séjour (niveau séjour, distinctes du
+  //     transporteur/lieu par passage). Plafonnées en longueur à la saisie et à
+  //     l'import (FR-5).
   final String? notes;
+
+  // EN: Optional details of the ENTRY crossing (time, zone, location, means,
+  //     carrier). Null when the user recorded nothing beyond the arrival date.
+  // FR: Détails optionnels du passage d'ENTRÉE (heure, fuseau, lieu, moyen,
+  //     transporteur). Null quand l'utilisateur n'a rien noté au-delà de la date
+  //     d'arrivée.
+  final CrossingInfo? arrivalInfo;
+
+  // EN: Optional details of the EXIT crossing — same shape as [arrivalInfo].
+  // FR: Détails optionnels du passage de SORTIE — même forme que [arrivalInfo].
+  final CrossingInfo? departureInfo;
 
   // EN: Direct constructor — prefer Trip.create() for new trips (it generates a
   //     UUID and strips time components). Use this constructor only when
@@ -38,7 +68,10 @@ class Trip {
     required this.arrivalDate,
     required this.departureDate,
     required this.status,
+    this.name,
     this.notes,
+    this.arrivalInfo,
+    this.departureInfo,
   });
 
   // EN: Factory constructor for creating brand-new trips at runtime. Generates a
@@ -52,7 +85,10 @@ class Trip {
     required DateTime arrivalDate,
     required DateTime departureDate,
     required TripStatus status,
+    String? name,
     String? notes,
+    CrossingInfo? arrivalInfo,
+    CrossingInfo? departureInfo,
   }) {
     if (!departureDate.isAtSameMomentAs(arrivalDate) &&
         departureDate.isBefore(arrivalDate)) {
@@ -65,7 +101,15 @@ class Trip {
       arrivalDate: _dateOnly(arrivalDate),
       departureDate: _dateOnly(departureDate),
       status: status,
-      notes: notes?.trim().isEmpty == true ? null : notes?.trim(),
+      name: _capText(name, InputLimits.maxTripNameLength),
+      notes: _capText(notes, InputLimits.maxNotesLength),
+      // EN: Drop an all-empty CrossingInfo to null so "no details" is stored as
+      //     nothing, keeping date-only trips as small as before these fields existed.
+      // FR: Réduire un CrossingInfo entièrement vide à null pour que « aucun détail »
+      //     soit stocké comme rien, gardant les séjours « date seulement » aussi
+      //     petits qu'avant l'existence de ces champs.
+      arrivalInfo: (arrivalInfo?.isEmpty ?? true) ? null : arrivalInfo,
+      departureInfo: (departureInfo?.isEmpty ?? true) ? null : departureInfo,
     );
   }
 
@@ -106,15 +150,26 @@ class Trip {
     DateTime? arrivalDate,
     DateTime? departureDate,
     TripStatus? status,
+    Object? name = _sentinel,
     Object? notes = _sentinel,
+    Object? arrivalInfo = _sentinel,
+    Object? departureInfo = _sentinel,
   }) {
     return Trip(
       id: id ?? this.id,
-      arrivalDate: arrivalDate != null ? _dateOnly(arrivalDate) : this.arrivalDate,
+      arrivalDate:
+          arrivalDate != null ? _dateOnly(arrivalDate) : this.arrivalDate,
       departureDate:
           departureDate != null ? _dateOnly(departureDate) : this.departureDate,
       status: status ?? this.status,
+      name: name == _sentinel ? this.name : name as String?,
       notes: notes == _sentinel ? this.notes : notes as String?,
+      arrivalInfo: arrivalInfo == _sentinel
+          ? this.arrivalInfo
+          : arrivalInfo as CrossingInfo?,
+      departureInfo: departureInfo == _sentinel
+          ? this.departureInfo
+          : departureInfo as CrossingInfo?,
     );
   }
 
@@ -130,7 +185,19 @@ class Trip {
         'arrivalDate': _isoDate(arrivalDate),
         'departureDate': _isoDate(departureDate),
         'status': status.name,
+        if (name != null) 'name': name,
         if (notes != null) 'notes': notes,
+        // EN: Only write crossing details that carry something. isNotEmpty is
+        //     guaranteed by Trip.create/fromJson (they null out empties), but the
+        //     guard keeps toJson honest even for hand-built instances.
+        // FR: N'écrire que les détails de passage qui portent quelque chose.
+        //     isNotEmpty est garanti par Trip.create/fromJson (ils annulent les
+        //     vides), mais la garde garde toJson honnête même pour des instances
+        //     construites à la main.
+        if (arrivalInfo != null && arrivalInfo!.isNotEmpty)
+          'arrivalInfo': arrivalInfo!.toJson(),
+        if (departureInfo != null && departureInfo!.isNotEmpty)
+          'departureInfo': departureInfo!.toJson(),
       };
 
   // EN: Deserialize from a JSON map, validating every required field. Throws a
@@ -145,10 +212,14 @@ class Trip {
     final departure = DateTime.tryParse(json['departureDate'] as String? ?? '');
 
     if (arrival == null) {
-      throw const FormatException('Trip JSON is missing a valid "arrivalDate".');
+      throw const FormatException(
+        'Trip JSON is missing a valid "arrivalDate".',
+      );
     }
     if (departure == null) {
-      throw const FormatException('Trip JSON is missing a valid "departureDate".');
+      throw const FormatException(
+        'Trip JSON is missing a valid "departureDate".',
+      );
     }
     if (departure.isBefore(arrival)) {
       throw FormatException(
@@ -170,12 +241,41 @@ class Trip {
       throw const FormatException('Trip JSON is missing a non-empty "id".');
     }
 
+    // EN: The optional fields below are a FORWARD-COMPATIBLE (additive) schema
+    //     change (FR-12): a record written by an older app version simply lacks
+    //     these keys, and parseCrossing/_capText treat "absent" as "not recorded".
+    //     No storage-key bump or destructive migration is needed — old data loads
+    //     unchanged, and an older app reading newer data ignores keys it does not
+    //     know. A malformed crossing time still throws (untrusted input), so
+    //     StorageService can skip just that record.
+    // FR: Les champs optionnels ci-dessous sont un changement de schéma
+    //     RÉTROCOMPATIBLE (additif) (FR-12) : un enregistrement écrit par une
+    //     version antérieure n'a tout simplement pas ces clés, et
+    //     parseCrossing/_capText traitent « absent » comme « non renseigné ».
+    //     Aucun changement de clé de stockage ni migration destructrice n'est
+    //     requis — les anciennes données se chargent inchangées, et une ancienne
+    //     appli lisant des données plus récentes ignore les clés inconnues. Une
+    //     heure de passage malformée lance quand même (entrée non fiable), pour
+    //     que StorageService puisse ignorer ce seul enregistrement.
+    CrossingInfo? parseCrossing(String key) {
+      final raw = json[key];
+      if (raw == null) return null;
+      if (raw is! Map<String, dynamic>) {
+        throw FormatException('Trip JSON "$key" must be an object.');
+      }
+      final info = CrossingInfo.fromJson(raw);
+      return info.isEmpty ? null : info;
+    }
+
     return Trip(
       id: id,
       arrivalDate: _dateOnly(arrival),
       departureDate: _dateOnly(departure),
       status: status,
-      notes: json['notes'] as String?,
+      name: _capText(json['name'] as String?, InputLimits.maxTripNameLength),
+      notes: _capText(json['notes'] as String?, InputLimits.maxNotesLength),
+      arrivalInfo: parseCrossing('arrivalInfo'),
+      departureInfo: parseCrossing('departureInfo'),
     );
   }
 
@@ -192,13 +292,24 @@ class Trip {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() =>
-      'Trip(id: $id, arrival: ${_isoDate(arrivalDate)}, '
+  String toString() => 'Trip(id: $id, arrival: ${_isoDate(arrivalDate)}, '
       'departure: ${_isoDate(departureDate)}, status: ${status.name})';
 
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  // EN: Trim, blank→null, truncate to [max]. Never throws — an over-length string
+  //     is a usability slip, not corruption — matching CrossingInfo and the alert
+  //     label policy (FR-5).
+  // FR: Épurer, vide→null, tronquer à [max]. Ne lance jamais — une chaîne trop
+  //     longue est une maladresse d'ergonomie, pas une corruption — comme la
+  //     politique de CrossingInfo et de l'étiquette d'alerte (FR-5).
+  static String? _capText(String? raw, int max) {
+    final trimmed = raw?.trim();
+    if (trimmed == null || trimmed.isEmpty) return null;
+    return trimmed.length <= max ? trimmed : trimmed.substring(0, max);
+  }
 
   // EN: Strip the time component so all dates in the model are midnight-anchored.
   // FR: Supprimer la composante horaire pour que toutes les dates soient ancrées

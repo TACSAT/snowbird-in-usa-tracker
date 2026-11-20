@@ -1,0 +1,66 @@
+# Define the minimum iOS version supported by Flutter.framework.
+platform :ios, '15.0'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+  target 'Runner' do
+    use_frameworks!
+
+    flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+    target 'RunnerTests' do
+      inherit! :search_paths
+    end
+  end
+
+def disable_runner_tests_signing
+  Dir.glob(File.join(__dir__, 'Pods', 'Target Support Files', 'Pods-RunnerTests', 'Pods-RunnerTests.*.xcconfig')).each do |path|
+    contents = File.read(path)
+    next if contents.include?('CODE_SIGNING_ALLOWED = NO')
+
+    File.write(path, "#{contents.chomp}\nCODE_SIGNING_ALLOWED = NO\n")
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.instance_variable_set(:@object_version, Xcodeproj::Constants::LAST_KNOWN_OBJECT_VERSION.to_s)
+  installer.pods_project.root_object.compatibility_version = Xcodeproj::Constants::COMPATIBILITY_VERSION_BY_OBJECT_VERSION[Xcodeproj::Constants::LAST_KNOWN_OBJECT_VERSION]
+  installer.pods_project.root_object.attributes['BuildIndependentTargetsInParallel'] = 'YES'
+  installer.pods_project.root_object.attributes['LastSwiftUpdateCheck'] = '2660'
+  installer.pods_project.root_object.attributes['LastUpgradeCheck'] = '2660'
+
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      if target.name == 'printing'
+        config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
+      end
+    end
+  end
+
+  disable_runner_tests_signing
+end

@@ -36,6 +36,24 @@ import 'package:uuid/uuid.dart';
 
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 
+// EN: What KIND of target this alert measures (FR-9 vs FR-10):
+//     • dayCountThreshold — "notify me at N days within the last M-day rolling
+//       window" (the original alert; uses thresholdDays AND windowDays), and
+//     • sinceLastVisit — "notify me when it has been N days since my last actual US
+//       visit" (uses thresholdDays as the elapsed-days target; windowDays is
+//       ignored). Splitting on kind lets both reuse the same delivery-time / lead /
+//       scheduling machinery — only the projected REACH DATE is computed differently
+//       (see AlertRepository).
+// FR: Quel TYPE de cible cette alerte mesure (FR-9 vs FR-10) :
+//     • dayCountThreshold — « m'aviser à N jours dans la fenêtre glissante de M
+//       jours » (l'alerte d'origine ; utilise thresholdDays ET windowDays), et
+//     • sinceLastVisit — « m'aviser quand il s'est écoulé N jours depuis mon dernier
+//       séjour réel aux É.-U. » (utilise thresholdDays comme cible de jours écoulés ;
+//       windowDays est ignoré). Séparer par type permet aux deux de réutiliser la
+//       même machinerie heure/préavis/planification — seule la DATE D'ATTEINTE
+//       projetée est calculée différemment (voir AlertRepository).
+enum AlertKind { dayCountThreshold, sinceLastVisit }
+
 // EN: Maximum length of the optional user label — a modest cap so a crafted
 //     backup file cannot smuggle megabytes of text into storage or the
 //     notification body.
@@ -83,6 +101,14 @@ class DayAlert {
   //     préservés) mais jamais planifiée.
   final bool enabled;
 
+  // EN: Which kind of target this is (FR-9 rolling day-count vs FR-10 elapsed time
+  //     since the last actual visit). For sinceLastVisit, [thresholdDays] is the
+  //     elapsed-days target and [windowDays] is ignored.
+  // FR: Quel type de cible (compte glissant FR-9 vs temps écoulé FR-10 depuis le
+  //     dernier séjour réel). Pour sinceLastVisit, [thresholdDays] est la cible de
+  //     jours écoulés et [windowDays] est ignoré.
+  final AlertKind kind;
+
   // EN: Direct constructor — validates EVERY numeric field against InputLimits
   //     and throws ArgumentError on violation. Prefer DayAlert.create() for new
   //     alerts (generates the UUID); use this one when round-tripping from
@@ -100,19 +126,40 @@ class DayAlert {
     this.leadDays = 0,
     this.leadHours = 0,
     this.enabled = true,
+    this.kind = AlertKind.dayCountThreshold,
     String? label,
   }) : label = _normalizeLabel(label) {
-    _requireInRange('thresholdDays', thresholdDays,
-        InputLimits.minThresholdDays, InputLimits.maxThresholdDays,);
-    _requireInRange('windowDays', windowDays, InputLimits.minWindowDays,
-        InputLimits.maxWindowDays,);
+    _requireInRange(
+      'thresholdDays',
+      thresholdDays,
+      InputLimits.minThresholdDays,
+      InputLimits.maxThresholdDays,
+    );
+    _requireInRange(
+      'windowDays',
+      windowDays,
+      InputLimits.minWindowDays,
+      InputLimits.maxWindowDays,
+    );
     _requireInRange('hour', hour, InputLimits.minHour, InputLimits.maxHour);
     _requireInRange(
-        'minute', minute, InputLimits.minMinute, InputLimits.maxMinute,);
-    _requireInRange('leadDays', leadDays, InputLimits.minLeadDays,
-        InputLimits.maxLeadDays,);
-    _requireInRange('leadHours', leadHours, InputLimits.minLeadHours,
-        InputLimits.maxLeadHours,);
+      'minute',
+      minute,
+      InputLimits.minMinute,
+      InputLimits.maxMinute,
+    );
+    _requireInRange(
+      'leadDays',
+      leadDays,
+      InputLimits.minLeadDays,
+      InputLimits.maxLeadDays,
+    );
+    _requireInRange(
+      'leadHours',
+      leadHours,
+      InputLimits.minLeadHours,
+      InputLimits.maxLeadHours,
+    );
     if (id.isEmpty) {
       throw ArgumentError.value(id, 'id', 'must not be empty');
     }
@@ -130,6 +177,7 @@ class DayAlert {
     int leadDays = 0,
     int leadHours = 0,
     bool enabled = true,
+    AlertKind kind = AlertKind.dayCountThreshold,
     String? label,
   }) {
     return DayAlert(
@@ -141,6 +189,7 @@ class DayAlert {
       leadDays: leadDays,
       leadHours: leadHours,
       enabled: enabled,
+      kind: kind,
       label: label,
     );
   }
@@ -181,6 +230,7 @@ class DayAlert {
     int? leadDays,
     int? leadHours,
     bool? enabled,
+    AlertKind? kind,
     Object? label = _sentinel,
   }) {
     return DayAlert(
@@ -192,6 +242,7 @@ class DayAlert {
       leadDays: leadDays ?? this.leadDays,
       leadHours: leadHours ?? this.leadHours,
       enabled: enabled ?? this.enabled,
+      kind: kind ?? this.kind,
       label: label == _sentinel ? this.label : label as String?,
     );
   }
@@ -209,6 +260,7 @@ class DayAlert {
         'leadDays': leadDays,
         'leadHours': leadHours,
         'enabled': enabled,
+        'kind': kind.name,
         if (label != null) 'label': label,
       };
 
@@ -251,6 +303,21 @@ class DayAlert {
       throw const FormatException('DayAlert JSON "label" must be a string.');
     }
 
+    // EN: Additive, migration-safe (FR-12): an alert written before this field
+    //     existed has no "kind" key and loads as the original dayCountThreshold. An
+    //     unrecognised value (e.g. from a newer version) also falls back rather than
+    //     throwing, so one odd record never wipes the list.
+    // FR: Additif, sûr pour la migration (FR-12) : une alerte écrite avant ce champ
+    //     n'a pas de clé « kind » et se charge comme le dayCountThreshold d'origine.
+    //     Une valeur non reconnue (p. ex. d'une version plus récente) retombe aussi
+    //     par défaut plutôt que de lever, pour qu'un enregistrement étrange n'efface
+    //     jamais la liste.
+    final kindRaw = json['kind'];
+    final kind = AlertKind.values.firstWhere(
+      (k) => k.name == kindRaw,
+      orElse: () => AlertKind.dayCountThreshold,
+    );
+
     try {
       return DayAlert(
         id: id,
@@ -261,6 +328,7 @@ class DayAlert {
         leadDays: readInt('leadDays'),
         leadHours: readInt('leadHours'),
         enabled: enabledRaw,
+        kind: kind,
         label: labelRaw as String?,
       );
     } on ArgumentError catch (e) {

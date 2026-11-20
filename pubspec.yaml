@@ -43,6 +43,49 @@ dependencies:
   # FR: UUID génère des identifiants de séjour locaux sans collision et sans appel
   #     réseau ni service externe — indispensable pour la conception hors-ligne.
   uuid: ^4.4.0
+  # EN: The flagship "US Presence Record" export (PLAN.md FR-8). `printing` builds
+  #     the PDF, rasterises it to a PNG image, and drives the system PRINT dialog;
+  #     `share_plus` hands the CSV / image / PDF file to the OS share sheet. Both
+  #     were verified to declare NO Android permissions (no INTERNET) — the export
+  #     is entirely on-device. IMPORTANT: never call `PdfGoogleFonts.*` — that is
+  #     the one code path in `printing` that would fetch a font over the network;
+  #     we use the pdf package's standard Latin-1 Helvetica and normalise the
+  #     punctuation we emit instead of a downloaded font, so the no-network
+  #     invariant (NFR-1) is never broken.
+  # FR: L'export de la « fiche de présence aux É.-U. » vedette (PLAN.md FR-8).
+  #     `printing` construit le PDF, le pixellise en image PNG et pilote la boîte
+  #     de dialogue d'IMPRESSION du système ; `share_plus` remet le fichier CSV /
+  #     image / PDF à la feuille de partage de l'OS. Les deux ont été vérifiés : ils
+  #     ne déclarent AUCUNE permission Android (pas d'INTERNET) — l'export est
+  #     entièrement sur l'appareil. IMPORTANT : ne jamais appeler `PdfGoogleFonts.*`
+  #     — c'est le seul chemin de `printing` qui téléchargerait une police par le
+  #     réseau ; nous intégrons plutôt notre propre police (voir `flutter: fonts:`
+  #     l'Helvetica standard Latin-1 du paquet pdf en normalisant la ponctuation que
+  #     nous produisons, sans police téléchargée, pour que l'invariant sans réseau
+  #     (NFR-1) ne soit jamais brisé.
+  printing: ^5.14.3
+  share_plus: ^13.2.0
+  # EN: `pdf` builds the document; it ships transitively with `printing`, but we
+  #     import it directly (pw.Document, PdfColors, PdfPageFormat) so it is listed
+  #     explicitly. Its standard fonts are used — no font is ever downloaded.
+  # FR: `pdf` construit le document ; il arrive de façon transitive avec `printing`,
+  #     mais nous l'importons directement (pw.Document, PdfColors, PdfPageFormat),
+  #     donc il est listé explicitement. Ses polices standard sont utilisées —
+  #     aucune police n'est jamais téléchargée.
+  pdf: ^3.11.0
+  # EN: `package_info_plus` reads the app's own version + build number from the
+  #     installed bundle for the About screen (FR-18) — a local metadata read, no
+  #     network. `url_launcher` opens the feedback/donate links in the OS browser
+  #     (FR-16); the launching app needs no INTERNET permission because the browser,
+  #     not this app, makes the request. Both verified against the release manifest.
+  # FR: `package_info_plus` lit la version + le numéro de build de l'appli depuis le
+  #     bundle installé pour l'écran À propos (FR-18) — une lecture de métadonnées
+  #     locale, sans réseau. `url_launcher` ouvre les liens commentaires/don dans le
+  #     navigateur de l'OS (FR-16) ; l'appli lanceuse n'a pas besoin de la permission
+  #     INTERNET car c'est le navigateur, pas cette appli, qui fait la requête. Les
+  #     deux vérifiés contre le manifeste de release.
+  package_info_plus: ^10.2.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

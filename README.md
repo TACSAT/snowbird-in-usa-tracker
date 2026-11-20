@@ -16,9 +16,10 @@ or share your trip list for your own planning or to share with others.
 - Log the trips you have already taken (actual dates).
 - Plan future trips and see how they affect your day counts.
 - View day totals over windows you choose (e.g. a calendar year or a rolling 365 days).
-- Print or export your trip list (PDF / CSV) to share or to plan with.
-- Export and import a backup you control — your data never leaves your device, so the
-  backup is how you move it to a new phone.
+- Print or export your trip list as an image, PDF, or CSV to share or to plan with.
+- Your data never leaves your device, and nothing is sent to the developer. It rides
+  along with your normal phone backup (iCloud / Google), so it moves to a new phone
+  automatically — there is no separate account, cloud, or sign-in.
 
 ## Built with
 
@@ -67,10 +68,11 @@ pour votre planification ou pour la communiquer à d'autres.
 - Planifier de futurs voyages et voir leur effet sur le décompte des jours.
 - Consulter les totaux de jours sur les périodes de votre choix (année civile ou
   365 jours glissants).
-- Imprimer ou exporter votre liste de voyages (PDF / CSV) pour la partager ou planifier.
-- Exporter et importer une sauvegarde que vous contrôlez — vos données ne quittent
-  jamais votre appareil, la sauvegarde sert donc à les transférer vers un nouveau
-  téléphone.
+- Imprimer ou exporter votre liste de voyages en image, PDF ou CSV pour la partager ou planifier.
+- Vos données ne quittent jamais votre appareil et rien n'est transmis au développeur.
+  Elles sont incluses dans la sauvegarde normale de votre téléphone (iCloud / Google),
+  donc elles se transfèrent automatiquement vers un nouveau téléphone — sans compte,
+  sans nuage, sans connexion.
 
 ## Conçu avec
 

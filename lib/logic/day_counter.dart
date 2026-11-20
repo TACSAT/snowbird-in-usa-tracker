@@ -389,6 +389,30 @@ abstract final class DayCounter {
     return null;
   }
 
+  // EN: The latest departure date among the considered trips, or null if there are
+  //     none. This is the anchor for the "time since last visit" alert (FR-10): the
+  //     reach date is this date plus the user's elapsed-days target. Defaults to
+  //     ACTUAL trips only — "since my last visit" means a visit that happened, not a
+  //     planned one.
+  // FR: La dernière date de départ parmi les séjours considérés, ou null s'il n'y en
+  //     a aucun. C'est l'ancre de l'alerte « temps depuis le dernier séjour »
+  //     (FR-10) : la date d'atteinte est cette date plus la cible de jours écoulés de
+  //     l'utilisateur. Par défaut, séjours RÉELS uniquement — « depuis mon dernier
+  //     séjour » signifie un séjour ayant eu lieu, pas un séjour planifié.
+  static DateTime? lastDeparture({
+    required List<Trip> trips,
+    Set<TripStatus> includeStatuses = const {TripStatus.actual},
+  }) {
+    DateTime? last;
+    for (final trip in trips) {
+      if (!includeStatuses.contains(trip.status)) continue;
+      if (last == null || trip.departureDate.isAfter(last)) {
+        last = trip.departureDate;
+      }
+    }
+    return last;
+  }
+
   // EN: Strip the time component from a DateTime so all window calculations work
   //     in calendar dates only. Without this, DateTime.now() would include the
   //     current time, causing the window boundary to shift throughout the day.

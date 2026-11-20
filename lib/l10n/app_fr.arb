@@ -10,6 +10,12 @@
 
   "appDisclaimerAcknowledge": "Je comprends",
 
+  "backupReminderTitle": "Garder vos données en sécurité",
+
+  "backupReminderBody": "SnowBird conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.",
+
+  "backupReminderAcknowledge": "Compris",
+
   "tripStatusActual": "Réel",
 
   "tripStatusPlanned": "Planifié",
@@ -160,5 +166,175 @@
 
   "alertChannelName": "Vos cibles de jours",
 
-  "alertChannelDescription": "Rappels que vous avez créés pour des cibles de jours que vous avez fixées vous-même."
+  "alertChannelDescription": "Rappels que vous avez créés pour des cibles de jours que vous avez fixées vous-même.",
+
+  "summaryHeading": "Jours aux États-Unis",
+
+  "tripTypeLabel": "Type de séjour",
+
+  "fieldTripName": "Nom du séjour (facultatif)",
+
+  "fieldTripNameHelper": "Un nom pour vous rappeler le but de ce séjour.",
+
+  "entryDetailsTitle": "Passage d'entrée (facultatif)",
+
+  "exitDetailsTitle": "Passage de sortie (facultatif)",
+
+  "fieldCrossingTime": "Heure (facultatif)",
+
+  "fieldTimeZone": "Fuseau horaire (facultatif)",
+
+  "fieldLocation": "Lieu (facultatif)",
+
+  "fieldMeansOfTravel": "Moyen de transport (facultatif)",
+
+  "fieldCarrier": "Transporteur (facultatif)",
+
+  "optionalNotSet": "Non renseigné",
+
+  "errorArrivalRequired": "Sélectionnez une date d'arrivée.",
+
+  "errorDepartureRequired": "Sélectionnez une date de départ.",
+
+  "tripSubtitle": "{arrival} – {departure} · {days}",
+  "@tripSubtitle": {
+    "placeholders": {
+      "arrival": { "type": "String" },
+      "departure": { "type": "String" },
+      "days": { "type": "String" }
+    }
+  },
+
+  "exportRecord": "Exporter la fiche",
+
+  "exportAsPdf": "Document PDF",
+
+  "exportAsImage": "Image (PNG)",
+
+  "exportAsCsv": "Tableur (CSV)",
+
+  "exportPrint": "Imprimer",
+
+  "exportError": "Impossible de créer l'export : {reason}",
+  "@exportError": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+
+  "exportEmpty": "Ajoutez d'abord un séjour — il n'y a encore rien à exporter.",
+
+  "recordHeading": "Fiche de présence aux États-Unis",
+
+  "recordAsOf": "En date du {date}",
+  "@recordAsOf": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+
+  "recordDisclaimer": "Ceci est une fiche personnelle, pas un conseil. Elle ne donne aucun avis en immigration, en fiscalité ni en droit. Vérifiez votre situation auprès d'un professionnel qualifié.",
+
+  "recordSummaryTitle": "Jours de présence aux États-Unis (réels)",
+
+  "recordSptLabel": "Valeur de présence substantielle",
+
+  "recordSptFormula": "année courante + ⅓ année précédente + ⅙ avant-précédente",
+
+  "recordColDates": "Dates",
+
+  "recordColDays": "Jours",
+
+  "recordColStatus": "Type",
+
+  "recordColDetails": "Séjour / détails",
+
+  "recordAuthor": "Tenue avec SnowBird — Veiðimaður · veidimadur.ca",
+
+  "menuSettings": "Réglages",
+
+  "menuAbout": "À propos",
+
+  "menuReference": "Règles courantes de comptage",
+
+  "settingsTitle": "Réglages",
+
+  "settingsLanguage": "Langue",
+
+  "settingsAppearance": "Apparence",
+
+  "settingsTextSize": "Taille du texte dans cette appli",
+
+  "optionFollowPhone": "Suivre le téléphone",
+
+  "languageEnglish": "English",
+
+  "languageFrench": "Français",
+
+  "themeLight": "Clair",
+
+  "themeDark": "Sombre",
+
+  "textSizeSample": "Exemple de texte à cette taille",
+
+  "aboutVersion": "Version {version} (build {build})",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": { "type": "String" },
+      "build": { "type": "String" }
+    }
+  },
+
+  "aboutPrivacyTitle": "Votre vie privée",
+
+  "aboutPrivacyBody": "SnowBird n'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.",
+
+  "aboutSourceButton": "Voir le code source",
+
+  "linkError": "Impossible d'ouvrir le lien.",
+
+  "referenceTitle": "Règles courantes de comptage",
+
+  "referenceIntro": "Voici des nombres que les gens suivent souvent. SnowBird n'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d'un professionnel qualifié.",
+
+  "referenceSptTitle": "Test de présence substantielle (É.-U.)",
+
+  "referenceSptBody": "Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l'an dernier, plus un sixième de l'année d'avant. SnowBird affiche cette valeur comme un nombre neutre.",
+
+  "referenceHealthTitle": "Couverture santé provinciale",
+
+  "referenceHealthBody": "De nombreux régimes de santé provinciaux exigent une présence physique dans votre province un nombre minimal de jours par an. Le nombre exact varie selon la province et change avec le temps — vérifiez la règle actuelle de votre régime.",
+
+  "referenceEntryTitle": "Durée d'un séjour aux É.-U.",
+
+  "referenceEntryBody": "Un visiteur est généralement admis pour une période limitée par entrée, à la discrétion de l'agent frontalier. La date d'admission figure sur votre fiche I-94 — et les passages terrestres ne sont pas toujours enregistrés, ce qui est précisément pourquoi tenir vos propres dates compte.",
+
+  "referenceMythTitle": "Il n'existe aucune limite cumulative unique",
+
+  "referenceMythBody": "Il n'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l'admission par entrée, la discrétion de l'agent et des tests fiscaux distincts. C'est pourquoi SnowBird compte et ne juge jamais.",
+
+  "sptDisclaimer": "Un nombre neutre, pas un conseil — touchez pour le contexte.",
+
+  "alertKindLabel": "Quoi surveiller",
+
+  "alertKindDayCount": "Jours dans une fenêtre",
+
+  "alertKindSinceVisit": "Temps depuis le dernier séjour",
+
+  "alertThresholdSinceField": "M'aviser après ce nombre de jours depuis mon dernier séjour",
+
+  "alertSinceHelper": "Par exemple, 1825 jours représentent environ 5 ans.",
+
+  "alertSummarySince": "{threshold} jours depuis le dernier séjour",
+  "@alertSummarySince": {
+    "placeholders": {
+      "threshold": { "type": "int" }
+    }
+  },
+
+  "alertNoVisits": "Ajoutez d'abord un séjour réel — il n'y a pas encore de séjour comme point de départ",
+
+  "alertNotificationBodySince": "En date du {date}, il s'est écoulé {threshold} jours depuis votre dernier séjour aux É.-U. — la cible que vous avez fixée.",
+  "@alertNotificationBodySince": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "threshold": { "type": "int" }
+    }
+  }
 }

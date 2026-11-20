@@ -84,4 +84,49 @@ abstract final class InputLimits {
   //     contrôlée par l'utilisateur ou l'import). 20 ans dépasse tout horizon de
   //     planification honnête et garde la boucle du pire cas petite et constante.
   static const int maxReachSearchDays = 7300;
+
+  // EN: Upper bound on how many trips may be stored. A real snowbird accumulates
+  //     at most a few dozen trips over a lifetime; this cap is far above any
+  //     honest use and exists only so a crafted import cannot plant hundreds of
+  //     thousands of records that would bog down counting or the export. It is a
+  //     security ceiling (FR-5), not a real limit the user will ever meet.
+  // FR: Borne supérieure du nombre de séjours stockés. Un vrai snowbird accumule
+  //     tout au plus quelques dizaines de séjours dans sa vie ; ce plafond
+  //     dépasse largement tout usage honnête et n'existe que pour qu'un import
+  //     forgé ne puisse pas introduire des centaines de milliers
+  //     d'enregistrements qui ralentiraient le comptage ou l'export. C'est un
+  //     plafond de sécurité (FR-5), pas une limite réelle que l'utilisateur
+  //     atteindra un jour.
+  static const int maxTrips = 2000;
+
+  // EN: A time of day expressed as minutes since local midnight, 0 (00:00) to
+  //     1439 (23:59). Optional per-crossing field: null means "time not
+  //     recorded", which is the common case for a land crossing the user only
+  //     remembers the date of.
+  // FR: Une heure de la journée exprimée en minutes depuis minuit local, de 0
+  //     (00 h 00) à 1439 (23 h 59). Champ optionnel par passage : null signifie
+  //     « heure non renseignée », le cas courant pour un passage terrestre dont
+  //     l'utilisateur ne se rappelle que la date.
+  static const int minMinuteOfDay = 0;
+  static const int maxMinuteOfDay = 1439;
+
+  // EN: Character caps for the optional free-text fields on a trip. These bound
+  //     how much text a single record can carry so a crafted backup cannot
+  //     smuggle megabytes into storage, the notification body, or the exported
+  //     record. Over-length text from the UI is truncated (a usability matter),
+  //     never a reason to reject an entire import — same policy as the alert
+  //     label (see kMaxAlertLabelLength).
+  // FR: Plafonds de caractères pour les champs texte libres optionnels d'un
+  //     séjour. Ils bornent la quantité de texte qu'un enregistrement peut
+  //     porter afin qu'une sauvegarde forgée ne puisse pas glisser des
+  //     mégaoctets dans le stockage, le corps d'une notification ou le rapport
+  //     exporté. Un texte trop long venant de l'interface est tronqué (question
+  //     d'ergonomie), jamais un motif de rejet d'un import entier — même
+  //     politique que l'étiquette d'alerte (voir kMaxAlertLabelLength).
+  static const int maxTripNameLength = 80;
+  static const int maxLocationLength = 120;
+  static const int maxMeansOfTravelLength = 60;
+  static const int maxCarrierLength = 120;
+  static const int maxTimeZoneLength = 60;
+  static const int maxNotesLength = 2000;
 }

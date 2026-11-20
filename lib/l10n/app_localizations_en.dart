@@ -22,6 +22,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appDisclaimerAcknowledge => 'I understand';
 
   @override
+  String get backupReminderTitle => 'Keeping your data safe';
+
+  @override
+  String get backupReminderBody =>
+      'SnowBird keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.';
+
+  @override
+  String get backupReminderAcknowledge => 'Got it';
+
+  @override
   String get tripStatusActual => 'Actual';
 
   @override
@@ -216,4 +226,238 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get alertChannelDescription =>
       'Reminders you created for day-count targets you set yourself.';
+
+  @override
+  String get summaryHeading => 'Days in the US';
+
+  @override
+  String get tripTypeLabel => 'Trip type';
+
+  @override
+  String get fieldTripName => 'Trip name (optional)';
+
+  @override
+  String get fieldTripNameHelper =>
+      'A name to help you remember what this trip was for.';
+
+  @override
+  String get entryDetailsTitle => 'Entry crossing (optional)';
+
+  @override
+  String get exitDetailsTitle => 'Exit crossing (optional)';
+
+  @override
+  String get fieldCrossingTime => 'Time (optional)';
+
+  @override
+  String get fieldTimeZone => 'Time zone (optional)';
+
+  @override
+  String get fieldLocation => 'Location (optional)';
+
+  @override
+  String get fieldMeansOfTravel => 'Means of travel (optional)';
+
+  @override
+  String get fieldCarrier => 'Carrier (optional)';
+
+  @override
+  String get optionalNotSet => 'Not set';
+
+  @override
+  String get errorArrivalRequired => 'Select an arrival date.';
+
+  @override
+  String get errorDepartureRequired => 'Select a departure date.';
+
+  @override
+  String tripSubtitle(String arrival, String departure, String days) {
+    return '$arrival – $departure · $days';
+  }
+
+  @override
+  String get exportRecord => 'Export record';
+
+  @override
+  String get exportAsPdf => 'PDF document';
+
+  @override
+  String get exportAsImage => 'Image (PNG)';
+
+  @override
+  String get exportAsCsv => 'Spreadsheet (CSV)';
+
+  @override
+  String get exportPrint => 'Print';
+
+  @override
+  String exportError(String reason) {
+    return 'Could not create the export: $reason';
+  }
+
+  @override
+  String get exportEmpty =>
+      'Add a trip first — there is nothing to export yet.';
+
+  @override
+  String get recordHeading => 'US Presence Record';
+
+  @override
+  String recordAsOf(String date) {
+    return 'As of $date';
+  }
+
+  @override
+  String get recordDisclaimer =>
+      'This is a personal record, not advice. It gives no immigration, tax, or legal opinion. Verify your situation with a qualified professional.';
+
+  @override
+  String get recordSummaryTitle => 'Days present in the US (actual)';
+
+  @override
+  String get recordSptLabel => 'Substantial Presence figure';
+
+  @override
+  String get recordSptFormula =>
+      'current year + ⅓ prior year + ⅙ second-prior year';
+
+  @override
+  String get recordColDates => 'Dates';
+
+  @override
+  String get recordColDays => 'Days';
+
+  @override
+  String get recordColStatus => 'Type';
+
+  @override
+  String get recordColDetails => 'Trip / details';
+
+  @override
+  String get recordAuthor => 'Kept with SnowBird — Veiðimaður · veidimadur.ca';
+
+  @override
+  String get menuSettings => 'Settings';
+
+  @override
+  String get menuAbout => 'About';
+
+  @override
+  String get menuReference => 'Common day-count rules';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsTextSize => 'Text size in this app';
+
+  @override
+  String get optionFollowPhone => 'Follow phone';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get textSizeSample => 'Sample text at this size';
+
+  @override
+  String aboutVersion(String version, String build) {
+    return 'Version $version (build $build)';
+  }
+
+  @override
+  String get aboutPrivacyTitle => 'Your privacy';
+
+  @override
+  String get aboutPrivacyBody =>
+      'SnowBird has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.';
+
+  @override
+  String get aboutSourceButton => 'View the source code';
+
+  @override
+  String get linkError => 'Could not open the link.';
+
+  @override
+  String get referenceTitle => 'Common day-count rules';
+
+  @override
+  String get referenceIntro =>
+      'These are numbers people commonly track. SnowBird sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.';
+
+  @override
+  String get referenceSptTitle => 'US Substantial Presence Test';
+
+  @override
+  String get referenceSptBody =>
+      'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. SnowBird shows this figure as a neutral number.';
+
+  @override
+  String get referenceHealthTitle => 'Provincial health coverage';
+
+  @override
+  String get referenceHealthBody =>
+      'Many provincial health plans expect you to be physically present in your province for a minimum number of days each year. The exact number varies by province and changes over time — check your own plan\'s current rule.';
+
+  @override
+  String get referenceEntryTitle => 'Length of a US visit';
+
+  @override
+  String get referenceEntryBody =>
+      'A visitor is generally admitted for a limited period per entry, at the border officer\'s discretion. The admitted-until date is on your I-94 record — and land crossings are not always recorded, which is exactly why keeping your own dates matters.';
+
+  @override
+  String get referenceMythTitle => 'There is no single cumulative limit';
+
+  @override
+  String get referenceMythBody =>
+      'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why SnowBird counts and never judges.';
+
+  @override
+  String get sptDisclaimer => 'A neutral figure, not advice — tap for context.';
+
+  @override
+  String get alertKindLabel => 'What to watch';
+
+  @override
+  String get alertKindDayCount => 'Days in a window';
+
+  @override
+  String get alertKindSinceVisit => 'Time since last visit';
+
+  @override
+  String get alertThresholdSinceField =>
+      'Notify me after this many days since my last visit';
+
+  @override
+  String get alertSinceHelper => 'For example, 1825 days is about 5 years.';
+
+  @override
+  String alertSummarySince(int threshold) {
+    return '$threshold days since the last visit';
+  }
+
+  @override
+  String get alertNoVisits =>
+      'Add an actual trip first — there is no visit to measure from yet';
+
+  @override
+  String alertNotificationBodySince(String date, int threshold) {
+    return 'As of $date, it has been $threshold days since your last US visit — the target you set.';
+  }
 }

@@ -27,9 +27,14 @@ the app never judges, but it computes any published formula the user could do by
    IDs are generated locally. This is also the brand: SnowBird is the first of a
    planned family of **secure-by-design** apps (see PLAN.md → Strategic context),
    so this invariant outranks any feature that would bend it.
-4. Because data never leaves the device, **user-controlled backup export/import is
-   MVP**, not a nice-to-have.
-5. **The printable "US Presence Record" (PDF/CSV export) is the flagship feature**,
+4. **Data durability rides the OS phone backup — the app ships no bespoke backup
+   feature.** Store data where iCloud/Google device backup captures it (never flag
+   "exclude from backup"; keep Android `allowBackup` on) so it survives a phone
+   migration, but build no in-app backup/restore/export-for-backup or cloud option:
+   the trip log is not sensitive data warranting bespoke protection, and no data is
+   ever sent to the developer (see PLAN.md → FR-11 / NFR-1). The flagship US Presence
+   Record export (#5) is a deliverable, not the backup mechanism.
+5. **The "US Presence Record" (image / PDF / CSV export) is the flagship feature**,
    not a nice-to-have — it leads the store listing and every screenshot.
 
 ## Code style (hard rules)

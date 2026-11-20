@@ -47,17 +47,23 @@ void main() {
 
     test('every out-of-cap numeric field is rejected at construction', () {
       expect(() => valid(thresholdDays: 0), throwsArgumentError);
-      expect(() => valid(thresholdDays: InputLimits.maxThresholdDays + 1),
-          throwsArgumentError,);
+      expect(
+        () => valid(thresholdDays: InputLimits.maxThresholdDays + 1),
+        throwsArgumentError,
+      );
       expect(() => valid(windowDays: 0), throwsArgumentError);
-      expect(() => valid(windowDays: InputLimits.maxWindowDays + 1),
-          throwsArgumentError,);
+      expect(
+        () => valid(windowDays: InputLimits.maxWindowDays + 1),
+        throwsArgumentError,
+      );
       expect(() => valid(hour: -1), throwsArgumentError);
       expect(() => valid(hour: 24), throwsArgumentError);
       expect(() => valid(minute: 60), throwsArgumentError);
       expect(() => valid(leadDays: -1), throwsArgumentError);
-      expect(() => valid(leadDays: InputLimits.maxLeadDays + 1),
-          throwsArgumentError,);
+      expect(
+        () => valid(leadDays: InputLimits.maxLeadDays + 1),
+        throwsArgumentError,
+      );
       expect(() => valid(leadHours: 24), throwsArgumentError);
     });
 
@@ -182,6 +188,47 @@ void main() {
       expect(fire.month, 3);
       expect(fire.day, 8);
       expect(fire.hour, 9);
+    });
+  });
+
+  group('alert kind (FR-10) serialisation', () {
+    test('kind defaults to dayCountThreshold', () {
+      expect(valid().kind, AlertKind.dayCountThreshold);
+    });
+
+    test('a since-last-visit alert round-trips through JSON', () {
+      final alert = DayAlert.create(
+        thresholdDays: 1825,
+        windowDays: 1825,
+        hour: 9,
+        minute: 0,
+        kind: AlertKind.sinceLastVisit,
+      );
+      final restored = DayAlert.fromJson(alert.toJson());
+      expect(restored.kind, AlertKind.sinceLastVisit);
+      expect(restored.thresholdDays, 1825);
+    });
+
+    test('legacy JSON with no "kind" key loads as dayCountThreshold (FR-12)',
+        () {
+      // EN: Exactly what a version before this field wrote.
+      // FR: Exactement ce qu'une version antérieure à ce champ a écrit.
+      final legacy = <String, dynamic>{
+        'id': 'legacy-alert',
+        'thresholdDays': 75,
+        'windowDays': 1095,
+        'hour': 9,
+        'minute': 0,
+        'leadDays': 0,
+        'leadHours': 0,
+        'enabled': true,
+      };
+      expect(DayAlert.fromJson(legacy).kind, AlertKind.dayCountThreshold);
+    });
+
+    test('an unknown kind value falls back rather than throwing', () {
+      final json = valid().toJson()..['kind'] = 'somethingNew';
+      expect(DayAlert.fromJson(json).kind, AlertKind.dayCountThreshold);
     });
   });
 }

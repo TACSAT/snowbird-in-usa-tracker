@@ -50,6 +50,7 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 
 class NotificationService implements AlertScheduler {
@@ -154,11 +155,28 @@ class NotificationService implements AlertScheduler {
     final onReachDay = alert.leadDays == 0 && alert.leadHours == 0;
     final dateText =
         DateFormat.yMMMMd(strings.localeName).format(entry.reachDate);
-    final body = onReachDay
-        ? strings.alertNotificationBodyToday(
-            alert.thresholdDays, alert.windowDays,)
-        : strings.alertNotificationBodyAdvance(
-            dateText, alert.thresholdDays, alert.windowDays,);
+    // EN: The since-last-visit kind (FR-10) has no rolling window, so it uses its
+    //     own neutral wording naming the date and the elapsed-days target. The
+    //     day-count kind keeps the today/advance split it always had.
+    // FR: Le type « depuis le dernier séjour » (FR-10) n'a pas de fenêtre glissante,
+    //     il utilise donc son propre libellé neutre nommant la date et la cible de
+    //     jours écoulés. Le type compte-de-jours garde sa distinction jour-même /
+    //     préavis.
+    final String body;
+    if (alert.kind == AlertKind.sinceLastVisit) {
+      body = strings.alertNotificationBodySince(dateText, alert.thresholdDays);
+    } else if (onReachDay) {
+      body = strings.alertNotificationBodyToday(
+        alert.thresholdDays,
+        alert.windowDays,
+      );
+    } else {
+      body = strings.alertNotificationBodyAdvance(
+        dateText,
+        alert.thresholdDays,
+        alert.windowDays,
+      );
+    }
 
     final details = NotificationDetails(
       android: AndroidNotificationDetails(

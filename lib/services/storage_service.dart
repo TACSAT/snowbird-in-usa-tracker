@@ -39,6 +39,27 @@ class StorageService {
   //     convention de versionnage.
   static const _kAlertsKey = 'snowbird.alerts.v1';
 
+  // EN: One-shot onboarding flags. The disclaimer (FR-14) and the single
+  //     backup reminder (FR-11) must each be shown exactly once; these booleans
+  //     record that they have been acknowledged so they never nag again.
+  // FR: Indicateurs d'accueil à usage unique. L'avertissement (FR-14) et l'unique
+  //     rappel de sauvegarde (FR-11) doivent chacun être montrés exactement une
+  //     fois ; ces booléens consignent leur acquittement pour qu'ils ne
+  //     reviennent jamais importuner.
+  static const _kDisclaimerAckKey = 'snowbird.flags.disclaimerAck.v1';
+  static const _kBackupReminderKey = 'snowbird.flags.backupReminderShown.v1';
+
+  // EN: User preference keys (FR-20). Locale is stored as a language code
+  //     ('en'/'fr') or ABSENT to mean "follow the phone"; theme as a ThemeMode
+  //     name; text scale as a multiplier applied on top of the OS setting.
+  // FR: Clés de préférences utilisateur (FR-20). La locale est stockée comme code
+  //     de langue (« en »/« fr ») ou ABSENTE pour « suivre le téléphone » ; le
+  //     thème comme nom de ThemeMode ; l'échelle du texte comme multiplicateur
+  //     appliqué par-dessus le réglage de l'OS.
+  static const _kLocaleKey = 'snowbird.settings.locale.v1';
+  static const _kThemeModeKey = 'snowbird.settings.themeMode.v1';
+  static const _kTextScaleKey = 'snowbird.settings.textScale.v1';
+
   final SharedPreferences _prefs;
 
   // EN: Inject SharedPreferences so this service can be unit-tested without a
@@ -157,6 +178,47 @@ class StorageService {
     );
     await _prefs.setString(_kAlertsKey, encoded);
   }
+
+  // EN: Onboarding flags — read defaults to false (not yet shown) on first launch.
+  // FR: Indicateurs d'accueil — la lecture retourne false (pas encore montré) au
+  //     premier lancement.
+  bool get disclaimerAcknowledged =>
+      _prefs.getBool(_kDisclaimerAckKey) ?? false;
+
+  Future<void> setDisclaimerAcknowledged() =>
+      _prefs.setBool(_kDisclaimerAckKey, true);
+
+  bool get backupReminderShown => _prefs.getBool(_kBackupReminderKey) ?? false;
+
+  Future<void> setBackupReminderShown() =>
+      _prefs.setBool(_kBackupReminderKey, true);
+
+  // EN: User preferences (FR-20). All default to "not set" so a fresh install
+  //     follows the phone (locale) and framework defaults (theme = system, scale
+  //     = 1.0), never a value chosen behind the user's back.
+  // FR: Préférences utilisateur (FR-20). Toutes par défaut « non définies » pour
+  //     qu'une nouvelle installation suive le téléphone (locale) et les défauts du
+  //     framework (thème = système, échelle = 1,0), jamais une valeur choisie dans
+  //     le dos de l'utilisateur.
+  String? get localeCode => _prefs.getString(_kLocaleKey);
+
+  Future<void> setLocaleCode(String? code) async {
+    if (code == null) {
+      await _prefs.remove(_kLocaleKey);
+    } else {
+      await _prefs.setString(_kLocaleKey, code);
+    }
+  }
+
+  String get themeModeName => _prefs.getString(_kThemeModeKey) ?? 'system';
+
+  Future<void> setThemeModeName(String name) =>
+      _prefs.setString(_kThemeModeKey, name);
+
+  double get textScale => _prefs.getDouble(_kTextScaleKey) ?? 1.0;
+
+  Future<void> setTextScale(double value) =>
+      _prefs.setDouble(_kTextScaleKey, value);
 
   // EN: Serialise the trip list to a pretty-printed JSON string for the user to
   //     save as a backup file. The format is identical to the internal storage

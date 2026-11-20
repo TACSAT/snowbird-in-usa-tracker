@@ -40,6 +40,7 @@ import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 import 'package:snowbird_in_usa_tracker/services/notification_service.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/alert_repository.dart';
+import 'package:snowbird_in_usa_tracker/state/settings_controller.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 import 'package:snowbird_in_usa_tracker/app.dart';
 
@@ -75,6 +76,15 @@ void main() async {
     scheduler: notificationService,
   );
 
+  // EN: User preferences (language / theme / text size). Loaded synchronously from
+  //     the already-resolved SharedPreferences so the first frame renders in the
+  //     user's chosen locale and theme with no flash of the wrong one.
+  // FR: Préférences utilisateur (langue / thème / taille du texte). Chargées de
+  //     manière synchrone depuis les SharedPreferences déjà résolues pour que la
+  //     première image s'affiche dans la locale et le thème choisis, sans
+  //     clignotement du mauvais réglage.
+  final settingsController = SettingsController(storage);
+
   runApp(
     // EN: .value constructors because the instances are already built above —
     //     Provider must not dispose them; the app's lifetime IS theirs.
@@ -86,6 +96,15 @@ void main() async {
     //     AlertScheduler pour que les widgets ne voient jamais le type du plugin.
     MultiProvider(
       providers: [
+        // EN: StorageService is exposed so the onboarding flow (disclaimer +
+        //     one-time backup reminder) can read and set its one-shot flags.
+        // FR: StorageService est exposé pour que le parcours d'accueil
+        //     (avertissement + rappel de sauvegarde unique) puisse lire et fixer
+        //     ses indicateurs à usage unique.
+        Provider<StorageService>.value(value: storage),
+        ChangeNotifierProvider<SettingsController>.value(
+          value: settingsController,
+        ),
         ChangeNotifierProvider<TripRepository>.value(value: tripRepository),
         ChangeNotifierProvider<AlertRepository>.value(value: alertRepository),
         Provider<AlertScheduler>.value(value: notificationService),

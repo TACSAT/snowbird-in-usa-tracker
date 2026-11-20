@@ -59,7 +59,8 @@ void main() {
       );
     });
 
-    test('trip entirely inside window counts all days (arrival + departure)', () {
+    test('trip entirely inside window counts all days (arrival + departure)',
+        () {
       // EN: Jan 10 to Jan 12 = 3 days (10, 11, 12 all count).
       // FR: 10 jan. au 12 jan. = 3 jours (10, 11, 12 comptent tous).
       final trips = [actual('2025-01-10', '2025-01-12')];
@@ -143,8 +144,12 @@ void main() {
 
     test('planned trips are excluded from actual-only count', () {
       final trips = [
-        actual('2025-01-05', '2025-01-07', id: 'a'),  // 3 days, actual
-        planned('2025-01-15', '2025-01-17', id: 'b'), // 3 days, planned — excluded
+        actual('2025-01-05', '2025-01-07', id: 'a'), // 3 days, actual
+        planned(
+          '2025-01-15',
+          '2025-01-17',
+          id: 'b',
+        ), // 3 days, planned — excluded
       ];
       expect(
         DayCounter.countDaysInWindow(
@@ -156,9 +161,10 @@ void main() {
       );
     });
 
-    test('planned trips are included when includeStatuses contains planned', () {
+    test('planned trips are included when includeStatuses contains planned',
+        () {
       final trips = [
-        actual('2025-01-05', '2025-01-07', id: 'a'),  // 3 days
+        actual('2025-01-05', '2025-01-07', id: 'a'), // 3 days
         planned('2025-01-15', '2025-01-17', id: 'b'), // 3 days
       ];
       expect(
@@ -381,7 +387,7 @@ void main() {
 
     test('planned trips are excluded by default', () {
       final trips = [
-        actual('2025-01-01', '2025-01-10', id: 'a'),  // 10 days / jours
+        actual('2025-01-01', '2025-01-10', id: 'a'), // 10 days / jours
         planned('2025-03-01', '2025-03-10', id: 'b'), // excluded / exclu
       ];
       final result = DayCounter.substantialPresence(
@@ -525,10 +531,14 @@ void main() {
         );
       }
 
-      expect(() => call(thresholdDays: 0, windowDays: 365),
-          throwsArgumentError,);
-      expect(() => call(thresholdDays: 75, windowDays: 0),
-          throwsArgumentError,);
+      expect(
+        () => call(thresholdDays: 0, windowDays: 365),
+        throwsArgumentError,
+      );
+      expect(
+        () => call(thresholdDays: 75, windowDays: 0),
+        throwsArgumentError,
+      );
       expect(
         () => call(
           thresholdDays: InputLimits.maxThresholdDays + 1,

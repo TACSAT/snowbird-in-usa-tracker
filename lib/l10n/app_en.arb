@@ -22,6 +22,21 @@
     "description": "Button label to dismiss the disclaimer dialog."
   },
 
+  "backupReminderTitle": "Keeping your data safe",
+  "@backupReminderTitle": {
+    "description": "Title of the one-time setup backup reminder (FR-11)."
+  },
+
+  "backupReminderBody": "SnowBird keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone's normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.",
+  "@backupReminderBody": {
+    "description": "Body of the one-time backup reminder. Shown once at setup, never repeated."
+  },
+
+  "backupReminderAcknowledge": "Got it",
+  "@backupReminderAcknowledge": {
+    "description": "Button label to dismiss the backup reminder."
+  },
+
   "tripStatusActual": "Actual",
   "@tripStatusActual": {
     "description": "Label for a completed (already taken) trip."
@@ -238,5 +253,245 @@
   "@alertChannelName": { "description": "Android notification channel name (visible in system settings)." },
 
   "alertChannelDescription": "Reminders you created for day-count targets you set yourself.",
-  "@alertChannelDescription": { "description": "Android notification channel description (visible in system settings)." }
+  "@alertChannelDescription": { "description": "Android notification channel description (visible in system settings)." },
+
+  "summaryHeading": "Days in the US",
+  "@summaryHeading": { "description": "Heading of the day-count summary card on the trip list screen." },
+
+  "tripTypeLabel": "Trip type",
+  "@tripTypeLabel": { "description": "Section label for the actual-vs-planned selector on the trip form." },
+
+  "fieldTripName": "Trip name (optional)",
+  "@fieldTripName": { "description": "Label for the optional trip-name field." },
+
+  "fieldTripNameHelper": "A name to help you remember what this trip was for.",
+  "@fieldTripNameHelper": { "description": "Helper text under the trip-name field." },
+
+  "entryDetailsTitle": "Entry crossing (optional)",
+  "@entryDetailsTitle": { "description": "Expansion-tile title for the optional entry-crossing details." },
+
+  "exitDetailsTitle": "Exit crossing (optional)",
+  "@exitDetailsTitle": { "description": "Expansion-tile title for the optional exit-crossing details." },
+
+  "fieldCrossingTime": "Time (optional)",
+  "@fieldCrossingTime": { "description": "Label for the optional crossing time-of-day field." },
+
+  "fieldTimeZone": "Time zone (optional)",
+  "@fieldTimeZone": { "description": "Label for the optional time-zone field." },
+
+  "fieldLocation": "Location (optional)",
+  "@fieldLocation": { "description": "Label for the optional crossing-location field." },
+
+  "fieldMeansOfTravel": "Means of travel (optional)",
+  "@fieldMeansOfTravel": { "description": "Label for the optional means-of-travel field (e.g. car, air)." },
+
+  "fieldCarrier": "Carrier (optional)",
+  "@fieldCarrier": { "description": "Label for the optional carrier field (e.g. airline, flight number)." },
+
+  "optionalNotSet": "Not set",
+  "@optionalNotSet": { "description": "Shown in place of an optional value the user has not entered (e.g. a time)." },
+
+  "errorArrivalRequired": "Select an arrival date.",
+  "@errorArrivalRequired": { "description": "Validation error when no arrival date is chosen." },
+
+  "errorDepartureRequired": "Select a departure date.",
+  "@errorDepartureRequired": { "description": "Validation error when no departure date is chosen." },
+
+  "tripSubtitle": "{arrival} – {departure} · {days}",
+  "@tripSubtitle": {
+    "description": "Trip list subtitle: date range and day count. 'days' is an already-formatted plural string.",
+    "placeholders": {
+      "arrival": { "type": "String" },
+      "departure": { "type": "String" },
+      "days": { "type": "String" }
+    }
+  },
+
+  "exportRecord": "Export record",
+  "@exportRecord": { "description": "App-bar action / sheet title to export the US Presence Record." },
+
+  "exportAsPdf": "PDF document",
+  "@exportAsPdf": { "description": "Export option: a PDF file." },
+
+  "exportAsImage": "Image (PNG)",
+  "@exportAsImage": { "description": "Export option: a PNG image." },
+
+  "exportAsCsv": "Spreadsheet (CSV)",
+  "@exportAsCsv": { "description": "Export option: a CSV file." },
+
+  "exportPrint": "Print",
+  "@exportPrint": { "description": "Export option: open the system print dialog." },
+
+  "exportError": "Could not create the export: {reason}",
+  "@exportError": {
+    "description": "Snack bar shown when export fails.",
+    "placeholders": { "reason": { "type": "String" } }
+  },
+
+  "exportEmpty": "Add a trip first — there is nothing to export yet.",
+  "@exportEmpty": { "description": "Shown when the user tries to export with no trips." },
+
+  "recordHeading": "US Presence Record",
+  "@recordHeading": { "description": "Title printed at the top of the exported record." },
+
+  "recordAsOf": "As of {date}",
+  "@recordAsOf": {
+    "description": "The as-of date line on the record.",
+    "placeholders": { "date": { "type": "String" } }
+  },
+
+  "recordDisclaimer": "This is a personal record, not advice. It gives no immigration, tax, or legal opinion. Verify your situation with a qualified professional.",
+  "@recordDisclaimer": { "description": "Not-advice line printed on the record." },
+
+  "recordSummaryTitle": "Days present in the US (actual)",
+  "@recordSummaryTitle": { "description": "Heading of the summary block on the record." },
+
+  "recordSptLabel": "Substantial Presence figure",
+  "@recordSptLabel": { "description": "Label for the neutral SPT figure on the record." },
+
+  "recordSptFormula": "current year + ⅓ prior year + ⅙ second-prior year",
+  "@recordSptFormula": { "description": "Neutral description of the SPT formula, printed under the figure." },
+
+  "recordColDates": "Dates",
+  "@recordColDates": { "description": "Record table column: the trip's date range." },
+
+  "recordColDays": "Days",
+  "@recordColDays": { "description": "Record table column: day count." },
+
+  "recordColStatus": "Type",
+  "@recordColStatus": { "description": "Record table column: actual or planned." },
+
+  "recordColDetails": "Trip / details",
+  "@recordColDetails": { "description": "Record table column: name and crossing notes." },
+
+  "recordAuthor": "Kept with SnowBird — Veiðimaður · veidimadur.ca",
+  "@recordAuthor": { "description": "Footer credit line on the record." },
+
+  "menuSettings": "Settings",
+  "@menuSettings": { "description": "Overflow menu item opening Settings." },
+
+  "menuAbout": "About",
+  "@menuAbout": { "description": "Overflow menu item opening the About screen." },
+
+  "menuReference": "Common day-count rules",
+  "@menuReference": { "description": "Overflow menu item opening the neutral reference page." },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": { "description": "Settings screen title." },
+
+  "settingsLanguage": "Language",
+  "@settingsLanguage": { "description": "Settings section: app language." },
+
+  "settingsAppearance": "Appearance",
+  "@settingsAppearance": { "description": "Settings section: light/dark theme." },
+
+  "settingsTextSize": "Text size in this app",
+  "@settingsTextSize": { "description": "Settings section: in-app text scale." },
+
+  "optionFollowPhone": "Follow phone",
+  "@optionFollowPhone": { "description": "Option meaning 'use the phone's system setting'." },
+
+  "languageEnglish": "English",
+  "@languageEnglish": { "description": "English language name (endonym; same in both locales)." },
+
+  "languageFrench": "Français",
+  "@languageFrench": { "description": "French language name (endonym; same in both locales)." },
+
+  "themeLight": "Light",
+  "@themeLight": { "description": "Light theme option." },
+
+  "themeDark": "Dark",
+  "@themeDark": { "description": "Dark theme option." },
+
+  "textSizeSample": "Sample text at this size",
+  "@textSizeSample": { "description": "Live preview line under the text-size control." },
+
+  "aboutVersion": "Version {version} (build {build})",
+  "@aboutVersion": {
+    "description": "Version + build line on the About screen (FR-18).",
+    "placeholders": {
+      "version": { "type": "String" },
+      "build": { "type": "String" }
+    }
+  },
+
+  "aboutPrivacyTitle": "Your privacy",
+  "@aboutPrivacyTitle": { "description": "About screen: privacy section heading." },
+
+  "aboutPrivacyBody": "SnowBird has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone's normal backup (iCloud or Google), so it moves to a new phone with you.",
+  "@aboutPrivacyBody": { "description": "About screen: privacy statement." },
+
+  "aboutSourceButton": "View the source code",
+  "@aboutSourceButton": { "description": "Button opening the public source repository." },
+
+  "linkError": "Could not open the link.",
+  "@linkError": { "description": "Shown when an external link cannot be opened." },
+
+  "referenceTitle": "Common day-count rules",
+  "@referenceTitle": { "description": "Reference screen title (FR-15)." },
+
+  "referenceIntro": "These are numbers people commonly track. SnowBird sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.",
+  "@referenceIntro": { "description": "Reference screen intro; restates the no-defaults, not-advice stance." },
+
+  "referenceSptTitle": "US Substantial Presence Test",
+  "@referenceSptTitle": { "description": "Reference item heading: IRS SPT." },
+
+  "referenceSptBody": "A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. SnowBird shows this figure as a neutral number.",
+  "@referenceSptBody": { "description": "Reference item: neutral SPT description." },
+
+  "referenceHealthTitle": "Provincial health coverage",
+  "@referenceHealthTitle": { "description": "Reference item heading: provincial health." },
+
+  "referenceHealthBody": "Many provincial health plans expect you to be physically present in your province for a minimum number of days each year. The exact number varies by province and changes over time — check your own plan's current rule.",
+  "@referenceHealthBody": { "description": "Reference item: provincial health, no specific number asserted." },
+
+  "referenceEntryTitle": "Length of a US visit",
+  "@referenceEntryTitle": { "description": "Reference item heading: per-entry admission." },
+
+  "referenceEntryBody": "A visitor is generally admitted for a limited period per entry, at the border officer's discretion. The admitted-until date is on your I-94 record — and land crossings are not always recorded, which is exactly why keeping your own dates matters.",
+  "@referenceEntryBody": { "description": "Reference item: per-entry admission + I-94 gap." },
+
+  "referenceMythTitle": "There is no single cumulative limit",
+  "@referenceMythTitle": { "description": "Reference item heading: the 180-day myth." },
+
+  "referenceMythBody": "There is no one cumulative 'days' limit this app could enforce for you. Immigration lawyers often call the '180-day rule' a myth; the real constraints are the per-entry admission, the officer's discretion, and separate tax tests. That is why SnowBird counts and never judges.",
+  "@referenceMythBody": { "description": "Reference item: why the app never renders a verdict." },
+
+  "sptDisclaimer": "A neutral figure, not advice — tap for context.",
+  "@sptDisclaimer": { "description": "Required not-advice note shown next to the on-screen SPT figure (FR-7/FR-14)." },
+
+  "alertKindLabel": "What to watch",
+  "@alertKindLabel": { "description": "Section label for the alert-kind selector." },
+
+  "alertKindDayCount": "Days in a window",
+  "@alertKindDayCount": { "description": "Alert-kind option: rolling day-count threshold (FR-9)." },
+
+  "alertKindSinceVisit": "Time since last visit",
+  "@alertKindSinceVisit": { "description": "Alert-kind option: elapsed time since the last actual visit (FR-10)." },
+
+  "alertThresholdSinceField": "Notify me after this many days since my last visit",
+  "@alertThresholdSinceField": { "description": "Numeric field label for the since-last-visit alert." },
+
+  "alertSinceHelper": "For example, 1825 days is about 5 years.",
+  "@alertSinceHelper": { "description": "Helper text converting days to years for the since-last-visit field." },
+
+  "alertSummarySince": "{threshold} days since the last visit",
+  "@alertSummarySince": {
+    "description": "One-line description of a since-last-visit alert.",
+    "placeholders": {
+      "threshold": { "type": "int" }
+    }
+  },
+
+  "alertNoVisits": "Add an actual trip first — there is no visit to measure from yet",
+  "@alertNoVisits": { "description": "Shown for a since-last-visit alert when no actual trip exists." },
+
+  "alertNotificationBodySince": "As of {date}, it has been {threshold} days since your last US visit — the target you set.",
+  "@alertNotificationBodySince": {
+    "description": "Notification body for a since-last-visit alert. Neutral, no judgment.",
+    "placeholders": {
+      "date": { "type": "String" },
+      "threshold": { "type": "int" }
+    }
+  }
 }

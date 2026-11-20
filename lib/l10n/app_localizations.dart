@@ -122,6 +122,24 @@ abstract class AppLocalizations {
   /// **'I understand'**
   String get appDisclaimerAcknowledge;
 
+  /// Title of the one-time setup backup reminder (FR-11).
+  ///
+  /// In en, this message translates to:
+  /// **'Keeping your data safe'**
+  String get backupReminderTitle;
+
+  /// Body of the one-time backup reminder. Shown once at setup, never repeated.
+  ///
+  /// In en, this message translates to:
+  /// **'SnowBird keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.'**
+  String get backupReminderBody;
+
+  /// Button label to dismiss the backup reminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get backupReminderAcknowledge;
+
   /// Label for a completed (already taken) trip.
   ///
   /// In en, this message translates to:
@@ -457,6 +475,426 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reminders you created for day-count targets you set yourself.'**
   String get alertChannelDescription;
+
+  /// Heading of the day-count summary card on the trip list screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Days in the US'**
+  String get summaryHeading;
+
+  /// Section label for the actual-vs-planned selector on the trip form.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip type'**
+  String get tripTypeLabel;
+
+  /// Label for the optional trip-name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip name (optional)'**
+  String get fieldTripName;
+
+  /// Helper text under the trip-name field.
+  ///
+  /// In en, this message translates to:
+  /// **'A name to help you remember what this trip was for.'**
+  String get fieldTripNameHelper;
+
+  /// Expansion-tile title for the optional entry-crossing details.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry crossing (optional)'**
+  String get entryDetailsTitle;
+
+  /// Expansion-tile title for the optional exit-crossing details.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit crossing (optional)'**
+  String get exitDetailsTitle;
+
+  /// Label for the optional crossing time-of-day field.
+  ///
+  /// In en, this message translates to:
+  /// **'Time (optional)'**
+  String get fieldCrossingTime;
+
+  /// Label for the optional time-zone field.
+  ///
+  /// In en, this message translates to:
+  /// **'Time zone (optional)'**
+  String get fieldTimeZone;
+
+  /// Label for the optional crossing-location field.
+  ///
+  /// In en, this message translates to:
+  /// **'Location (optional)'**
+  String get fieldLocation;
+
+  /// Label for the optional means-of-travel field (e.g. car, air).
+  ///
+  /// In en, this message translates to:
+  /// **'Means of travel (optional)'**
+  String get fieldMeansOfTravel;
+
+  /// Label for the optional carrier field (e.g. airline, flight number).
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier (optional)'**
+  String get fieldCarrier;
+
+  /// Shown in place of an optional value the user has not entered (e.g. a time).
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get optionalNotSet;
+
+  /// Validation error when no arrival date is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an arrival date.'**
+  String get errorArrivalRequired;
+
+  /// Validation error when no departure date is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a departure date.'**
+  String get errorDepartureRequired;
+
+  /// Trip list subtitle: date range and day count. 'days' is an already-formatted plural string.
+  ///
+  /// In en, this message translates to:
+  /// **'{arrival} – {departure} · {days}'**
+  String tripSubtitle(String arrival, String departure, String days);
+
+  /// App-bar action / sheet title to export the US Presence Record.
+  ///
+  /// In en, this message translates to:
+  /// **'Export record'**
+  String get exportRecord;
+
+  /// Export option: a PDF file.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF document'**
+  String get exportAsPdf;
+
+  /// Export option: a PNG image.
+  ///
+  /// In en, this message translates to:
+  /// **'Image (PNG)'**
+  String get exportAsImage;
+
+  /// Export option: a CSV file.
+  ///
+  /// In en, this message translates to:
+  /// **'Spreadsheet (CSV)'**
+  String get exportAsCsv;
+
+  /// Export option: open the system print dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get exportPrint;
+
+  /// Snack bar shown when export fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the export: {reason}'**
+  String exportError(String reason);
+
+  /// Shown when the user tries to export with no trips.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a trip first — there is nothing to export yet.'**
+  String get exportEmpty;
+
+  /// Title printed at the top of the exported record.
+  ///
+  /// In en, this message translates to:
+  /// **'US Presence Record'**
+  String get recordHeading;
+
+  /// The as-of date line on the record.
+  ///
+  /// In en, this message translates to:
+  /// **'As of {date}'**
+  String recordAsOf(String date);
+
+  /// Not-advice line printed on the record.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a personal record, not advice. It gives no immigration, tax, or legal opinion. Verify your situation with a qualified professional.'**
+  String get recordDisclaimer;
+
+  /// Heading of the summary block on the record.
+  ///
+  /// In en, this message translates to:
+  /// **'Days present in the US (actual)'**
+  String get recordSummaryTitle;
+
+  /// Label for the neutral SPT figure on the record.
+  ///
+  /// In en, this message translates to:
+  /// **'Substantial Presence figure'**
+  String get recordSptLabel;
+
+  /// Neutral description of the SPT formula, printed under the figure.
+  ///
+  /// In en, this message translates to:
+  /// **'current year + ⅓ prior year + ⅙ second-prior year'**
+  String get recordSptFormula;
+
+  /// Record table column: the trip's date range.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get recordColDates;
+
+  /// Record table column: day count.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get recordColDays;
+
+  /// Record table column: actual or planned.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get recordColStatus;
+
+  /// Record table column: name and crossing notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip / details'**
+  String get recordColDetails;
+
+  /// Footer credit line on the record.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept with SnowBird — Veiðimaður · veidimadur.ca'**
+  String get recordAuthor;
+
+  /// Overflow menu item opening Settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get menuSettings;
+
+  /// Overflow menu item opening the About screen.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get menuAbout;
+
+  /// Overflow menu item opening the neutral reference page.
+  ///
+  /// In en, this message translates to:
+  /// **'Common day-count rules'**
+  String get menuReference;
+
+  /// Settings screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// Settings section: app language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// Settings section: light/dark theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// Settings section: in-app text scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size in this app'**
+  String get settingsTextSize;
+
+  /// Option meaning 'use the phone's system setting'.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow phone'**
+  String get optionFollowPhone;
+
+  /// English language name (endonym; same in both locales).
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// French language name (endonym; same in both locales).
+  ///
+  /// In en, this message translates to:
+  /// **'Français'**
+  String get languageFrench;
+
+  /// Light theme option.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// Dark theme option.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// Live preview line under the text-size control.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample text at this size'**
+  String get textSizeSample;
+
+  /// Version + build line on the About screen (FR-18).
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} (build {build})'**
+  String aboutVersion(String version, String build);
+
+  /// About screen: privacy section heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Your privacy'**
+  String get aboutPrivacyTitle;
+
+  /// About screen: privacy statement.
+  ///
+  /// In en, this message translates to:
+  /// **'SnowBird has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.'**
+  String get aboutPrivacyBody;
+
+  /// Button opening the public source repository.
+  ///
+  /// In en, this message translates to:
+  /// **'View the source code'**
+  String get aboutSourceButton;
+
+  /// Shown when an external link cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link.'**
+  String get linkError;
+
+  /// Reference screen title (FR-15).
+  ///
+  /// In en, this message translates to:
+  /// **'Common day-count rules'**
+  String get referenceTitle;
+
+  /// Reference screen intro; restates the no-defaults, not-advice stance.
+  ///
+  /// In en, this message translates to:
+  /// **'These are numbers people commonly track. SnowBird sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.'**
+  String get referenceIntro;
+
+  /// Reference item heading: IRS SPT.
+  ///
+  /// In en, this message translates to:
+  /// **'US Substantial Presence Test'**
+  String get referenceSptTitle;
+
+  /// Reference item: neutral SPT description.
+  ///
+  /// In en, this message translates to:
+  /// **'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. SnowBird shows this figure as a neutral number.'**
+  String get referenceSptBody;
+
+  /// Reference item heading: provincial health.
+  ///
+  /// In en, this message translates to:
+  /// **'Provincial health coverage'**
+  String get referenceHealthTitle;
+
+  /// Reference item: provincial health, no specific number asserted.
+  ///
+  /// In en, this message translates to:
+  /// **'Many provincial health plans expect you to be physically present in your province for a minimum number of days each year. The exact number varies by province and changes over time — check your own plan\'s current rule.'**
+  String get referenceHealthBody;
+
+  /// Reference item heading: per-entry admission.
+  ///
+  /// In en, this message translates to:
+  /// **'Length of a US visit'**
+  String get referenceEntryTitle;
+
+  /// Reference item: per-entry admission + I-94 gap.
+  ///
+  /// In en, this message translates to:
+  /// **'A visitor is generally admitted for a limited period per entry, at the border officer\'s discretion. The admitted-until date is on your I-94 record — and land crossings are not always recorded, which is exactly why keeping your own dates matters.'**
+  String get referenceEntryBody;
+
+  /// Reference item heading: the 180-day myth.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no single cumulative limit'**
+  String get referenceMythTitle;
+
+  /// Reference item: why the app never renders a verdict.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why SnowBird counts and never judges.'**
+  String get referenceMythBody;
+
+  /// Required not-advice note shown next to the on-screen SPT figure (FR-7/FR-14).
+  ///
+  /// In en, this message translates to:
+  /// **'A neutral figure, not advice — tap for context.'**
+  String get sptDisclaimer;
+
+  /// Section label for the alert-kind selector.
+  ///
+  /// In en, this message translates to:
+  /// **'What to watch'**
+  String get alertKindLabel;
+
+  /// Alert-kind option: rolling day-count threshold (FR-9).
+  ///
+  /// In en, this message translates to:
+  /// **'Days in a window'**
+  String get alertKindDayCount;
+
+  /// Alert-kind option: elapsed time since the last actual visit (FR-10).
+  ///
+  /// In en, this message translates to:
+  /// **'Time since last visit'**
+  String get alertKindSinceVisit;
+
+  /// Numeric field label for the since-last-visit alert.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify me after this many days since my last visit'**
+  String get alertThresholdSinceField;
+
+  /// Helper text converting days to years for the since-last-visit field.
+  ///
+  /// In en, this message translates to:
+  /// **'For example, 1825 days is about 5 years.'**
+  String get alertSinceHelper;
+
+  /// One-line description of a since-last-visit alert.
+  ///
+  /// In en, this message translates to:
+  /// **'{threshold} days since the last visit'**
+  String alertSummarySince(int threshold);
+
+  /// Shown for a since-last-visit alert when no actual trip exists.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an actual trip first — there is no visit to measure from yet'**
+  String get alertNoVisits;
+
+  /// Notification body for a since-last-visit alert. Neutral, no judgment.
+  ///
+  /// In en, this message translates to:
+  /// **'As of {date}, it has been {threshold} days since your last US visit — the target you set.'**
+  String alertNotificationBodySince(String date, int threshold);
 }
 
 class _AppLocalizationsDelegate

@@ -17,9 +17,26 @@
              de compte de jours — moins de permissions, par conception). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- EN: allowBackup="true" is Android's default, but we set it EXPLICITLY
+             because it is a product requirement (PLAN.md FR-11), not an accident:
+             the app ships no bespoke backup feature, so the user's trip data must
+             ride Android's own Auto Backup to survive a phone migration. Making it
+             explicit also guards against a future manifest-template change silently
+             flipping it off. No data leaves the device for the DEVELOPER — this is
+             the user's own Google backup (NFR-1).
+         FR: allowBackup="true" est la valeur par défaut d'Android, mais nous la
+             fixons EXPLICITEMENT car c'est une exigence du produit (PLAN.md FR-11),
+             pas un hasard : l'appli ne livre aucune fonction de sauvegarde dédiée,
+             donc les données de séjour de l'utilisateur doivent voyager dans la
+             sauvegarde automatique d'Android pour survivre à une migration de
+             téléphone. L'expliciter protège aussi contre un futur changement de
+             gabarit de manifeste qui la désactiverait en silence. Aucune donnée ne
+             quitte l'appareil vers le DÉVELOPPEUR — c'est la sauvegarde Google de
+             l'utilisateur (NFR-1). -->
     <application
         android:label="SnowBird"
         android:name="${applicationName}"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

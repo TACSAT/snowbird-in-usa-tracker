@@ -23,6 +23,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
+import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
@@ -117,22 +118,19 @@ class AlertRepository extends ChangeNotifier {
     for (final alert in _alerts) {
       if (!alert.enabled) continue;
 
-      final reachDate = DayCounter.firstDateReachingThreshold(
-        trips: trips,
-        thresholdDays: alert.thresholdDays,
-        windowDays: alert.windowDays,
-        from: today,
-      );
+      final reachDate = _reachDate(alert, trips, today);
       if (reachDate == null) continue;
 
       final fireMoment = alert.fireMomentFor(reachDate);
       if (!fireMoment.isAfter(now)) continue;
 
-      schedule.add(ScheduledAlert(
-        alert: alert,
-        reachDate: reachDate,
-        fireMoment: fireMoment,
-      ),);
+      schedule.add(
+        ScheduledAlert(
+          alert: alert,
+          reachDate: reachDate,
+          fireMoment: fireMoment,
+        ),
+      );
     }
     return schedule;
   }
@@ -144,12 +142,47 @@ class AlertRepository extends ChangeNotifier {
   //     de séjour actuelles).
   DateTime? projectedReachDate(DayAlert alert) {
     final now = _now();
-    return DayCounter.firstDateReachingThreshold(
-      trips: _tripRepository.trips,
-      thresholdDays: alert.thresholdDays,
-      windowDays: alert.windowDays,
-      from: DateTime(now.year, now.month, now.day),
+    return _reachDate(
+      alert,
+      _tripRepository.trips,
+      DateTime(now.year, now.month, now.day),
     );
+  }
+
+  // EN: Project an alert's reach date according to its kind (FR-9 / FR-10). This is
+  //     the ONLY place the two alert kinds diverge — everything downstream (delivery
+  //     time, lead, scheduling) is shared:
+  //       • dayCountThreshold — the first date the rolling count reaches the target
+  //         (actual + planned trips, since projecting forward is the point), or null
+  //         if never reached;
+  //       • sinceLastVisit    — the last ACTUAL departure plus the elapsed-days
+  //         target, or null if the user has recorded no actual visit yet. Calendar
+  //         arithmetic goes through the DateTime constructor (not Duration) so it
+  //         stays DST-safe, consistent with the rest of the engine.
+  // FR: Projeter la date d'atteinte d'une alerte selon son type (FR-9 / FR-10).
+  //     C'est le SEUL endroit où les deux types divergent — tout l'aval (heure,
+  //     préavis, planification) est partagé :
+  //       • dayCountThreshold — la première date où le compte glissant atteint la
+  //         cible (séjours réels + planifiés, la projection étant le but), ou null si
+  //         jamais atteinte ;
+  //       • sinceLastVisit    — le dernier départ RÉEL plus la cible de jours
+  //         écoulés, ou null si l'utilisateur n'a encore consigné aucun séjour réel.
+  //         L'arithmétique calendaire passe par le constructeur DateTime (pas
+  //         Duration) pour rester sûre face à l'heure d'été, comme le reste du moteur.
+  DateTime? _reachDate(DayAlert alert, List<Trip> trips, DateTime today) {
+    switch (alert.kind) {
+      case AlertKind.dayCountThreshold:
+        return DayCounter.firstDateReachingThreshold(
+          trips: trips,
+          thresholdDays: alert.thresholdDays,
+          windowDays: alert.windowDays,
+          from: today,
+        );
+      case AlertKind.sinceLastVisit:
+        final last = DayCounter.lastDeparture(trips: trips);
+        if (last == null) return null;
+        return DateTime(last.year, last.month, last.day + alert.thresholdDays);
+    }
   }
 
   Future<void> _persistAndReschedule() async {

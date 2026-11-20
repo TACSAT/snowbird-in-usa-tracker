@@ -66,23 +66,29 @@ void main() {
     //     75 jours dans une fenêtre de 365 jours est atteinte le 16 mars 2025
     //     (mêmes calculs que le test du moteur), donc la notification doit être
     //     planifiée le 16 mars à 9 h.
-    await tripRepo.addTrip(Trip.create(
-      arrivalDate: DateTime(2024, 12, 1),
-      departureDate: DateTime(2024, 12, 31),
-      status: TripStatus.actual,
-    ),);
-    await tripRepo.addTrip(Trip.create(
-      arrivalDate: DateTime(2025, 2, 1),
-      departureDate: DateTime(2025, 4, 30),
-      status: TripStatus.planned,
-    ),);
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2024, 12, 1),
+        departureDate: DateTime(2024, 12, 31),
+        status: TripStatus.actual,
+      ),
+    );
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2025, 2, 1),
+        departureDate: DateTime(2025, 4, 30),
+        status: TripStatus.planned,
+      ),
+    );
 
-    await alertRepo.addAlert(DayAlert.create(
-      thresholdDays: 75,
-      windowDays: 365,
-      hour: 9,
-      minute: 0,
-    ),);
+    await alertRepo.addAlert(
+      DayAlert.create(
+        thresholdDays: 75,
+        windowDays: 365,
+        hour: 9,
+        minute: 0,
+      ),
+    );
 
     expect(alertRepo.alertCount, 1);
     expect(scheduler.last, hasLength(1));
@@ -103,25 +109,29 @@ void main() {
   test('lead days shift the scheduled fire moment earlier', () async {
     final (alertRepo, tripRepo, scheduler) = await build();
 
-    await tripRepo.addTrip(Trip.create(
-      arrivalDate: DateTime(2025, 2, 1),
-      departureDate: DateTime(2025, 4, 30),
-      status: TripStatus.planned,
-    ),);
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2025, 2, 1),
+        departureDate: DateTime(2025, 4, 30),
+        status: TripStatus.planned,
+      ),
+    );
 
     // EN: 10-day target inside the planned trip: reached Feb 10. With a 2-day,
     //     3-hour lead at 09:00, the notification fires Feb 8 at 06:00.
     // FR: Cible de 10 jours dans le séjour planifié : atteinte le 10 fév. Avec
     //     un préavis de 2 jours et 3 heures à 9 h, la notification part le
     //     8 fév. à 6 h.
-    await alertRepo.addAlert(DayAlert.create(
-      thresholdDays: 10,
-      windowDays: 365,
-      hour: 9,
-      minute: 0,
-      leadDays: 2,
-      leadHours: 3,
-    ),);
+    await alertRepo.addAlert(
+      DayAlert.create(
+        thresholdDays: 10,
+        windowDays: 365,
+        hour: 9,
+        minute: 0,
+        leadDays: 2,
+        leadHours: 3,
+      ),
+    );
 
     expect(scheduler.last.single.reachDate, DateTime(2025, 2, 10));
     expect(scheduler.last.single.fireMoment, DateTime(2025, 2, 8, 6, 0));
@@ -130,29 +140,35 @@ void main() {
   test('disabled alerts and unreachable targets are not scheduled', () async {
     final (alertRepo, tripRepo, scheduler) = await build();
 
-    await tripRepo.addTrip(Trip.create(
-      arrivalDate: DateTime(2025, 2, 1),
-      departureDate: DateTime(2025, 2, 5),
-      status: TripStatus.planned,
-    ),);
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2025, 2, 1),
+        departureDate: DateTime(2025, 2, 5),
+        status: TripStatus.planned,
+      ),
+    );
 
     // EN: Disabled alert — kept, never scheduled.
     // FR: Alerte désactivée — conservée, jamais planifiée.
-    await alertRepo.addAlert(DayAlert.create(
-      thresholdDays: 3,
-      windowDays: 365,
-      hour: 9,
-      minute: 0,
-      enabled: false,
-    ),);
+    await alertRepo.addAlert(
+      DayAlert.create(
+        thresholdDays: 3,
+        windowDays: 365,
+        hour: 9,
+        minute: 0,
+        enabled: false,
+      ),
+    );
     // EN: Enabled but unreachable (only 5 days of trips exist).
     // FR: Active mais inatteignable (seulement 5 jours de séjours existent).
-    await alertRepo.addAlert(DayAlert.create(
-      thresholdDays: 100,
-      windowDays: 365,
-      hour: 9,
-      minute: 0,
-    ),);
+    await alertRepo.addAlert(
+      DayAlert.create(
+        thresholdDays: 100,
+        windowDays: 365,
+        hour: 9,
+        minute: 0,
+      ),
+    );
 
     expect(alertRepo.alertCount, 2);
     expect(scheduler.last, isEmpty);
@@ -162,27 +178,101 @@ void main() {
       () async {
     final (alertRepo, tripRepo, scheduler) = await build();
 
-    await alertRepo.addAlert(DayAlert.create(
-      thresholdDays: 5,
-      windowDays: 365,
-      hour: 9,
-      minute: 0,
-    ),);
+    await alertRepo.addAlert(
+      DayAlert.create(
+        thresholdDays: 5,
+        windowDays: 365,
+        hour: 9,
+        minute: 0,
+      ),
+    );
     // EN: No trips yet — nothing schedulable.
     // FR: Aucun séjour encore — rien à planifier.
     expect(scheduler.last, isEmpty);
 
     final callsBefore = scheduler.calls.length;
-    await tripRepo.addTrip(Trip.create(
-      arrivalDate: DateTime(2025, 3, 1),
-      departureDate: DateTime(2025, 3, 31),
-      status: TripStatus.planned,
-    ),);
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2025, 3, 1),
+        departureDate: DateTime(2025, 3, 31),
+        status: TripStatus.planned,
+      ),
+    );
     // EN: Listener fired: one more reschedule, now with a projected date —
     //     5th day of the March trip is Mar 5.
     // FR: Listener déclenché : une replanification de plus, maintenant avec une
     //     date projetée — le 5e jour du séjour de mars est le 5 mars.
     expect(scheduler.calls.length, greaterThan(callsBefore));
     expect(scheduler.last.single.reachDate, DateTime(2025, 3, 5));
+  });
+
+  // EN: FR-10 — the since-last-visit alert projects from the last ACTUAL departure
+  //     plus the elapsed-days target, and ignores planned trips entirely.
+  // FR: FR-10 — l'alerte « depuis le dernier séjour » projette à partir du dernier
+  //     départ RÉEL plus la cible de jours écoulés, et ignore complètement les
+  //     séjours planifiés.
+  test('since-last-visit projects last actual departure + threshold days',
+      () async {
+    final (alertRepo, tripRepo, scheduler) = await build();
+
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2024, 12, 1),
+        departureDate: DateTime(2024, 12, 31),
+        status: TripStatus.actual,
+      ),
+    );
+    // EN: A later PLANNED trip must NOT be treated as the last visit.
+    // FR: Un séjour PLANIFIÉ ultérieur ne doit PAS compter comme le dernier séjour.
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2025, 6, 1),
+        departureDate: DateTime(2025, 6, 30),
+        status: TripStatus.planned,
+      ),
+    );
+
+    await alertRepo.addAlert(
+      DayAlert.create(
+        thresholdDays: 30,
+        windowDays: 30,
+        hour: 9,
+        minute: 0,
+        kind: AlertKind.sinceLastVisit,
+      ),
+    );
+
+    // EN: 2024-12-31 + 30 days = 2025-01-30 (future vs the fixed now).
+    // FR: 2024-12-31 + 30 jours = 2025-01-30 (futur par rapport au maintenant fixe).
+    expect(scheduler.last, hasLength(1));
+    expect(scheduler.last.single.reachDate, DateTime(2025, 1, 30));
+    expect(scheduler.last.single.fireMoment, DateTime(2025, 1, 30, 9, 0));
+  });
+
+  test('since-last-visit with no actual trip is not scheduled', () async {
+    final (alertRepo, tripRepo, scheduler) = await build();
+
+    // EN: Only a planned trip exists — there is no actual visit to measure from.
+    // FR: Seul un séjour planifié existe — aucun séjour réel comme point de départ.
+    await tripRepo.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(2025, 3, 1),
+        departureDate: DateTime(2025, 3, 31),
+        status: TripStatus.planned,
+      ),
+    );
+    await alertRepo.addAlert(
+      DayAlert.create(
+        thresholdDays: 30,
+        windowDays: 30,
+        hour: 9,
+        minute: 0,
+        kind: AlertKind.sinceLastVisit,
+      ),
+    );
+
+    expect(alertRepo.alertCount, 1);
+    expect(scheduler.last, isEmpty);
+    expect(alertRepo.projectedReachDate(alertRepo.alerts.single), isNull);
   });
 }
