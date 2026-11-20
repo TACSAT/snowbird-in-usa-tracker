@@ -59,10 +59,9 @@ dependencies:
   #     ne déclarent AUCUNE permission Android (pas d'INTERNET) — l'export est
   #     entièrement sur l'appareil. IMPORTANT : ne jamais appeler `PdfGoogleFonts.*`
   #     — c'est le seul chemin de `printing` qui téléchargerait une police par le
-  #     réseau ; nous intégrons plutôt notre propre police (voir `flutter: fonts:`
-  #     l'Helvetica standard Latin-1 du paquet pdf en normalisant la ponctuation que
-  #     nous produisons, sans police téléchargée, pour que l'invariant sans réseau
-  #     (NFR-1) ne soit jamais brisé.
+  #     réseau ; nous utilisons plutôt l'Helvetica standard Latin-1 du paquet pdf
+  #     et normalisons la ponctuation que nous produisons, au lieu d'une police
+  #     téléchargée, pour que l'invariant sans réseau (NFR-1) ne soit jamais brisé.
   printing: ^5.14.3
   share_plus: ^13.2.0
   # EN: `pdf` builds the document; it ships transitively with `printing`, but we
