@@ -146,31 +146,39 @@ class _TripListScreenState extends State<TripListScreen> {
 
     final choice = await showModalBottomSheet<_ExportChoice>(
       context: context,
+      // EN: Scrolls and may use the full height, or large text would push the last
+      //     choices off screen.
+      // FR: Défile et peut prendre toute la hauteur, sinon le grand texte pousserait
+      //     les derniers choix hors de l'écran.
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf_outlined),
-              title: Text(strings.exportAsPdf),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.pdf),
-            ),
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: Text(strings.exportAsImage),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.image),
-            ),
-            ListTile(
-              leading: const Icon(Icons.table_chart_outlined),
-              title: Text(strings.exportAsCsv),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.csv),
-            ),
-            ListTile(
-              leading: const Icon(Icons.print_outlined),
-              title: Text(strings.exportPrint),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.print),
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf_outlined),
+                title: Text(strings.exportAsPdf),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.pdf),
+              ),
+              ListTile(
+                leading: const Icon(Icons.image_outlined),
+                title: Text(strings.exportAsImage),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.image),
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart_outlined),
+                title: Text(strings.exportAsCsv),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.csv),
+              ),
+              ListTile(
+                leading: const Icon(Icons.print_outlined),
+                title: Text(strings.exportPrint),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.print),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -435,7 +443,7 @@ class _SummaryCard extends StatelessWidget {
                           Icon(
                             Icons.info_outline,
                             size: 18,
-                            color: theme.colorScheme.outline,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -443,7 +451,7 @@ class _SummaryCard extends StatelessWidget {
                         strings.sptDisclaimer,
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontStyle: FontStyle.italic,
-                          color: theme.colorScheme.outline,
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],

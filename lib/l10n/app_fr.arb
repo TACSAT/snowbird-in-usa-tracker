@@ -20,7 +20,7 @@
 
   "tripStatusPlanned": "Planifié",
 
-  "daysCount": "{count, plural, =1{1 jour} other{{count} jours}}",
+  "daysCount": "{count, plural, =0{0 jour} =1{1 jour} other{{count} jours}}",
   "@daysCount": {
     "placeholders": {
       "count": { "type": "int" }
@@ -442,7 +442,7 @@
 
   "assumeOpenTrip": "Les comptes incluant les séjours planifiés supposent que votre séjour en cours se poursuit jusqu'à ce que vous consigniez un départ.",
 
-  "assumeStalePlanned": "{count, plural, =1{Comprend 1 séjour planifié dont les dates sont passées. Marquez-le comme réel ou supprimez-le.} other{Comprend {count} séjours planifiés dont les dates sont passées. Marquez-les comme réels ou supprimez-les.}}",
+  "assumeStalePlanned": "{count, plural, =0{Comprend 0 séjour planifié dont les dates sont passées.} =1{Comprend 1 séjour planifié dont les dates sont passées. Marquez-le comme réel ou supprimez-le.} other{Comprend {count} séjours planifiés dont les dates sont passées. Marquez-les comme réels ou supprimez-les.}}",
   "@assumeStalePlanned": {
     "placeholders": {
       "count": { "type": "int" }

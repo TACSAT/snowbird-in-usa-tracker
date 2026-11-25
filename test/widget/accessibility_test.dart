@@ -488,4 +488,22 @@ void main() {
     );
     expect(dialog.firstDate.year, lessThanOrEqualTo(1970));
   });
+
+  for (final locale in ['en', 'fr']) {
+    testWidgets(
+        'the export sheet fits and scrolls at the largest text: $locale',
+        (tester) async {
+      final a = await _start(tester, os: 3.1, locale: locale);
+      await a.trips.addTrip(openTrip);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.ios_share_rounded));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(_truncated(tester), isEmpty);
+      final last = find.byIcon(Icons.print_outlined);
+      await tester.ensureVisible(last);
+      await tester.pumpAndSettle();
+      expect(last.hitTestable(), findsOneWidget);
+    });
+  }
 }

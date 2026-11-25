@@ -138,6 +138,78 @@ List<String> _headings(WidgetTester tester) => [
         if (d.flagsCollection.isHeader) d.label,
     ];
 
+// EN: Texts below WCAG AA contrast. Flutter's own check guesses the text colour from
+//     anti-aliased pixels, which differ by platform and by line wrapping. Here the text
+//     colour is the declared one, and the background is the most common pixel around it.
+//     Only the front route counts: what lies under a sheet is dimmed on purpose. Icons
+//     are skipped: each one here accompanies a text or a named control.
+// FR: Textes sous le contraste WCAG AA. La vérification de Flutter devine la couleur du
+//     texte à partir de pixels lissés, qui varient selon la plateforme et les retours à
+//     la ligne. Ici la couleur du texte est celle déclarée, et le fond est le pixel le
+//     plus fréquent autour. Seul l'écran de devant compte : ce qui est sous une feuille
+//     est assombri à dessein. Les icônes sont omises : chacune accompagne un texte ou un
+//     contrôle nommé.
+Future<List<String>> _lowContrast(WidgetTester tester) async {
+  final view = tester.binding.renderViews.first;
+  final layer = view.debugLayer! as OffsetLayer;
+  late ByteData pixels;
+  late int width;
+  late int height;
+  await tester.runAsync(() async {
+    final image = await layer.toImage(view.paintBounds);
+    width = image.width;
+    height = image.height;
+    pixels = (await image.toByteData())!;
+    image.dispose();
+  });
+
+  final found = <String>[];
+  var checked = 0;
+  void check(Element element, String text, TextStyle? style) {
+    final color = style?.color;
+    if (text.trim().isEmpty || color == null) return;
+    if (style!.fontFamily == 'MaterialIcons') return;
+    if (!(ModalRoute.of(element)?.isCurrent ?? true)) return;
+    final box = element.renderObject! as RenderBox;
+    final rect = (box.localToGlobal(Offset.zero) & box.size)
+        .inflate(2)
+        .intersect(Offset.zero & Size(width.toDouble(), height.toDouble()));
+    if (rect.isEmpty) return;
+    final counts = <int, int>{};
+    for (var y = rect.top.ceil(); y < rect.bottom.floor(); y++) {
+      for (var x = rect.left.ceil(); x < rect.right.floor(); x++) {
+        final rgba = pixels.getUint32((y * width + x) * 4);
+        counts[rgba] = (counts[rgba] ?? 0) + 1;
+      }
+    }
+    if (counts.isEmpty) return;
+    final rgba =
+        counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+    final back = Color(0xFF000000 | (rgba >> 8));
+    final a = Color.alphaBlend(color, back).computeLuminance();
+    final b = back.computeLuminance();
+    final ratio = (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
+    final size = style.fontSize ?? 14;
+    final bold = (style.fontWeight ?? FontWeight.normal).value >= 700;
+    final needed = size >= 24 || bold && size >= 18.66 ? 3.0 : 4.5;
+    checked++;
+    if (ratio < needed) found.add('"$text" ${ratio.toStringAsFixed(2)}');
+  }
+
+  for (final e in find.byType(RichText).evaluate()) {
+    final span = (e.widget as RichText).text;
+    check(e, span.toPlainText(), span.style);
+  }
+  for (final e in find.byType(EditableText).evaluate()) {
+    final w = e.widget as EditableText;
+    check(e, w.controller.text, w.style);
+  }
+  // EN: A check that looked at nothing must not pass.
+  // FR: Une vérification qui n'a rien regardé ne doit pas réussir.
+  expect(checked, greaterThan(2));
+  return found;
+}
+
 void main() {
   final now = DateTime.now();
   final openTrip = Trip.create(
@@ -185,15 +257,7 @@ void main() {
           await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
           await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
           await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-          // EN: The sampler takes the border colour of the alert-type selector for its
-          //     text once French labels wrap; that text is computed separately below.
-          // FR: L'échantillonneur prend la bordure du sélecteur de type d'alerte pour
-          //     son texte quand les libellés français passent à la ligne ; ce texte
-          //     est calculé à part plus bas.
-          if (locale == 'en' ||
-              find.byType(AlertEditScreen).evaluate().isEmpty) {
-            await expectLater(tester, meetsGuideline(textContrastGuideline));
-          }
+          expect(await _lowContrast(tester), isEmpty);
           // EN: Adjustable controls are not "tap targets", so check them here.
           // FR: Les contrôles réglables ne sont pas des cibles à toucher ; les
           //     vérifier ici.
@@ -203,6 +267,11 @@ void main() {
         }
 
         await check();
+        await tester.tap(find.byIcon(Icons.ios_share_rounded));
+        await tester.pumpAndSettle();
+        await check();
+        tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+        await tester.pumpAndSettle();
         for (final screen in [
           TripEditScreen(existing: openTrip),
           const TripEditScreen(),
@@ -237,33 +306,6 @@ void main() {
         handle.dispose();
       });
     }
-  }
-
-  for (final brightness in Brightness.values) {
-    testWidgets('alert-type selector text contrast: ${brightness.name}',
-        (tester) async {
-      await _start(tester, size: tall, locale: 'fr');
-      tester.platformDispatcher.platformBrightnessTestValue = brightness;
-      await _open(tester, const AlertEditScreen());
-      final colors = Theme.of(
-        tester.element(find.byType(AlertEditScreen)),
-      ).colorScheme;
-      for (final (label, background) in [
-        ('Jours dans une fenêtre', colors.secondaryContainer),
-        ('Temps depuis le dernier séjour', colors.surface),
-      ]) {
-        final text = tester
-            .renderObject<RenderParagraph>(find.text(label))
-            .text
-            .style!
-            .color!
-            .computeLuminance();
-        final back = background.computeLuminance();
-        final ratio =
-            (math.max(text, back) + 0.05) / (math.min(text, back) + 0.05);
-        expect(ratio, greaterThanOrEqualTo(4.5), reason: label);
-      }
-    });
   }
 
   testWidgets('each alert switch says which alert it controls', (tester) async {
@@ -415,5 +457,26 @@ void main() {
         ),
       ),
     );
+  });
+
+  testWidgets('the contrast check itself catches faint text', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              Text('faint', style: TextStyle(color: Color(0xFFBBBBBB))),
+              Text('clear', style: TextStyle(color: Color(0xFF000000))),
+              Text(
+                'large',
+                style: TextStyle(color: Color(0xFF888888), fontSize: 24),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    final found = await _lowContrast(tester);
+    expect(found.single, startsWith('"faint"'));
   });
 }

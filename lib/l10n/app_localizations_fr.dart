@@ -44,6 +44,7 @@ class AppLocalizationsFr extends AppLocalizations {
       locale: localeName,
       other: '$count jours',
       one: '1 jour',
+      zero: '0 jour',
     );
     return '$_temp0';
   }
@@ -588,6 +589,7 @@ class AppLocalizationsFr extends AppLocalizations {
           'Comprend $count séjours planifiés dont les dates sont passées. Marquez-les comme réels ou supprimez-les.',
       one:
           'Comprend 1 séjour planifié dont les dates sont passées. Marquez-le comme réel ou supprimez-le.',
+      zero: 'Comprend 0 séjour planifié dont les dates sont passées.',
     );
     return '$_temp0';
   }
