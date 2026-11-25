@@ -33,6 +33,7 @@ import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
+import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
@@ -256,24 +257,18 @@ class _TripEditScreenState extends State<TripEditScreen> {
                 ),
               const SizedBox(height: 8),
 
-              TextFormField(
+              LabeledField(
                 controller: _name,
                 maxLength: InputLimits.maxTripNameLength,
-                decoration: InputDecoration(
-                  labelText: strings.fieldTripName,
-                  helperText: strings.fieldTripNameHelper,
-                  counterText: '',
-                ),
+                label: strings.fieldTripName,
+                helper: strings.fieldTripNameHelper,
               ),
               const SizedBox(height: 8),
-              TextFormField(
+              LabeledField(
                 controller: _notes,
                 maxLength: InputLimits.maxNotesLength,
                 maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: strings.fieldNotes,
-                  counterText: '',
-                ),
+                label: strings.fieldNotes,
               ),
               const SizedBox(height: 8),
 
@@ -327,14 +322,8 @@ class _TripEditScreenState extends State<TripEditScreen> {
     final picked = await pickDate(
       context,
       initial: initial,
-      // EN: A generous but bounded range — a decade back covers any real history,
-      //     and a few years forward covers planned trips, without an infinite
-      //     scroll.
-      // FR: Une plage large mais bornée — une décennie en arrière couvre tout
-      //     historique réel, et quelques années en avant couvrent les séjours
-      //     planifiés, sans défilement infini.
-      first: DateTime(DateTime.now().year - 10),
-      last: DateTime(DateTime.now().year + 10),
+      first: DateTime(InputLimits.minTripYear),
+      last: DateTime(DateTime.now().year + InputLimits.maxYearsAhead, 12, 31),
     );
     if (picked == null) return;
     setState(() {
@@ -442,11 +431,18 @@ class _TripEditScreenState extends State<TripEditScreen> {
         );
       }
     } on TripValidationException catch (e) {
+      // EN: Not about the dates, so not shown under them.
+      // FR: Ne concerne pas les dates, donc pas affiché dessous.
+      if (e.problem == TripProblem.tooMany) {
+        complain(strings.errorTooManyTrips(InputLimits.maxTrips));
+        return;
+      }
       if (!mounted) return;
       _showDateError(
         arrival: switch (e.problem) {
           TripProblem.overlap => strings.errorTripOverlap,
           TripProblem.futureArrival => strings.errorFutureArrival,
+          TripProblem.tooMany => null,
         },
       );
       return;
@@ -550,40 +546,28 @@ class _CrossingSection extends StatelessWidget {
             clearTooltip: strings.clearTime,
             onClear: time == null ? null : onClearTime,
           ),
-          TextFormField(
+          LabeledField(
             controller: location,
             maxLength: InputLimits.maxLocationLength,
-            decoration: InputDecoration(
-              labelText: strings.fieldLocation,
-              counterText: '',
-            ),
+            label: strings.fieldLocation,
           ),
           const SizedBox(height: 8),
-          TextFormField(
+          LabeledField(
             controller: means,
             maxLength: InputLimits.maxMeansOfTravelLength,
-            decoration: InputDecoration(
-              labelText: strings.fieldMeansOfTravel,
-              counterText: '',
-            ),
+            label: strings.fieldMeansOfTravel,
           ),
           const SizedBox(height: 8),
-          TextFormField(
+          LabeledField(
             controller: carrier,
             maxLength: InputLimits.maxCarrierLength,
-            decoration: InputDecoration(
-              labelText: strings.fieldCarrier,
-              counterText: '',
-            ),
+            label: strings.fieldCarrier,
           ),
           const SizedBox(height: 8),
-          TextFormField(
+          LabeledField(
             controller: tz,
             maxLength: InputLimits.maxTimeZoneLength,
-            decoration: InputDecoration(
-              labelText: strings.fieldTimeZone,
-              counterText: '',
-            ),
+            label: strings.fieldTimeZone,
           ),
         ],
       ),

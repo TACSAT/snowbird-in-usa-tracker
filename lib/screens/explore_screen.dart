@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/logic/projection.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
@@ -65,11 +66,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
         context,
         initial: current ?? (first.isAfter(_today) ? first : _today),
         first: first,
-        last: DateTime(_today.year + 10, 12, 31),
+        last: DateTime(_today.year + InputLimits.maxYearsAhead, 12, 31),
       );
 
   Future<void> _pickFrom() async {
-    final d = await _pick(_from, DateTime(_today.year - 20));
+    final d = await _pick(_from, DateTime(InputLimits.minTripYear));
     if (d == null || !mounted) return;
     setState(() {
       _from = d;
@@ -78,7 +79,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Future<void> _pickTo() async {
-    final d = await _pick(_to, _from ?? DateTime(_today.year - 20));
+    final d = await _pick(_to, _from ?? DateTime(InputLimits.minTripYear));
     if (d != null && mounted) setState(() => _to = d);
   }
 
@@ -115,6 +116,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
       // FR: L'effacer : le séjour compte désormais comme planifié, et le laisser ici
       //     montrerait une différence de zéro.
       if (mounted) _clearWhatIf();
+    } on TripValidationException {
+      // EN: Only the trip limit can refuse a planned trip.
+      // FR: Seule la limite de séjours peut refuser un séjour planifié.
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(strings.errorTooManyTrips(InputLimits.maxTrips)),
+        ),
+      );
     } on StorageWriteException {
       messenger.showSnackBar(SnackBar(content: Text(strings.errorSaveFailed)));
     } finally {

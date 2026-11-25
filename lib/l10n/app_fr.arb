@@ -447,5 +447,12 @@
     "placeholders": {
       "count": { "type": "int" }
     }
+  },
+
+  "errorTooManyTrips": "La limite de {count} séjours est atteinte. Supprimez un séjour pour en ajouter un autre.",
+  "@errorTooManyTrips": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

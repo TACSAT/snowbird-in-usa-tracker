@@ -28,13 +28,14 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 
 // EN: Why a trip was refused. The UI turns these into localised, neutral messages.
 // FR: Pourquoi un séjour a été refusé. L'interface en fait des messages neutres et
 //     localisés.
-enum TripProblem { overlap, futureArrival }
+enum TripProblem { overlap, futureArrival, tooMany }
 
 class TripValidationException implements Exception {
   final TripProblem problem;
@@ -95,6 +96,9 @@ class TripRepository extends ChangeNotifier {
   //     Throws TripValidationException or StorageWriteException.
   //     Lance TripValidationException ou StorageWriteException.
   Future<void> addTrip(Trip trip) => _mutate((current) {
+        if (current.length >= InputLimits.maxTrips) {
+          throw const TripValidationException(TripProblem.tooMany);
+        }
         _validate(trip, current);
         return [...current, trip];
       });

@@ -34,6 +34,7 @@ import 'package:provider/provider.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
+import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
@@ -328,10 +329,10 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
                 onSelectionChanged: (s) => setState(() => _kind = s.first),
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              LabeledField(
                 controller: _label,
                 maxLength: kMaxAlertLabelLength,
-                decoration: InputDecoration(labelText: strings.alertLabelField),
+                label: strings.alertLabelField,
               ),
               const SizedBox(height: 8),
               _numberField(
@@ -432,18 +433,15 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
     required AppLocalizations strings,
     String? helper,
   }) {
-    return TextFormField(
+    return LabeledField(
       controller: controller,
       keyboardType: TextInputType.number,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
         LengthLimitingTextInputFormatter(4),
       ],
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: helper,
-        counterText: '',
-      ),
+      label: label,
+      helper: helper,
       validator: (raw) {
         final value = int.tryParse(raw ?? '');
         if (value == null || value < min || value > max) {

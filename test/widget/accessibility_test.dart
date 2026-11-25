@@ -7,6 +7,7 @@
 //     ligne, les heures effaçables et l'ordre de la permission.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart';
@@ -108,6 +110,25 @@ Future<void> _open(WidgetTester tester, Widget screen) async {
   await tester.pumpAndSettle();
 }
 
+// EN: Text cut off by "..." on the current screen. App bar titles are exempt: one line
+//     by platform convention, and they repeat what the user just tapped.
+// FR: Textes coupés par « … » à l'écran. Les titres de barre sont exemptés : une ligne
+//     par convention, et ils répètent ce que l'utilisateur vient de toucher.
+List<String> _truncated(WidgetTester tester) {
+  final found = <String>[];
+  void visit(RenderObject node, bool inBar) {
+    if (node is RenderParagraph && !inBar && node.didExceedMaxLines) {
+      found.add(node.text.toPlainText());
+    }
+    node.visitChildren((c) => visit(c, inBar));
+  }
+
+  for (final e in find.byType(Scrollable).evaluate()) {
+    visit(e.renderObject!, false);
+  }
+  return found;
+}
+
 void main() {
   final today = DateTime.now();
   final openTrip = Trip.create(
@@ -153,6 +174,25 @@ void main() {
           const AboutScreen(),
         ]) {
           await _open(tester, screen);
+          final sections = find.byType(ExpansionTile);
+          for (var i = sections.evaluate().length - 1; i >= 0; i--) {
+            await tester.ensureVisible(sections.at(i));
+            await tester.pumpAndSettle();
+            await tester.tap(
+              find
+                  .descendant(
+                    of: sections.at(i),
+                    matching: find.byType(ListTile),
+                  )
+                  .first,
+            );
+            await tester.pumpAndSettle();
+          }
+          expect(
+            _truncated(tester),
+            isEmpty,
+            reason: '${screen.runtimeType} cuts text off',
+          );
           expect(
             tester.takeException(),
             isNull,
@@ -251,11 +291,11 @@ void main() {
 
   Future<void> fillAlert(WidgetTester tester) async {
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Notify me at this many days'),
+      find.widgetWithText(LabeledField, 'Notify me at this many days'),
       '30',
     );
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Counted within the last (days)'),
+      find.widgetWithText(LabeledField, 'Counted within the last (days)'),
       '365',
     );
     await tester.tap(find.text('Delivery time'));
@@ -332,7 +372,7 @@ void main() {
       ('Notify me at this many days', '30'),
       ('Counted within the last (days)', '365'),
     ]) {
-      await tester.enterText(find.widgetWithText(TextFormField, field), value);
+      await tester.enterText(find.widgetWithText(LabeledField, field), value);
     }
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pumpAndSettle();
@@ -399,4 +439,53 @@ void main() {
       });
     }
   }
+
+  testWidgets('every field keeps its label for screen readers', (tester) async {
+    final handle = tester.ensureSemantics();
+    await _start(tester, size: const Size(800, 1600));
+    await _open(tester, const AlertEditScreen());
+    final fields = find.byType(LabeledField);
+    expect(fields, findsNWidgets(5));
+    for (var i = 0; i < 5; i++) {
+      final widget = tester.widget<LabeledField>(fields.at(i));
+      final node = tester.getSemantics(
+        find.descendant(of: fields.at(i), matching: find.byType(EditableText)),
+      );
+      expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
+      expect(node.label, contains(widget.label));
+    }
+    handle.dispose();
+  });
+
+  testWidgets('a trip from decades ago can be opened and its date picked',
+      (tester) async {
+    final a = await _start(tester, size: const Size(800, 1600));
+    for (final year in [1940, 1995]) {
+      final old = Trip.create(
+        arrivalDate: DateTime(year, 1, 5),
+        departureDate: DateTime(year, 1, 9),
+        status: TripStatus.actual,
+      );
+      await a.trips.addTrip(old);
+      await _open(tester, TripEditScreen(existing: old));
+      await tester.tap(find.text('Arrival date'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('January 5, $year'), findsOneWidget);
+    }
+  });
+
+  testWidgets('the arrival picker reaches well past ten years back',
+      (tester) async {
+    await _start(tester, size: const Size(800, 1600));
+    await _open(tester, const TripEditScreen());
+    await tester.tap(find.text('Arrival date'));
+    await tester.pumpAndSettle();
+    final dialog = tester.widget<DatePickerDialog>(
+      find.byType(DatePickerDialog),
+    );
+    expect(dialog.firstDate.year, lessThanOrEqualTo(1970));
+  });
 }

@@ -131,13 +131,6 @@ class SnowBirdApp extends StatelessWidget {
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      // EN: Help and error text wraps instead of being cut off at large sizes.
-      // FR: Les textes d'aide et d'erreur passent à la ligne au lieu d'être coupés
-      //     en grande taille.
-      inputDecorationTheme: const InputDecorationThemeData(
-        helperMaxLines: 4,
-        errorMaxLines: 4,
-      ),
       colorScheme: ColorScheme.fromSeed(
         // EN: Deep blue — calm, professional, universally readable.
         // FR: Bleu foncé — calme, professionnel, universellement lisible.

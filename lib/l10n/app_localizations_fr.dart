@@ -591,4 +591,9 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String errorTooManyTrips(int count) {
+    return 'La limite de $count séjours est atteinte. Supprimez un séjour pour en ajouter un autre.';
+  }
 }

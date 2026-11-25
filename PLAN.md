@@ -461,7 +461,7 @@ Where this differs from a tick above, this section governs.
 - **FR-2:** open trips (no departure) are supported for actual trips.
 - **FR-3 / FR-6:** what-if and custom ranges are on the Explore screen.
 - **FR-5:** actual trips may share a border day but not otherwise overlap, and may not start
-  in the future; planned trips may overlap. The 2,000-trip cap is **not enforced yet**.
+  in the future; planned trips may overlap. The 2,000-trip cap is enforced.
 - **FR-8:** PDF (US Letter, bundled font) shows every crossing detail; PNG is one image per
   page; CSV headers stay in English by decision.
 - **FR-9 / FR-10 / FR-19:** alerts fire on the crossing day only; permission is asked first.
@@ -469,5 +469,4 @@ Where this differs from a tick above, this section governs.
 - **FR-20 / FR-21:** every screen is tested at large text in both languages. The optional
   high-contrast / bold mode is **not built**.
 - **Open:** device testing, French review, feedback and donation links, icon, signing key,
-  privacy policy publication, dates older than ten years in the trip form, and the
-  remaining dependency upgrades.
+  privacy policy publication, and the remaining dependency upgrades.

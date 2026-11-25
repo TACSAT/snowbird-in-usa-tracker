@@ -1,12 +1,13 @@
-# EN: Every push and pull request: format, analysis, tests, a release build, and proof
+# EN: Every pull request, and every push to main: format, analysis, tests, a release build, and proof
 #     that the APK cannot reach the network. No third-party action is used, versions
 #     are pinned by commit, and the token is read-only.
-# FR: À chaque push et demande de tirage : format, analyse, tests, build de release et
+# FR: À chaque demande de tirage et push sur main : format, analyse, tests, build de release et
 #     preuve que l'APK ne peut joindre le réseau. Aucune action tierce, versions figées
 #     par commit, jeton en lecture seule.
 name: CI
 on:
   push:
+    branches: [main]
   pull_request:
 permissions:
   contents: read

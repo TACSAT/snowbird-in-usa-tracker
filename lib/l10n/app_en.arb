@@ -595,5 +595,12 @@
     "placeholders": {
       "count": { "type": "int" }
     }
+  },
+
+  "errorTooManyTrips": "The limit of {count} trips is reached. Delete a trip to add another.",
+  "@errorTooManyTrips": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

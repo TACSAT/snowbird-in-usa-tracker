@@ -1075,6 +1075,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Includes 1 planned trip whose dates have passed. Mark it as actual or delete it.} other{Includes {count} planned trips whose dates have passed. Mark them as actual or delete them.}}'**
   String assumeStalePlanned(int count);
+
+  /// No description provided for @errorTooManyTrips.
+  ///
+  /// In en, this message translates to:
+  /// **'The limit of {count} trips is reached. Delete a trip to add another.'**
+  String errorTooManyTrips(int count);
 }
 
 class _AppLocalizationsDelegate

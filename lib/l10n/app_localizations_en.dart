@@ -585,4 +585,9 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String errorTooManyTrips(int count) {
+    return 'The limit of $count trips is reached. Delete a trip to add another.';
+  }
 }

@@ -10,6 +10,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
@@ -215,6 +216,42 @@ void main() {
       await r.addTrip(_trip('2026-01-10', '2026-01-10'));
       await r.addTrip(_trip('2026-01-10', '2026-01-20'));
       expect(r.tripCount, 4);
+    });
+
+    test('the trip limit refuses one more, but edits and deletes still work',
+        () async {
+      final full = [
+        for (var i = 0; i < InputLimits.maxTrips; i++)
+          Trip.create(
+            arrivalDate: DateTime(2000, 1, 1 + i),
+            departureDate: DateTime(2000, 1, 1 + i),
+            status: TripStatus.planned,
+          ),
+      ];
+      final (s, _) = await _storage(
+        jsonEncode([for (final t in full) t.toJson()]),
+      );
+      final r = repoOf(s);
+      expect(r.tripCount, InputLimits.maxTrips);
+      final extra =
+          _trip('2026-12-01', '2026-12-02', status: TripStatus.planned);
+      await expectLater(r.addTrip(extra), problem(TripProblem.tooMany));
+      expect(r.tripCount, InputLimits.maxTrips);
+      await r.updateTrip(full.first.copyWith(notes: 'edited'));
+      await r.deleteTrip(full.last.id);
+      await r.addTrip(extra);
+      expect(r.tripCount, InputLimits.maxTrips);
+    });
+
+    test('a history already over the limit loads whole', () async {
+      final (s, _) = await _storage(
+        jsonEncode([
+          for (var i = 0; i < InputLimits.maxTrips + 5; i++)
+            _trip('2020-01-01', '2020-01-01', status: TripStatus.planned)
+                .toJson(),
+        ]),
+      );
+      expect(repoOf(s).tripCount, InputLimits.maxTrips + 5);
     });
 
     test('an open trip blocks any later actual trip', () async {

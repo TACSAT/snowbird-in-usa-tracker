@@ -24,8 +24,10 @@ Future<DateTime?> pickDate(
     showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: first,
-      lastDate: last,
+      // EN: A stored date outside the usual range must still open, not fail.
+      // FR: Une date enregistrée hors de la plage usuelle doit s'ouvrir, pas échouer.
+      firstDate: initial.isBefore(first) ? initial : first,
+      lastDate: initial.isAfter(last) ? initial : last,
       builder: _capped,
     );
 
