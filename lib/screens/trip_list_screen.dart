@@ -25,6 +25,7 @@ import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart';
 import 'package:snowbird_in_usa_tracker/services/record_exporter.dart';
@@ -366,7 +367,10 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(strings.summaryHeading, style: theme.textTheme.titleSmall),
+          SectionHeading(
+            strings.summaryHeading,
+            style: theme.textTheme.titleSmall,
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -404,38 +408,48 @@ class _SummaryCard extends StatelessWidget {
           // FR: Bloc de la valeur SPT — le toucher ouvre la page de référence neutre
           //     pour que le nombre voyage toujours avec son contexte et sa mention
           //     « pas un conseil ».
-          InkWell(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const ReferenceScreen()),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        strings.recordSptLabel,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                    Text(sptText, style: theme.textTheme.titleLarge),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.info_outline,
-                      size: 18,
-                      color: theme.colorScheme.outline,
-                    ),
-                  ],
-                ),
-                Text(
-                  strings.sptDisclaimer,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: theme.colorScheme.outline,
+          MergeSemantics(
+            child: Semantics(
+              button: true,
+              child: InkWell(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ReferenceScreen(),
                   ),
                 ),
-              ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              strings.recordSptLabel,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ),
+                          Text(sptText, style: theme.textTheme.titleLarge),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.info_outline,
+                            size: 18,
+                            color: theme.colorScheme.outline,
+                          ),
+                        ],
+                      ),
+                      Text(
+                        strings.sptDisclaimer,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -465,6 +479,7 @@ class _StatBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
+      container: true,
       label: '$label: $days',
       child: ExcludeSemantics(
         child: Column(
@@ -510,11 +525,12 @@ class _TripTile extends StatelessWidget {
     // FR: En grand texte, une puce à droite ne laisse aucune largeur aux dates ; elle
     //     passe donc dessous.
     final largeText = MediaQuery.textScalerOf(context).scale(14) / 14 > 1.3;
-    final subtitle = strings.tripSubtitle(
-      arrival,
-      departure,
-      isCurrent ? strings.tripDaysSoFar(days) : days,
-    );
+    // EN: An unnamed trip already has its dates as title; do not repeat them.
+    // FR: Un séjour sans nom a déjà ses dates pour titre ; ne pas les répéter.
+    final hasName = trip.name?.isNotEmpty ?? false;
+    final daysText = isCurrent ? strings.tripDaysSoFar(days) : days;
+    final subtitle =
+        hasName ? strings.tripSubtitle(arrival, departure, daysText) : daysText;
     final chip = Chip(
       label: Text(
         isPlanned
@@ -526,24 +542,28 @@ class _TripTile extends StatelessWidget {
       visualDensity: VisualDensity.compact,
     );
 
-    return ListTile(
-      leading: Icon(
-        isPlanned ? Icons.event_outlined : Icons.flight_land_rounded,
-        color: isPlanned ? theme.colorScheme.secondary : null,
-      ),
-      title: Text(
-        trip.name?.isNotEmpty == true ? trip.name! : '$arrival – $departure',
-      ),
-      subtitle: largeText
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text(subtitle), chip],
-            )
-          : Text(subtitle),
-      trailing: largeText ? null : chip,
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => TripEditScreen(existing: trip),
+    // EN: One stop for screen readers: the trip and its status together.
+    // FR: Un seul arrêt pour les lecteurs d'écran : le séjour avec son statut.
+    return MergeSemantics(
+      child: ListTile(
+        leading: Icon(
+          isPlanned ? Icons.event_outlined : Icons.flight_land_rounded,
+          color: isPlanned ? theme.colorScheme.secondary : null,
+        ),
+        title: Text(
+          trip.name?.isNotEmpty == true ? trip.name! : '$arrival – $departure',
+        ),
+        subtitle: largeText
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text(subtitle), chip],
+              )
+            : Text(subtitle),
+        trailing: largeText ? null : chip,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => TripEditScreen(existing: trip),
+          ),
         ),
       ),
     );

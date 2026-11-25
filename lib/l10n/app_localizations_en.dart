@@ -590,4 +590,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String errorTooManyTrips(int count) {
     return 'The limit of $count trips is reached. Delete a trip to add another.';
   }
+
+  @override
+  String alertToggleLabel(String name) {
+    return 'Alert active: $name';
+  }
 }

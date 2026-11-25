@@ -602,5 +602,12 @@
     "placeholders": {
       "count": { "type": "int" }
     }
+  },
+
+  "alertToggleLabel": "Alert active: {name}",
+  "@alertToggleLabel": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
   }
 }

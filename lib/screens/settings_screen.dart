@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/state/settings_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -88,7 +89,10 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _sectionLabel(BuildContext context, String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium),
+        child: SectionHeading(
+          text,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
       );
 }
 
@@ -169,12 +173,21 @@ class _TextSizeControl extends StatelessWidget {
       children: [
         const Icon(Icons.text_decrease, size: 20),
         Expanded(
-          child: Slider(
-            value: index.toDouble(),
-            min: 0,
-            max: (kTextScaleOptions.length - 1).toDouble(),
-            divisions: kTextScaleOptions.length - 1,
-            onChanged: (v) => onChanged(kTextScaleOptions[v.round()]),
+          // EN: Named, and read as the size itself rather than a position on the track.
+          // FR: Nommé, et lu comme la taille elle-même plutôt qu'une position.
+          child: MergeSemantics(
+            child: Semantics(
+              label: AppLocalizations.of(context).settingsTextSize,
+              child: Slider(
+                value: index.toDouble(),
+                semanticFormatterCallback: (v) =>
+                    '${(kTextScaleOptions[v.round()] * 100).round()}%',
+                min: 0,
+                max: (kTextScaleOptions.length - 1).toDouble(),
+                divisions: kTextScaleOptions.length - 1,
+                onChanged: (v) => onChanged(kTextScaleOptions[v.round()]),
+              ),
+            ),
           ),
         ),
         const Icon(Icons.text_increase, size: 28),

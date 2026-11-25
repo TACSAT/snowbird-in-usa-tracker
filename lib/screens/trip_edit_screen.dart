@@ -35,6 +35,7 @@ import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
@@ -200,7 +201,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
               //     glance and needs no free typing.
               // FR: Réel ou planifié. Un contrôle segmenté se lit clairement d'un
               //     coup d'œil et n'exige aucune saisie libre.
-              Text(
+              SectionHeading(
                 strings.tripTypeLabel,
                 style: Theme.of(context).textTheme.titleSmall,
               ),

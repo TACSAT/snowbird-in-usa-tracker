@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 
 class ReferenceScreen extends StatelessWidget {
   const ReferenceScreen({super.key});
@@ -66,7 +67,7 @@ class ReferenceScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.titleMedium),
+              SectionHeading(title, style: theme.textTheme.titleMedium),
               const SizedBox(height: 6),
               Text(body, style: theme.textTheme.bodyMedium),
             ],

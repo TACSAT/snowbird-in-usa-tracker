@@ -36,6 +36,7 @@ import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
@@ -136,18 +137,30 @@ class _AlertTile extends StatelessWidget {
         alert.label != null ? '$summary\n$projection' : projection,
       ),
       isThreeLine: alert.label != null,
-      trailing: Switch(
-        value: alert.enabled,
-        onChanged: (value) async {
-          final messenger = ScaffoldMessenger.of(context);
-          final scheduler = context.read<AlertScheduler>();
-          if (value) await _askPermission(scheduler, messenger, strings);
-          await _orReport(
-            messenger,
-            strings,
-            () => repo.updateAlert(alert.copyWith(enabled: value)),
-          );
-        },
+      // EN: A switch beside a row is its own control; it must say which alert it is.
+      // FR: Un interrupteur à côté d'une rangée est un contrôle à part ; il doit dire
+      //     de quelle alerte il s'agit.
+      trailing: MergeSemantics(
+        child: Semantics(
+          label: strings.alertToggleLabel(
+            alert.label == null ? summary : '${alert.label}, $summary',
+          ),
+          child: Switch(
+            value: alert.enabled,
+            onChanged: (value) async {
+              final messenger = ScaffoldMessenger.of(context);
+              final scheduler = context.read<AlertScheduler>();
+              if (value) {
+                await _askPermission(scheduler, messenger, strings);
+              }
+              await _orReport(
+                messenger,
+                strings,
+                () => repo.updateAlert(alert.copyWith(enabled: value)),
+              );
+            },
+          ),
+        ),
       ),
       onTap: () => _openEditor(context, existing: alert),
     );
@@ -309,7 +322,7 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
               // FR: Choisir ce que l'alerte surveille (FR-9 vs FR-10). Le changement
               //     masque ou affiche le champ de fenêtre glissante ci-dessous, car
               //     seul le type compte de jours utilise une fenêtre.
-              Text(
+              SectionHeading(
                 strings.alertKindLabel,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
@@ -367,12 +380,14 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
               //     heure n'est choisie.
               ValueRow(
                 label: strings.alertTimeField,
-                value: _time == null ? '—' : _time!.format(context),
+                value: _time == null
+                    ? strings.optionalNotSet
+                    : _time!.format(context),
                 error: _timeMissing ? strings.errorTimeRequired : null,
                 onTap: _pickTime,
               ),
               const Divider(),
-              Text(
+              SectionHeading(
                 strings.alertLeadField,
                 style: Theme.of(context).textTheme.titleSmall,
               ),

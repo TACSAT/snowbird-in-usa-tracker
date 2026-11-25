@@ -17,6 +17,7 @@ import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/logic/projection.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
@@ -164,7 +165,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(strings.exploreRangeHeading, style: text.titleMedium),
+          SectionHeading(strings.exploreRangeHeading, style: text.titleMedium),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -202,17 +203,31 @@ class _ExploreScreenState extends State<ExploreScreen> {
               style: text.bodyMedium,
             ),
             const SizedBox(height: 4),
-            Text(
-              strings.rangeActual(strings.daysCount(count.actual)),
-              style: text.titleMedium,
-            ),
-            Text(
-              strings.rangeWithPlanned(strings.daysCount(count.withPlanned)),
-              style: text.titleMedium,
+            // EN: Announced as one unit when the period changes (WCAG status message).
+            // FR: Annoncé d'un bloc quand la période change (message d'état WCAG).
+            MergeSemantics(
+              child: Semantics(
+                liveRegion: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      strings.rangeActual(strings.daysCount(count.actual)),
+                      style: text.titleMedium,
+                    ),
+                    Text(
+                      strings.rangeWithPlanned(
+                        strings.daysCount(count.withPlanned),
+                      ),
+                      style: text.titleMedium,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
           const Divider(height: 32),
-          Text(strings.whatIfHeading, style: text.titleMedium),
+          SectionHeading(strings.whatIfHeading, style: text.titleMedium),
           const SizedBox(height: 4),
           Text(strings.whatIfIntro, style: text.bodyMedium),
           ValueRow(
@@ -313,7 +328,19 @@ class _WhatIfCard extends StatelessWidget {
                 strings.whatIfYear('${y.year}', dates.format(y.through)),
                 y.days,
               ),
-            ...days(strings.whatIfLast365(asOf), result.last365),
+            // EN: The one figure announced when the result appears or changes: reading
+            //     all of them would talk over the user. The others can be browsed.
+            // FR: Le seul nombre annoncé quand le résultat apparaît ou change : tous les
+            //     lire couvrirait l'utilisateur. Les autres se parcourent.
+            MergeSemantics(
+              child: Semantics(
+                liveRegion: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: days(strings.whatIfLast365(asOf), result.last365),
+                ),
+              ),
+            ),
             ...block(
               strings.whatIfSpt(asOf),
               result.sptWithout.formatted,

@@ -1081,6 +1081,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The limit of {count} trips is reached. Delete a trip to add another.'**
   String errorTooManyTrips(int count);
+
+  /// No description provided for @alertToggleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert active: {name}'**
+  String alertToggleLabel(String name);
 }
 
 class _AppLocalizationsDelegate

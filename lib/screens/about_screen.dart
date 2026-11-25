@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:snowbird_in_usa_tracker/config/app_links.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -61,7 +62,10 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          Text(strings.aboutPrivacyTitle, style: theme.textTheme.titleMedium),
+          SectionHeading(
+            strings.aboutPrivacyTitle,
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 4),
           Text(strings.aboutPrivacyBody, style: theme.textTheme.bodyMedium),
           const SizedBox(height: 16),

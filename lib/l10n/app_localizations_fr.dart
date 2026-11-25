@@ -596,4 +596,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String errorTooManyTrips(int count) {
     return 'La limite de $count séjours est atteinte. Supprimez un séjour pour en ajouter un autre.';
   }
+
+  @override
+  String alertToggleLabel(String name) {
+    return 'Alerte active : $name';
+  }
 }
