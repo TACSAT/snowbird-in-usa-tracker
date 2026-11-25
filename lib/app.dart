@@ -76,8 +76,15 @@ class SnowBirdApp extends StatelessWidget {
       //     l'outrepassement explicite de l'utilisateur dans l'appli (FR-20).
       locale: settings.locale,
 
-      theme: _theme(Brightness.light),
-      darkTheme: _theme(Brightness.dark),
+      // EN: The phone's "increase contrast" picks the highContrast themes by itself;
+      //     the in-app switch makes them the only ones, since not every phone offers it.
+      // FR: « Augmenter le contraste » du téléphone choisit lui-même les thèmes
+      //     highContrast ; l'interrupteur de l'appli en fait les seuls, car tous les
+      //     téléphones ne l'offrent pas.
+      theme: _theme(Brightness.light, high: settings.highContrast),
+      darkTheme: _theme(Brightness.dark, high: settings.highContrast),
+      highContrastTheme: _theme(Brightness.light, high: true),
+      highContrastDarkTheme: _theme(Brightness.dark, high: true),
       themeMode: settings.themeMode,
 
       // EN: Apply the in-app text-scale multiplier ON TOP of the OS text size, so a
@@ -106,6 +113,7 @@ class SnowBirdApp extends StatelessWidget {
         final wanted = osFactor * settings.textScale;
         return MediaQuery(
           data: media.copyWith(
+            boldText: media.boldText || settings.highContrast,
             textScaler: TextScaler.linear(wanted > ceiling ? ceiling : wanted),
           ),
           child: child ?? const SizedBox.shrink(),
@@ -127,15 +135,69 @@ class SnowBirdApp extends StatelessWidget {
   //     spécifier chaque jeton. La graine bleu foncé est volontairement neutre —
   //     aucune connotation de « danger » ou de « limite », cohérente avec le
   //     positionnement sans verdict.
-  ThemeData _theme(Brightness brightness) {
+  //
+  //     [high] gives pure black on white, or the reverse, with strong borders. Colours
+  //     still carry no meaning of their own (no "danger" tint).
+  //     [high] donne du noir pur sur blanc, ou l'inverse, avec des bordures marquées.
+  //     Les couleurs n'ont toujours aucun sens propre (aucune teinte de « danger »).
+  ThemeData _theme(Brightness brightness, {required bool high}) {
+    final base = ColorScheme.fromSeed(
+      // EN: Deep blue — calm, professional, universally readable.
+      // FR: Bleu foncé — calme, professionnel, universellement lisible.
+      seedColor: const Color(0xFF1565C0),
+      brightness: brightness,
+      contrastLevel: high ? 1.0 : 0.0,
+    );
+    if (!high) {
+      return ThemeData(
+        useMaterial3: true,
+        brightness: brightness,
+        colorScheme: base,
+      );
+    }
+    final light = brightness == Brightness.light;
+    final back = light ? Colors.white : Colors.black;
+    final front = light ? Colors.black : Colors.white;
+    final colors = base.copyWith(
+      surface: back,
+      surfaceContainerLowest: back,
+      surfaceContainerLow: back,
+      surfaceContainer: back,
+      surfaceContainerHigh: back,
+      surfaceContainerHighest: back,
+      onSurface: front,
+      onSurfaceVariant: front,
+      outline: front,
+      outlineVariant: front,
+      surfaceTint: Colors.transparent,
+    );
+    // EN: With one background colour, cards, sheets and dialogs need an edge.
+    // FR: Avec une seule couleur de fond, cartes, feuilles et dialogues ont besoin d'un
+    //     bord.
+    final edge = BorderSide(color: front, width: 2);
+    RoundedRectangleBorder shape(double radius) => RoundedRectangleBorder(
+          side: edge,
+          borderRadius: BorderRadius.circular(radius),
+        );
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorScheme: ColorScheme.fromSeed(
-        // EN: Deep blue — calm, professional, universally readable.
-        // FR: Bleu foncé — calme, professionnel, universellement lisible.
-        seedColor: const Color(0xFF1565C0),
-        brightness: brightness,
+      colorScheme: colors,
+      cardTheme: CardThemeData(shape: shape(12)),
+      dialogTheme: DialogThemeData(shape: shape(28)),
+      // EN: The unfilled track defaults to the background colour; this grey is visible
+      //     on both black and white, and distinct from the filled part.
+      // FR: La partie vide prend par défaut la couleur du fond ; ce gris se voit sur le
+      //     noir comme sur le blanc, et se distingue de la partie remplie.
+      sliderTheme: const SliderThemeData(
+        inactiveTrackColor: Color(0xFF757575),
+      ),
+      popupMenuTheme: PopupMenuThemeData(shape: shape(8)),
+      bottomSheetTheme: BottomSheetThemeData(
+        shape: RoundedRectangleBorder(
+          side: edge,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
       ),
     );
   }

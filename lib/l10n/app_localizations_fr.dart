@@ -622,4 +622,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get recordNotes => 'Notes';
+
+  @override
+  String get settingsHighContrast => 'Contraste élevé et texte gras';
+
+  @override
+  String get settingsHighContrastHelper =>
+      'Si désactivé, suit les réglages de contraste et de texte gras de votre téléphone, s\'ils existent.';
 }

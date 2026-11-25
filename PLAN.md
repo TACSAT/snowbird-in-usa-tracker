@@ -467,7 +467,7 @@ Where this differs from a tick above, this section governs.
   decision.
 - **FR-9 / FR-10 / FR-19:** alerts fire on the crossing day only; permission is asked first.
 - **FR-12 / FR-13:** stored data is versioned; unreadable data is quarantined and announced.
-- **FR-20 / FR-21:** every screen is tested at large text in both languages. The optional
-  high-contrast / bold mode is **not built**.
+- **FR-20 / FR-21:** every screen is tested at large text in both languages. High contrast
+  with bold text follows the phone or an in-app switch.
 - **Open:** device testing, French review, feedback and donation links, icon, signing key,
   privacy policy publication, and the remaining dependency upgrades.

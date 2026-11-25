@@ -631,5 +631,9 @@
 
   "recordTripName": "Trip name",
 
-  "recordNotes": "Notes"
+  "recordNotes": "Notes",
+
+  "settingsHighContrast": "High contrast and bold text",
+
+  "settingsHighContrastHelper": "When off, follows your phone's contrast and bold text settings where available."
 }

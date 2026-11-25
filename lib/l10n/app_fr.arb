@@ -483,5 +483,9 @@
 
   "recordTripName": "Nom du séjour",
 
-  "recordNotes": "Notes"
+  "recordNotes": "Notes",
+
+  "settingsHighContrast": "Contraste élevé et texte gras",
+
+  "settingsHighContrastHelper": "Si désactivé, suit les réglages de contraste et de texte gras de votre téléphone, s'ils existent."
 }

@@ -58,6 +58,7 @@ Future<_App> _start(
   double os = 1,
   double app = 1,
   String locale = 'en',
+  bool highContrast = false,
   bool granted = true,
 }) async {
   tester.view.physicalSize = size;
@@ -70,6 +71,7 @@ Future<_App> _start(
     'snowbird.flags.backupReminderShown.v1': true,
     'snowbird.settings.textScale.v1': app,
     'snowbird.settings.locale.v1': locale,
+    'snowbird.settings.highContrast.v1': highContrast,
   });
   PackageInfo.setMockInitialValues(
     appName: 'SnowBird',
@@ -140,9 +142,24 @@ void main() {
   );
 
   for (final locale in ['en', 'fr']) {
-    for (final (os, app) in [(1.0, 1.0), (1.5, 1.6), (2.0, 1.6), (3.1, 1.0)]) {
-      testWidgets('all screens fit: $locale os=$os app=$app', (tester) async {
-        final a = await _start(tester, os: os, app: app, locale: locale);
+    for (final (os, app, high) in [
+      (1.0, 1.0, false),
+      (1.5, 1.6, false),
+      (2.0, 1.6, false),
+      (3.1, 1.0, false),
+      (1.0, 1.0, true),
+      (2.0, 1.6, true),
+      (3.1, 1.0, true),
+    ]) {
+      testWidgets('all screens fit: $locale os=$os app=$app high=$high',
+          (tester) async {
+        final a = await _start(
+          tester,
+          os: os,
+          app: app,
+          locale: locale,
+          highContrast: high,
+        );
         await a.trips.addTrip(openTrip);
         await a.trips.addTrip(
           Trip.create(
@@ -217,9 +234,15 @@ void main() {
         }
       });
 
-      testWidgets('trips are reachable: $locale os=$os app=$app',
+      testWidgets('trips are reachable: $locale os=$os app=$app high=$high',
           (tester) async {
-        final a = await _start(tester, os: os, app: app, locale: locale);
+        final a = await _start(
+          tester,
+          os: os,
+          app: app,
+          locale: locale,
+          highContrast: high,
+        );
         await a.trips.addTrip(openTrip);
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(

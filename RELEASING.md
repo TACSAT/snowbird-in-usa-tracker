@@ -55,6 +55,7 @@ do not want that, keep the real file elsewhere and symlink it.
 4. Share the PDF, plain text, a multi-page PNG and the CSV, and print. Listen to the text
    file with VoiceOver and TalkBack. iPad especially.
 5. Largest text with VoiceOver and TalkBack, in English and French; open a date picker.
+   Repeat with high contrast on, in light and dark.
 6. Run a what-if, then save it as a planned trip.
 7. Upgrade over the previous version and confirm the old trips load.
 8. Restore a phone backup and confirm the trips and alerts return.

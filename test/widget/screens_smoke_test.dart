@@ -61,12 +61,14 @@ void main() {
 
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Text size in this app'), findsOneWidget);
 
     expect(settings.themeMode, ThemeMode.system);
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
     expect(settings.themeMode, ThemeMode.dark);
+
+    await tester.scrollUntilVisible(find.text('Text size in this app'), 200);
+    expect(find.text('Text size in this app'), findsOneWidget);
   });
 
   testWidgets('Reference page renders its intro and items', (tester) async {

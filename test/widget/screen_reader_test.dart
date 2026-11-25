@@ -59,6 +59,7 @@ Future<_App> _start(
   double os = 1,
   double app = 1,
   String locale = 'en',
+  bool highContrast = false,
   bool granted = true,
 }) async {
   tester.view.physicalSize = size;
@@ -71,6 +72,7 @@ Future<_App> _start(
     'snowbird.flags.backupReminderShown.v1': true,
     'snowbird.settings.textScale.v1': app,
     'snowbird.settings.locale.v1': locale,
+    'snowbird.settings.highContrast.v1': highContrast,
   });
   PackageInfo.setMockInitialValues(
     appName: 'SnowBird',
@@ -149,7 +151,11 @@ List<String> _headings(WidgetTester tester) => [
 //     plus fréquent autour. Seul l'écran de devant compte : ce qui est sous une feuille
 //     est assombri à dessein. Les icônes sont omises : chacune accompagne un texte ou un
 //     contrôle nommé.
-Future<List<String>> _lowContrast(WidgetTester tester) async {
+Future<List<String>> _lowContrast(
+  WidgetTester tester, {
+  double normal = 4.5,
+  double large = 3,
+}) async {
   final view = tester.binding.renderViews.first;
   final layer = view.debugLayer! as OffsetLayer;
   late ByteData pixels;
@@ -191,7 +197,7 @@ Future<List<String>> _lowContrast(WidgetTester tester) async {
     final ratio = (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
     final size = style.fontSize ?? 14;
     final bold = (style.fontWeight ?? FontWeight.normal).value >= 700;
-    final needed = size >= 24 || bold && size >= 18.66 ? 3.0 : 4.5;
+    final needed = size >= 24 || bold && size >= 18.66 ? large : normal;
     checked++;
     if (ratio < needed) found.add('"$text" ${ratio.toStringAsFixed(2)}');
   }
@@ -243,10 +249,19 @@ void main() {
   });
 
   for (final locale in ['en', 'fr']) {
-    for (final brightness in Brightness.values) {
-      testWidgets('guidelines: $locale ${brightness.name}', (tester) async {
+    for (final (brightness, high) in [
+      for (final b in Brightness.values)
+        for (final h in [false, true]) (b, h),
+    ]) {
+      final mode = '${brightness.name}${high ? ' high contrast' : ''}';
+      testWidgets('guidelines: $locale $mode', (tester) async {
         final handle = tester.ensureSemantics();
-        final a = await _start(tester, size: tall, locale: locale);
+        final a = await _start(
+          tester,
+          size: tall,
+          locale: locale,
+          highContrast: high,
+        );
         tester.platformDispatcher.platformBrightnessTestValue = brightness;
         await a.trips.addTrip(openTrip);
         await a.trips.addTrip(planned);
@@ -257,7 +272,14 @@ void main() {
           await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
           await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
           await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-          expect(await _lowContrast(tester), isEmpty);
+          // EN: High contrast is held to WCAG AAA, the ordinary themes to AA.
+          // FR: Le contraste élevé vise WCAG AAA, les thèmes ordinaires AA.
+          expect(
+            high
+                ? await _lowContrast(tester, normal: 7, large: 4.5)
+                : await _lowContrast(tester),
+            isEmpty,
+          );
           // EN: Adjustable controls are not "tap targets", so check them here.
           // FR: Les contrôles réglables ne sont pas des cibles à toucher ; les
           //     vérifier ici.

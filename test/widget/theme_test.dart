@@ -93,4 +93,102 @@ void main() {
       await expectShown(tester, phoneLight: phoneLight, phoneDark: phoneDark);
     }
   });
+
+  bool isHighContrast(WidgetTester tester) {
+    final colors = Theme.of(
+      tester.element(find.byType(TripListScreen, skipOffstage: false)),
+    ).colorScheme;
+    return (colors.surface == const Color(0xFFFFFFFF) &&
+            colors.onSurface == const Color(0xFF000000)) ||
+        (colors.surface == const Color(0xFF000000) &&
+            colors.onSurface == const Color(0xFFFFFFFF));
+  }
+
+  bool isBold(WidgetTester tester) => MediaQuery.boldTextOf(
+        tester.element(find.byType(TripListScreen, skipOffstage: false)),
+      );
+
+  testWidgets('high contrast is off by default and follows the phone',
+      (tester) async {
+    addTearDown(tester.platformDispatcher.clearAllTestValues);
+    await launch(tester);
+    expect(isHighContrast(tester), isFalse);
+    expect(isBold(tester), isFalse);
+    for (final phone in [light, dark]) {
+      tester.platformDispatcher.platformBrightnessTestValue = phone;
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(highContrast: true);
+      await tester.pumpAndSettle();
+      expect(isHighContrast(tester), isTrue, reason: phone.name);
+      expect(isBold(tester), isFalse);
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures();
+      await tester.pumpAndSettle();
+      expect(isHighContrast(tester), isFalse);
+    }
+  });
+
+  testWidgets('the in-app switch applies to both modes and survives a restart',
+      (tester) async {
+    addTearDown(tester.platformDispatcher.clearAllTestValues);
+    await launch(tester);
+    Future<void> toggle() async {
+      tester
+          .state<NavigatorState>(find.byType(Navigator).first)
+          .push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()))
+          .ignore();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('High contrast and bold text'));
+      await tester.pumpAndSettle();
+    }
+
+    await toggle();
+    for (var i = 0; i < 2; i++) {
+      for (final phone in [light, dark]) {
+        expect(await shown(tester, phone), phone);
+        expect(isHighContrast(tester), isTrue);
+        expect(isBold(tester), isTrue);
+      }
+      await launch(tester);
+    }
+    await toggle();
+    expect(isHighContrast(tester), isFalse);
+    expect(isBold(tester), isFalse);
+    await launch(tester);
+    expect(isHighContrast(tester), isFalse);
+  });
+
+  testWidgets('a phone asking for bold text gets it without the switch',
+      (tester) async {
+    addTearDown(tester.platformDispatcher.clearAllTestValues);
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(boldText: true);
+    await launch(tester);
+    expect(isBold(tester), isTrue);
+    expect(isHighContrast(tester), isFalse);
+  });
+
+  testWidgets('high-contrast borders, dividers and slider track are strong',
+      (tester) async {
+    addTearDown(tester.platformDispatcher.clearAllTestValues);
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(highContrast: true);
+    await launch(tester);
+    for (final phone in [light, dark]) {
+      await shown(tester, phone);
+      final colors = Theme.of(
+        tester.element(find.byType(TripListScreen, skipOffstage: false)),
+      ).colorScheme;
+      final back = colors.surface.computeLuminance();
+      final track = Theme.of(
+        tester.element(find.byType(TripListScreen, skipOffstage: false)),
+      ).sliderTheme.inactiveTrackColor!;
+      for (final line in [colors.outline, colors.outlineVariant, track]) {
+        final l = line.computeLuminance();
+        final hi = l > back ? l : back;
+        final lo = l > back ? back : l;
+        expect((hi + 0.05) / (lo + 0.05), greaterThanOrEqualTo(4.5));
+      }
+    }
+  });
 }

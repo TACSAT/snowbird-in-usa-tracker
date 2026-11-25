@@ -60,6 +60,14 @@ class SettingsScreen extends StatelessWidget {
             onChanged: (v) =>
                 context.read<SettingsController>().setThemeMode(v),
           ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(strings.settingsHighContrast),
+            subtitle: Text(strings.settingsHighContrastHelper),
+            value: settings.highContrast,
+            onChanged: (v) =>
+                context.read<SettingsController>().setHighContrast(v),
+          ),
           const Divider(height: 32),
 
           _sectionLabel(context, strings.settingsTextSize),

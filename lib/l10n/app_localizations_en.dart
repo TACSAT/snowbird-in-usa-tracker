@@ -614,4 +614,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recordNotes => 'Notes';
+
+  @override
+  String get settingsHighContrast => 'High contrast and bold text';
+
+  @override
+  String get settingsHighContrastHelper =>
+      'When off, follows your phone\'s contrast and bold text settings where available.';
 }

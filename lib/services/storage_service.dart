@@ -85,6 +85,7 @@ class StorageService {
   static const _kLocaleKey = 'snowbird.settings.locale.v1';
   static const _kThemeModeKey = 'snowbird.settings.themeMode.v1';
   static const _kTextScaleKey = 'snowbird.settings.textScale.v1';
+  static const _kHighContrastKey = 'snowbird.settings.highContrast.v1';
 
   final SharedPreferences _prefs;
 
@@ -273,6 +274,11 @@ class StorageService {
 
   Future<void> setThemeModeName(String name) =>
       _prefs.setString(_kThemeModeKey, name);
+
+  bool get highContrast => _prefs.getBool(_kHighContrastKey) ?? false;
+
+  Future<void> setHighContrast(bool value) =>
+      _prefs.setBool(_kHighContrastKey, value);
 
   double get textScale => _prefs.getDouble(_kTextScaleKey) ?? 1.0;
 

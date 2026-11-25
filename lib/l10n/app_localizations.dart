@@ -1117,6 +1117,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes'**
   String get recordNotes;
+
+  /// No description provided for @settingsHighContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast and bold text'**
+  String get settingsHighContrast;
+
+  /// No description provided for @settingsHighContrastHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, follows your phone\'s contrast and bold text settings where available.'**
+  String get settingsHighContrastHelper;
 }
 
 class _AppLocalizationsDelegate
