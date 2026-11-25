@@ -30,9 +30,9 @@ dependencies:
   #     flutter_timezone fournissent la base IANA et le fuseau courant de
   #     l'appareil pour que « 9 h locale » reste correct malgré les voyages et
   #     les changements d'heure.
-  flutter_local_notifications: ^19.0.0
-  timezone: ^0.10.0
-  flutter_timezone: ^4.1.1
+  flutter_local_notifications: ^23.0.4
+  timezone: ^0.11.2
+  flutter_timezone: ^5.1.1
   # EN: Provider is the state-management layer between the UI and TripRepository.
   #     Lightweight ChangeNotifier approach — no code generation, no magic.
   # FR: Provider est la couche de gestion d'état entre l'interface et TripRepository.

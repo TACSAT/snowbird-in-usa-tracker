@@ -100,7 +100,7 @@ class NotificationService implements AlertScheduler {
           requestSoundPermission: false,
         ),
       );
-      await _plugin.initialize(initSettings);
+      await _plugin.initialize(settings: initSettings);
       _initialized = true;
     } catch (_) {
       _initialized = false;
@@ -180,7 +180,9 @@ class NotificationService implements AlertScheduler {
   Future<void> _useDeviceZone() async {
     try {
       tz.setLocalLocation(
-        tz.getLocation(await FlutterTimezone.getLocalTimezone()),
+        tz.getLocation(
+          (await FlutterTimezone.getLocalTimezone()).identifier,
+        ),
       );
     } catch (_) {
       tz.setLocalLocation(tz.UTC);
@@ -249,11 +251,11 @@ class NotificationService implements AlertScheduler {
       // FR: Identifiant 32 bits stable et non négatif dérivé de l'UUID de
       //     l'alerte pour que la même alerte occupe toujours le même
       //     emplacement de notification OS.
-      entry.alert.id.hashCode & 0x7fffffff,
-      title,
-      body,
-      tz.TZDateTime.from(entry.fireMoment, tz.local),
-      details,
+      id: entry.alert.id.hashCode & 0x7fffffff,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(entry.fireMoment, tz.local),
+      notificationDetails: details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
   }

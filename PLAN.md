@@ -469,5 +469,5 @@ Where this differs from a tick above, this section governs.
 - **FR-20 / FR-21:** every screen is tested at large text in both languages. The optional
   high-contrast / bold mode is **not built**.
 - **Open:** device testing, French review, feedback and donation links, icon, signing key,
-  privacy policy publication, dates older than ten years in the trip form, and dependency
-  upgrades (`flutter_local_notifications` especially).
+  privacy policy publication, dates older than ten years in the trip form, and the
+  remaining dependency upgrades.

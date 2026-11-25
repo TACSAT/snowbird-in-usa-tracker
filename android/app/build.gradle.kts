@@ -20,7 +20,11 @@ val hasReleaseKey = keyProperties.getProperty("storeFile") != null
 
 android {
     namespace = "ca.veidimadur.snowbird_in_usa_tracker"
-    compileSdk = flutter.compileSdkVersion
+    // EN: flutter_local_notifications 23 requires compiling against API 37, newer than
+    //     Flutter's default. This does not change targetSdk, hence runtime behaviour.
+    // FR: flutter_local_notifications 23 exige de compiler avec l'API 37, plus récente
+    //     que celle de Flutter. Cela ne change pas targetSdk, donc ni le comportement.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
