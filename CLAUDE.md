@@ -102,6 +102,12 @@ mkdir -p ~/development/builds/snowbird-in-usa-tracker
 ln -s ~/development/builds/snowbird-in-usa-tracker build
 ```
 
+**Never restore `ios/Podfile.lock` or the Xcode project from git after a build**: a lock file
+out of step with the installed Pods stops Xcode, though Flutter repairs it silently. Commit
+what Flutter changes, and run `tools/check_ios_project.sh`. The minimum iOS version is **15.0**.
+If Xcode offers "Update to recommended settings", skip the Pods project (`pod install`
+regenerates it) and decline the deployment-target change.
+
 Any change to day-count logic needs a test in `test/logic/day_counter_test.dart`
 first — inclusive-date edge cases (arrival day counts, departure day counts,
 overlapping windows) are exactly where this app can silently lie to its users.

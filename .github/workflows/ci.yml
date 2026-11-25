@@ -66,3 +66,44 @@ jobs:
       - run: flutter build apk --release
       - name: The app has no network permission
         run: tools/check_apk_permissions.sh build/app/outputs/flutter-apk/app-release.apk
+
+  # EN: CI used to build Android only, so a broken iOS project went unnoticed. Built twice:
+  #     with Flutter, then directly as Xcode does, because Flutter repairs some faults that
+  #     stop Xcode. Unsigned simulator builds: no certificate is needed.
+  # FR: La CI ne construisait qu'Android, donc un projet iOS cassé passait inaperçu. Deux
+  #     builds : avec Flutter, puis directement comme Xcode, car Flutter répare des défauts
+  #     qui arrêtent Xcode. Builds simulateur non signés : aucun certificat requis.
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      # actions/checkout v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - name: The committed iOS project is consistent
+        run: tools/check_ios_project.sh
+      - name: Install Flutter
+        run: |
+          git init -q "$RUNNER_TEMP/flutter"
+          cd "$RUNNER_TEMP/flutter"
+          git remote add origin https://github.com/flutter/flutter.git
+          git fetch -q --depth 1 origin "$FLUTTER_COMMIT"
+          git checkout -q FETCH_HEAD
+          git tag 3.47.2
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: xcodebuild -version && pod --version
+      - run: flutter config --no-analytics
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build ios --simulator --debug
+      - name: The build left the Xcode project unchanged
+        run: git diff --exit-code -- ios/Runner.xcodeproj
+      - name: Build as Xcode does
+        run: >-
+          xcodebuild -quiet -workspace ios/Runner.xcworkspace -scheme Runner
+          -configuration Debug -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath "$RUNNER_TEMP/dd" build
+      - name: The app still installs on the minimum iOS version
+        run: |
+          test "$(plutil -extract MinimumOSVersion raw \
+            build/ios/iphonesimulator/Runner.app/Info.plist)" = "15.0"
