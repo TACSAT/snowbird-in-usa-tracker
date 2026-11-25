@@ -2,6 +2,6 @@
 # Oblige à choisir un modèle plutôt qu'à ouvrir un ticket vide.
 blank_issues_enabled: false
 contact_links:
-  - name: "Author's website / Site de l'auteur (Veiðimaður)"
-    url: "https://veidimadur.ca"
-    about: "Learn about the developer or get in touch. / En savoir plus sur le développeur ou le contacter."
+  - name: "teagarden.net"
+    url: "https://teagarden.net"
+    about: "Created and maintained by teagarden.net. / Créé et maintenu par teagarden.net."

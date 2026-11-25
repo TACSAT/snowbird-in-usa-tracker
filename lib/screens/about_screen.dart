@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/config/app_links.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
@@ -29,7 +30,7 @@ class AboutScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.aboutTitle)),
+      appBar: AppBar(title: Text(strings.aboutTitle(AppIdentity.name))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -38,7 +39,7 @@ class AboutScreen extends StatelessWidget {
               children: [
                 const Icon(Icons.ac_unit_rounded, size: 56),
                 const SizedBox(height: 8),
-                Text(strings.appTitle, style: theme.textTheme.headlineSmall),
+                Text(AppIdentity.name, style: theme.textTheme.headlineSmall),
                 // EN: Version + build via package_info_plus — read locally from the
                 //     installed bundle, no network.
                 // FR: Version + build via package_info_plus — lu localement depuis le
@@ -67,40 +68,71 @@ class AboutScreen extends StatelessWidget {
             style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 4),
-          Text(strings.aboutPrivacyBody, style: theme.textTheme.bodyMedium),
+          Text(
+            strings.aboutPrivacyBody(AppIdentity.name),
+            style: theme.textTheme.bodyMedium,
+          ),
           const SizedBox(height: 16),
 
           // EN: The same not-advice line the app shows on first launch.
           // FR: La même mention « pas un conseil » qu'au premier lancement.
           Text(
-            strings.appDisclaimerBody,
+            strings.appDisclaimerBody(AppIdentity.name),
             style: theme.textTheme.bodySmall?.copyWith(
               fontStyle: FontStyle.italic,
             ),
           ),
           const Divider(height: 32),
 
-          OutlinedButton.icon(
-            icon: const Icon(Icons.feedback_outlined),
-            label: Text(strings.feedbackButton),
-            onPressed: () => _launch(context, AppLinks.feedbackUrl),
+          SectionHeading(
+            strings.aboutHelpTitle,
+            style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.favorite_outline),
-            label: Text(strings.donateButton),
-            onPressed: () => _launch(context, AppLinks.donateUrl),
-          ),
-          const SizedBox(height: 8),
+          for (final (icon, label, page) in [
+            (Icons.bug_report_outlined, strings.aboutReport, AppPage.report),
+            (Icons.lightbulb_outline, strings.aboutRequest, AppPage.request),
+            (Icons.fact_check_outlined, strings.aboutStatus, AppPage.status),
+            (Icons.map_outlined, strings.aboutRoadmap, AppPage.roadmap),
+            (
+              Icons.favorite_outline,
+              strings.aboutContribute,
+              AppPage.contribute,
+            ),
+            (
+              Icons.privacy_tip_outlined,
+              strings.aboutPrivacyPolicy,
+              AppPage.privacy,
+            ),
+          ]) ...[
+            OutlinedButton.icon(
+              icon: Icon(icon),
+              label: Text(label, textAlign: TextAlign.center),
+              onPressed: () => _launch(
+                context,
+                AppLinks.page(
+                  page,
+                  Localizations.localeOf(context).languageCode,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           OutlinedButton.icon(
             icon: const Icon(Icons.code_rounded),
             label: Text(strings.aboutSourceButton),
-            onPressed: () => _launch(context, AppLinks.sourceUrl),
+            onPressed: () => _launch(context, Uri.parse(AppLinks.sourceUrl)),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            strings.aboutContributeNote(AppIdentity.maker),
+            style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 24),
           Center(
             child: Text(
-              strings.aboutAuthor,
+              strings.aboutAuthor(AppIdentity.maker),
+              textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall,
             ),
           ),
@@ -113,13 +145,13 @@ class AboutScreen extends StatelessWidget {
   //     widget may unmount) and show a neutral error if the launch fails.
   // FR: Ouvrir [url] dans le navigateur de l'OS. Capturer le messenger avant l'await
   //     (le widget peut être démonté) et afficher une erreur neutre en cas d'échec.
-  Future<void> _launch(BuildContext context, String url) async {
+  Future<void> _launch(BuildContext context, Uri url) async {
     final messenger = ScaffoldMessenger.of(context);
     final strings = AppLocalizations.of(context);
     var ok = false;
     try {
       ok = await launchUrl(
-        Uri.parse(url),
+        url,
         mode: LaunchMode.externalApplication,
       );
     } catch (_) {

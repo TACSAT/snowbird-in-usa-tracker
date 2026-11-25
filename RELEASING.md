@@ -1,10 +1,14 @@
-# Releasing SnowBird
+# Releasing SENALOVIRA (working name)
 
-Author: Veiðimaður - veidimadur.ca
+Created and maintained by teagarden.net
 
 ## Before the first release (owner)
 
-- [ ] Set `feedbackUrl` and `donateUrl` in `lib/config/app_links.dart` (both are placeholders).
+- [ ] teagarden.net app pages live: `tools/check_links.sh` passes.
+- [ ] Final name chosen, and checked for trademark and store conflicts. To change it, edit
+      `lib/config/app_identity.dart` and the two native labels.
+- [ ] Confirm with Apple's current rules that an external contribution link is allowed in
+      the storefronts you ship to; hide the button on iOS if it is not.
 - [ ] Supply an app icon (1024 x 1024 px) for iOS and Android.
 - [ ] Review the French wording.
 - [ ] Review `PRIVACY.md`, then publish it at a public URL for both store listings.
@@ -19,7 +23,7 @@ Run this yourself, outside the repository. `keytool` prompts for the passwords.
 
 ```bash
 mkdir -p ~/keys
-keytool -genkeypair -v -keystore ~/keys/snowbird-upload.jks \
+keytool -genkeypair -v -keystore ~/keys/app-upload.jks \
   -alias upload -keyalg RSA -keysize 4096 -validity 10000
 ```
 
@@ -27,7 +31,7 @@ Back the file up in two places, and keep its password in a password manager. The
 `android/key.properties` (gitignored, never commit it):
 
 ```properties
-storeFile=/absolute/path/to/snowbird-upload.jks
+storeFile=/absolute/path/to/app-upload.jks
 storePassword=...
 keyAlias=upload
 keyPassword=...

@@ -1,10 +1,10 @@
-# SnowBird privacy policy
+# SENALOVIRA privacy policy
 
 > **DRAFT.** Review before publishing. Effective date: _to be set_.
 
-Author: Veiðimaður - veidimadur.ca
+Created and maintained by teagarden.net
 
-**SnowBird collects nothing. Everything you enter stays on your device.**
+**SENALOVIRA collects nothing. Everything you enter stays on your device.**
 
 - **What the app stores:** your trips, the details and notes you add, your alerts and your
   settings. If saved data cannot be read, a copy of it is also kept on the device so that
@@ -19,8 +19,10 @@ Author: Veiðimaður - veidimadur.ca
   appear on your lock screen.
 - **Permissions:** notifications, if you create an alert. On Android, also restoring alerts
   after a restart, and vibration. The app does not use your location.
-- **Links:** the feedback, support and source buttons open your browser. Those sites have
-  their own privacy policies.
+- **Links:** the buttons on the About screen open teagarden.net, or the source code on
+  GitHub, in your browser, and only when you tap them. The app passes the language it is
+  using and nothing else. What you send or pay on those sites is covered by their own
+  privacy policies.
 - **Deleting your data:** delete trips and alerts in the app, or uninstall it to remove
   everything from the device. Copies may remain in your phone backups and in anything you
   shared.
@@ -29,13 +31,13 @@ Author: Veiðimaður - veidimadur.ca
 
 ---
 
-# Politique de confidentialité de SnowBird
+# Politique de confidentialité de SENALOVIRA
 
 > **ÉBAUCHE.** À réviser avant publication. Date d'entrée en vigueur : _à déterminer_.
 
-Auteur : Veiðimaður - veidimadur.ca
+Créé et maintenu par teagarden.net
 
-**SnowBird ne recueille rien. Tout ce que vous saisissez reste sur votre appareil.**
+**SENALOVIRA ne recueille rien. Tout ce que vous saisissez reste sur votre appareil.**
 
 - **Ce que l'appli conserve :** vos séjours, les détails et notes que vous ajoutez, vos
   alertes et vos réglages. Si des données enregistrées sont illisibles, une copie en est
@@ -52,8 +54,10 @@ Auteur : Veiðimaður - veidimadur.ca
 - **Permissions :** les notifications, si vous créez une alerte. Sur Android, aussi le
   rétablissement des alertes après un redémarrage et la vibration. L'appli n'utilise pas
   votre position.
-- **Liens :** les boutons de commentaires, de soutien et de code source ouvrent votre
-  navigateur. Ces sites ont leurs propres politiques de confidentialité.
+- **Liens :** les boutons de l'écran « À propos » ouvrent teagarden.net, ou le code source
+  sur GitHub, dans votre navigateur, et seulement quand vous les touchez. L'appli transmet
+  la langue utilisée et rien d'autre. Ce que vous envoyez ou payez sur ces sites relève de
+  leurs propres politiques de confidentialité.
 - **Supprimer vos données :** supprimez séjours et alertes dans l'appli, ou désinstallez-la
   pour tout retirer de l'appareil. Des copies peuvent subsister dans les sauvegardes de
   votre téléphone et dans ce que vous avez partagé.

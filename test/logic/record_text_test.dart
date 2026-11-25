@@ -99,7 +99,7 @@ void main() {
       'Departure date: December 12, 2026',
       'Days: 3',
       '',
-      'Kept with SnowBird — Veiðimaður · veidimadur.ca',
+      'Kept with SENALOVIRA · teagarden.net',
     ]);
   });
 

@@ -88,7 +88,7 @@ void main() {
     test('carries the not-advice line and the neutral summary numbers', () {
       final csv = PresenceRecord.build(trips: scenario(), asOf: asOf).toCsv();
       expect(csv, contains('not advice'));
-      expect(csv, contains('SnowBird — US Presence Record'));
+      expect(csv, contains('SENALOVIRA — US Presence Record'));
       // Summary values present.
       expect(csv, contains('41'));
       expect(csv, contains('53'));

@@ -1,4 +1,6 @@
-# SnowBird-In-USA-Tracker
+# SENALOVIRA
+
+_Working name, formerly SnowBird. / Nom provisoire, auparavant SnowBird._
 
 A privacy-first, **on-device** record-keeper and trip planner that helps visitors
 keep track of the days they have spent — and plan to spend — in the United States.
@@ -31,9 +33,10 @@ fully on-device and uses local storage only.
 
 ## Feedback, bugs, and donations
 
-- **Bugs and feature requests:** please open an issue in this repository's Issues tab.
-- **Support the developer:** this app is free. If it helps you and you would like to
-  say thanks, a donation link is available in the app's About screen.
+- **Problems, requests, status, plans and voluntary contributions** are handled at
+  [teagarden.net](https://teagarden.net), from the app's About screen. Those pages are
+  being prepared; until they open, use this repository's Issues tab.
+- Every feature is free. Contributions are optional and unlock nothing.
 
 ## Contributing
 
@@ -43,7 +46,7 @@ any contribution.
 
 ## Author
 
-Created and maintained by **Veiðimaður** — [veidimadur.ca](https://veidimadur.ca).
+Created and maintained by [teagarden.net](https://teagarden.net).
 
 ## Privacy
 
@@ -55,7 +58,7 @@ Released under the MIT License — see [`LICENSE`](LICENSE).
 
 ---
 
-# SnowBird-In-USA-Tracker (Français)
+# SENALOVIRA (Français)
 
 Un outil **local** et respectueux de la vie privée pour enregistrer et planifier les
 jours passés aux États-Unis. Aucun compte, aucun nuage, aucun pistage : tout ce que
@@ -92,15 +95,15 @@ fonctionne entièrement sur l'appareil et n'utilise que le stockage local.
 
 ## Commentaires, bogues et dons
 
-- **Bogues et demandes de fonctionnalités :** veuillez ouvrir un ticket dans l'onglet
-  Issues de ce dépôt.
-- **Soutenir le développeur :** cette application est gratuite. Si elle vous est utile
-  et que vous souhaitez dire merci, un lien de don est disponible dans l'écran « À
-  propos » de l'application.
+- **Problèmes, demandes, suivi, projets et contributions volontaires** sont traités sur
+  [teagarden.net](https://teagarden.net), depuis l'écran « À propos » de l'appli. Ces pages
+  sont en préparation; d'ici là, utilisez l'onglet Issues de ce dépôt.
+- Toutes les fonctionnalités sont gratuites. Les contributions sont facultatives et ne
+  débloquent rien.
 
 ## Auteur
 
-Créé et maintenu par **Veiðimaður** — [veidimadur.ca](https://veidimadur.ca).
+Créé et maintenu par [teagarden.net](https://teagarden.net).
 
 ## Confidentialité
 

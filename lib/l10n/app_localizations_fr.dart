@@ -9,14 +9,12 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appTitle => 'SnowBird';
-
-  @override
   String get appDisclaimerTitle => 'Outil de suivi personnel — pas un conseil';
 
   @override
-  String get appDisclaimerBody =>
-      'SnowBird compte vos jours aux États-Unis et vous permet d\'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n\'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  String appDisclaimerBody(String appName) {
+    return '$appName compte vos jours aux États-Unis et vous permet d\'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n\'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  }
 
   @override
   String get appDisclaimerAcknowledge => 'Je comprends';
@@ -25,8 +23,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get backupReminderTitle => 'Garder vos données en sécurité';
 
   @override
-  String get backupReminderBody =>
-      'SnowBird conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.';
+  String backupReminderBody(String appName) {
+    return '$appName conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.';
+  }
 
   @override
   String get backupReminderAcknowledge => 'Compris';
@@ -89,16 +88,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'La date de départ doit être égale ou postérieure à l\'arrivée.';
 
   @override
-  String get aboutTitle => 'À propos de SnowBird';
+  String aboutTitle(String appName) {
+    return 'À propos de $appName';
+  }
 
   @override
-  String get aboutAuthor => 'Développé par Veiðimaður — veidimadur.ca';
-
-  @override
-  String get feedbackButton => 'Envoyer des commentaires';
-
-  @override
-  String get donateButton => 'Soutenir le développeur';
+  String aboutAuthor(String maker) {
+    return 'Créé et maintenu par $maker';
+  }
 
   @override
   String get windowLast365 => '365 derniers jours';
@@ -119,8 +116,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get alertsTooltip => 'Mes alertes';
 
   @override
-  String get alertsEmpty =>
-      'Aucune alerte.\nSnowBird ne fixe aucune limite de lui-même — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.';
+  String alertsEmpty(String appName) {
+    return 'Aucune alerte.\n$appName ne fixe aucune limite — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.';
+  }
 
   @override
   String get addAlert => 'Ajouter une alerte';
@@ -183,8 +181,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get alertPermissionDenied =>
-      'Les notifications sont désactivées pour SnowBird dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.';
+  String alertPermissionDenied(String appName) {
+    return 'Les notifications sont désactivées pour $appName dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.';
+  }
 
   @override
   String get alertNotificationTitle => 'Votre cible de jours';
@@ -313,7 +312,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get recordColDetails => 'Séjour / détails';
 
   @override
-  String get recordAuthor => 'Tenue avec SnowBird — Veiðimaður · veidimadur.ca';
+  String recordAuthor(String appName, String maker) {
+    return 'Tenue avec $appName · $maker';
+  }
 
   @override
   String get menuSettings => 'Réglages';
@@ -363,8 +364,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aboutPrivacyTitle => 'Votre vie privée';
 
   @override
-  String get aboutPrivacyBody =>
-      'SnowBird n\'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n\'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.';
+  String aboutPrivacyBody(String appName) {
+    return '$appName n\'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n\'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.';
+  }
 
   @override
   String get aboutSourceButton => 'Voir le code source';
@@ -376,15 +378,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get referenceTitle => 'Règles courantes de comptage';
 
   @override
-  String get referenceIntro =>
-      'Voici des nombres que les gens suivent souvent. SnowBird n\'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  String referenceIntro(String appName) {
+    return 'Voici des nombres que les gens suivent souvent. $appName n\'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  }
 
   @override
   String get referenceSptTitle => 'Test de présence substantielle (É.-U.)';
 
   @override
-  String get referenceSptBody =>
-      'Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l\'an dernier, plus un sixième de l\'année d\'avant. SnowBird affiche cette valeur comme un nombre neutre.';
+  String referenceSptBody(String appName) {
+    return 'Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l\'an dernier, plus un sixième de l\'année d\'avant. $appName affiche cette valeur comme un nombre neutre.';
+  }
 
   @override
   String get referenceHealthTitle => 'Couverture santé provinciale';
@@ -405,8 +409,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Il n\'existe aucune limite cumulative unique';
 
   @override
-  String get referenceMythBody =>
-      'Il n\'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l\'admission par entrée, la discrétion de l\'agent et des tests fiscaux distincts. C\'est pourquoi SnowBird compte et ne juge jamais.';
+  String referenceMythBody(String appName) {
+    return 'Il n\'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l\'admission par entrée, la discrétion de l\'agent et des tests fiscaux distincts. C\'est pourquoi $appName compte et ne juge jamais.';
+  }
 
   @override
   String get sptDisclaimer =>
@@ -481,8 +486,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Une partie de vos données enregistrées n\'a pas pu être lue; elle n\'est donc ni affichée ni comptée. Rien n\'a été effacé : l\'original est conservé sur cet appareil, même après vos modifications.';
 
   @override
-  String get storageNewerBody =>
-      'Vos données ont été enregistrées par une version plus récente de SnowBird. Veuillez mettre l\'appli à jour. D\'ici là, les changements à ces données ne peuvent pas être enregistrés, afin de ne rien écraser.';
+  String storageNewerBody(String appName) {
+    return 'Vos données ont été enregistrées par une version plus récente de $appName. Veuillez mettre l\'appli à jour. D\'ici là, les changements à ces données ne peuvent pas être enregistrés, afin de ne rien écraser.';
+  }
 
   @override
   String get alertInUsNow =>
@@ -629,4 +635,30 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settingsHighContrastHelper =>
       'Si désactivé, suit les réglages de contraste et de texte gras de votre téléphone, s\'ils existent.';
+
+  @override
+  String get aboutHelpTitle => 'Aide et planification';
+
+  @override
+  String get aboutReport => 'Signaler un problème';
+
+  @override
+  String get aboutRequest => 'Demander une fonctionnalité';
+
+  @override
+  String get aboutStatus => 'Suivre signalements et demandes';
+
+  @override
+  String get aboutRoadmap => 'Ce qui est prévu';
+
+  @override
+  String get aboutContribute => 'Faire une contribution volontaire';
+
+  @override
+  String aboutContributeNote(String maker) {
+    return 'Les contributions sont facultatives et ne débloquent rien : toutes les fonctionnalités sont gratuites. Ces boutons ouvrent $maker, ou GitHub pour le code source, dans votre navigateur.';
+  }
+
+  @override
+  String get aboutPrivacyPolicy => 'Politique de confidentialité';
 }

@@ -35,6 +35,7 @@
 //     traduction. La fiche PDF/image destinée à l'humain, elle, est localisée par
 //     RecordExporter.
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
@@ -122,7 +123,7 @@ class PresenceRecord {
   //     puis les lignes de résumé neutres.
   String toCsv() {
     final rows = <List<String>>[
-      ['SnowBird — US Presence Record'],
+      ['${AppIdentity.name} — US Presence Record'],
       [
         'This is a personal record, not advice. '
             'Verify your situation with a qualified professional.',

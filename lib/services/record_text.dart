@@ -9,6 +9,7 @@
 
 import 'package:intl/intl.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
@@ -83,7 +84,7 @@ String buildRecordText(
       if (trip.notes != null) line(strings.recordNotes, trip.notes!),
     ]);
   }
-  lines.addAll(['', strings.recordAuthor]);
+  lines.addAll(['', strings.recordAuthor(AppIdentity.name, AppIdentity.maker)]);
 
   // EN: CRLF throughout, including inside notes: older Windows readers need it.
   // FR: CRLF partout, y compris dans les notes : d'anciens lecteurs Windows l'exigent.

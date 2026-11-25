@@ -1,4 +1,4 @@
-# CLAUDE.md — SnowBird-In-USA-Tracker
+# CLAUDE.md — SENALOVIRA (working name; folder SnowBird-In-USA-Tracker)
 
 Privacy-first, **on-device** Flutter app: a record-keeper and planner for US-days
 (snowbirds logging past trips, sketching planned ones, seeing day counts over any
@@ -24,7 +24,7 @@ the app never judges, but it computes any published formula the user could do by
    trip is "safe."
 3. **No accounts, no cloud, no data collection, no background location.** All data
    stays on-device; no network calls in the data path. `uuid` exists precisely so
-   IDs are generated locally. This is also the brand: SnowBird is the first of a
+   IDs are generated locally. This is also the brand: this app is the first of a
    planned family of **secure-by-design** apps (see PLAN.md → Strategic context),
    so this invariant outranks any feature that would bend it.
 4. **Data durability rides the OS phone backup — the app ships no bespoke backup
@@ -47,8 +47,14 @@ the app never judges, but it computes any published formula the user could do by
   //     ne gonflent jamais le total.
   ```
   Applies to all Dart/code files. Existing files follow it — match them.
-- **Author attribution in any documentation is exactly `Veiðimaður - veidimadur.ca`**
-  (README, About screen, LICENSE, store listings).
+- **Creator and maintainer is `teagarden.net`** (since 2026-11-25) in the README, About
+  screen, LICENSE, exports and store listings; no personal name.
+- **The app name is provisional: `SENALOVIRA`.** It lives in `lib/config/app_identity.dart`
+  and the two native labels, never in ARB text (use `{appName}`). Storage keys, bundle IDs,
+  package, folder and repository names keep `snowbird` and must not follow the name.
+- **Links never name the app** (`teagarden.net/apps/days/...`): installed apps cannot
+  change them. Site requirements live in the workspace repo,
+  `Projects/Web-Sites/teagarden.net/REQUIREMENTS-app-hub.md`.
 - User-facing strings go through l10n: add to `lib/l10n/app_en.arb` **and**
   `app_fr.arb`, never hard-code them in widgets.
 

@@ -9,14 +9,12 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'SnowBird';
-
-  @override
   String get appDisclaimerTitle => 'A personal tracking tool — not advice';
 
   @override
-  String get appDisclaimerBody =>
-      'SnowBird counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is \'safe\'. Verify your own situation with a qualified professional.';
+  String appDisclaimerBody(String appName) {
+    return '$appName counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is \'safe\'. Verify your own situation with a qualified professional.';
+  }
 
   @override
   String get appDisclaimerAcknowledge => 'I understand';
@@ -25,8 +23,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupReminderTitle => 'Keeping your data safe';
 
   @override
-  String get backupReminderBody =>
-      'SnowBird keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.';
+  String backupReminderBody(String appName) {
+    return '$appName keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.';
+  }
 
   @override
   String get backupReminderAcknowledge => 'Got it';
@@ -86,16 +85,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorDepartureBefore => 'Departure must be on or after arrival.';
 
   @override
-  String get aboutTitle => 'About SnowBird';
+  String aboutTitle(String appName) {
+    return 'About $appName';
+  }
 
   @override
-  String get aboutAuthor => 'Built by Veiðimaður — veidimadur.ca';
-
-  @override
-  String get feedbackButton => 'Send feedback';
-
-  @override
-  String get donateButton => 'Support the developer';
+  String aboutAuthor(String maker) {
+    return 'Created and maintained by $maker';
+  }
 
   @override
   String get windowLast365 => 'Last 365 days';
@@ -116,8 +113,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alertsTooltip => 'My alerts';
 
   @override
-  String get alertsEmpty =>
-      'No alerts.\nSnowBird sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.';
+  String alertsEmpty(String appName) {
+    return 'No alerts.\n$appName sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.';
+  }
 
   @override
   String get addAlert => 'Add alert';
@@ -179,8 +177,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get alertPermissionDenied =>
-      'Notifications are turned off for SnowBird in your device settings, so this alert cannot be delivered.';
+  String alertPermissionDenied(String appName) {
+    return 'Notifications are turned off for $appName in your device settings, so this alert cannot be delivered.';
+  }
 
   @override
   String get alertNotificationTitle => 'Your day-count target';
@@ -309,7 +308,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordColDetails => 'Trip / details';
 
   @override
-  String get recordAuthor => 'Kept with SnowBird — Veiðimaður · veidimadur.ca';
+  String recordAuthor(String appName, String maker) {
+    return 'Kept with $appName · $maker';
+  }
 
   @override
   String get menuSettings => 'Settings';
@@ -359,8 +360,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutPrivacyTitle => 'Your privacy';
 
   @override
-  String get aboutPrivacyBody =>
-      'SnowBird has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.';
+  String aboutPrivacyBody(String appName) {
+    return '$appName has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.';
+  }
 
   @override
   String get aboutSourceButton => 'View the source code';
@@ -372,15 +374,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get referenceTitle => 'Common day-count rules';
 
   @override
-  String get referenceIntro =>
-      'These are numbers people commonly track. SnowBird sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.';
+  String referenceIntro(String appName) {
+    return 'These are numbers people commonly track. $appName sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.';
+  }
 
   @override
   String get referenceSptTitle => 'US Substantial Presence Test';
 
   @override
-  String get referenceSptBody =>
-      'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. SnowBird shows this figure as a neutral number.';
+  String referenceSptBody(String appName) {
+    return 'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. $appName shows this figure as a neutral number.';
+  }
 
   @override
   String get referenceHealthTitle => 'Provincial health coverage';
@@ -400,8 +404,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get referenceMythTitle => 'There is no single cumulative limit';
 
   @override
-  String get referenceMythBody =>
-      'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why SnowBird counts and never judges.';
+  String referenceMythBody(String appName) {
+    return 'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why $appName counts and never judges.';
+  }
 
   @override
   String get sptDisclaimer => 'A neutral figure, not advice — tap for context.';
@@ -474,8 +479,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Part of your saved data could not be read, so it is not shown or counted. Nothing has been erased: the original is kept on this device, even after you make changes.';
 
   @override
-  String get storageNewerBody =>
-      'Your data was saved by a newer version of SnowBird. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.';
+  String storageNewerBody(String appName) {
+    return 'Your data was saved by a newer version of $appName. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.';
+  }
 
   @override
   String get alertInUsNow =>
@@ -621,4 +627,30 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsHighContrastHelper =>
       'When off, follows your phone\'s contrast and bold text settings where available.';
+
+  @override
+  String get aboutHelpTitle => 'Help and planning';
+
+  @override
+  String get aboutReport => 'Report a problem';
+
+  @override
+  String get aboutRequest => 'Request a feature';
+
+  @override
+  String get aboutStatus => 'Track reports and requests';
+
+  @override
+  String get aboutRoadmap => 'What is planned';
+
+  @override
+  String get aboutContribute => 'Make a voluntary contribution';
+
+  @override
+  String aboutContributeNote(String maker) {
+    return 'Contributions are optional and unlock nothing: every feature is free. These buttons open $maker, or GitHub for the source code, in your browser.';
+  }
+
+  @override
+  String get aboutPrivacyPolicy => 'Privacy policy';
 }

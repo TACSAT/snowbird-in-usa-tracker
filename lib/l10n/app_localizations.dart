@@ -98,12 +98,6 @@ abstract class AppLocalizations {
     Locale('fr')
   ];
 
-  /// The application name shown in the OS task switcher and title bar.
-  ///
-  /// In en, this message translates to:
-  /// **'SnowBird'**
-  String get appTitle;
-
   /// Title of the first-launch disclaimer dialog.
   ///
   /// In en, this message translates to:
@@ -113,8 +107,8 @@ abstract class AppLocalizations {
   /// Body of the first-launch disclaimer dialog.
   ///
   /// In en, this message translates to:
-  /// **'SnowBird counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is \'safe\'. Verify your own situation with a qualified professional.'**
-  String get appDisclaimerBody;
+  /// **'{appName} counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is \'safe\'. Verify your own situation with a qualified professional.'**
+  String appDisclaimerBody(String appName);
 
   /// Button label to dismiss the disclaimer dialog.
   ///
@@ -131,8 +125,8 @@ abstract class AppLocalizations {
   /// Body of the one-time backup reminder. Shown once at setup, never repeated.
   ///
   /// In en, this message translates to:
-  /// **'SnowBird keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.'**
-  String get backupReminderBody;
+  /// **'{appName} keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.'**
+  String backupReminderBody(String appName);
 
   /// Button label to dismiss the backup reminder.
   ///
@@ -233,26 +227,14 @@ abstract class AppLocalizations {
   /// About screen title.
   ///
   /// In en, this message translates to:
-  /// **'About SnowBird'**
-  String get aboutTitle;
+  /// **'About {appName}'**
+  String aboutTitle(String appName);
 
   /// Author credit line on the About screen.
   ///
   /// In en, this message translates to:
-  /// **'Built by Veiðimaður — veidimadur.ca'**
-  String get aboutAuthor;
-
-  /// Button that opens the feedback link.
-  ///
-  /// In en, this message translates to:
-  /// **'Send feedback'**
-  String get feedbackButton;
-
-  /// Button that opens the donation link.
-  ///
-  /// In en, this message translates to:
-  /// **'Support the developer'**
-  String get donateButton;
+  /// **'Created and maintained by {maker}'**
+  String aboutAuthor(String maker);
 
   /// Day-count window label for rolling 365 days.
   ///
@@ -293,8 +275,8 @@ abstract class AppLocalizations {
   /// Empty state for the alerts screen; restates the zero-defaults positioning.
   ///
   /// In en, this message translates to:
-  /// **'No alerts.\nSnowBird sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.'**
-  String get alertsEmpty;
+  /// **'No alerts.\n{appName} sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.'**
+  String alertsEmpty(String appName);
 
   /// FAB tooltip and screen title for creating an alert.
   ///
@@ -401,8 +383,8 @@ abstract class AppLocalizations {
   /// Shown when the OS notification permission is refused.
   ///
   /// In en, this message translates to:
-  /// **'Notifications are turned off for SnowBird in your device settings, so this alert cannot be delivered.'**
-  String get alertPermissionDenied;
+  /// **'Notifications are turned off for {appName} in your device settings, so this alert cannot be delivered.'**
+  String alertPermissionDenied(String appName);
 
   /// Default notification title when the alert has no user label. Neutral — the target is the user's.
   ///
@@ -629,8 +611,8 @@ abstract class AppLocalizations {
   /// Footer credit line on the record.
   ///
   /// In en, this message translates to:
-  /// **'Kept with SnowBird — Veiðimaður · veidimadur.ca'**
-  String get recordAuthor;
+  /// **'Kept with {appName} · {maker}'**
+  String recordAuthor(String appName, String maker);
 
   /// Overflow menu item opening Settings.
   ///
@@ -725,8 +707,8 @@ abstract class AppLocalizations {
   /// About screen: privacy statement.
   ///
   /// In en, this message translates to:
-  /// **'SnowBird has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.'**
-  String get aboutPrivacyBody;
+  /// **'{appName} has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.'**
+  String aboutPrivacyBody(String appName);
 
   /// Button opening the public source repository.
   ///
@@ -749,8 +731,8 @@ abstract class AppLocalizations {
   /// Reference screen intro; restates the no-defaults, not-advice stance.
   ///
   /// In en, this message translates to:
-  /// **'These are numbers people commonly track. SnowBird sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.'**
-  String get referenceIntro;
+  /// **'These are numbers people commonly track. {appName} sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.'**
+  String referenceIntro(String appName);
 
   /// Reference item heading: IRS SPT.
   ///
@@ -761,8 +743,8 @@ abstract class AppLocalizations {
   /// Reference item: neutral SPT description.
   ///
   /// In en, this message translates to:
-  /// **'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. SnowBird shows this figure as a neutral number.'**
-  String get referenceSptBody;
+  /// **'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. {appName} shows this figure as a neutral number.'**
+  String referenceSptBody(String appName);
 
   /// Reference item heading: provincial health.
   ///
@@ -797,8 +779,8 @@ abstract class AppLocalizations {
   /// Reference item: why the app never renders a verdict.
   ///
   /// In en, this message translates to:
-  /// **'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why SnowBird counts and never judges.'**
-  String get referenceMythBody;
+  /// **'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why {appName} counts and never judges.'**
+  String referenceMythBody(String appName);
 
   /// Required not-advice note shown next to the on-screen SPT figure (FR-7/FR-14).
   ///
@@ -917,8 +899,8 @@ abstract class AppLocalizations {
   /// No description provided for @storageNewerBody.
   ///
   /// In en, this message translates to:
-  /// **'Your data was saved by a newer version of SnowBird. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.'**
-  String get storageNewerBody;
+  /// **'Your data was saved by a newer version of {appName}. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.'**
+  String storageNewerBody(String appName);
 
   /// No description provided for @alertInUsNow.
   ///
@@ -1129,6 +1111,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'When off, follows your phone\'s contrast and bold text settings where available.'**
   String get settingsHighContrastHelper;
+
+  /// No description provided for @aboutHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help and planning'**
+  String get aboutHelpTitle;
+
+  /// No description provided for @aboutReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem'**
+  String get aboutReport;
+
+  /// No description provided for @aboutRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a feature'**
+  String get aboutRequest;
+
+  /// No description provided for @aboutStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Track reports and requests'**
+  String get aboutStatus;
+
+  /// No description provided for @aboutRoadmap.
+  ///
+  /// In en, this message translates to:
+  /// **'What is planned'**
+  String get aboutRoadmap;
+
+  /// No description provided for @aboutContribute.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a voluntary contribution'**
+  String get aboutContribute;
+
+  /// No description provided for @aboutContributeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Contributions are optional and unlock nothing: every feature is free. These buttons open {maker}, or GitHub for the source code, in your browser.'**
+  String aboutContributeNote(String maker);
+
+  /// No description provided for @aboutPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get aboutPrivacyPolicy;
 }
 
 class _AppLocalizationsDelegate

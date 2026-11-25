@@ -30,6 +30,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
@@ -55,7 +56,7 @@ abstract final class RecordExporter {
     final doc = pw.Document(
       theme: fonts.theme,
       title: strings.recordHeading,
-      author: 'Veidimadur - veidimadur.ca',
+      author: AppIdentity.maker,
     );
 
     doc.addPage(
@@ -89,7 +90,9 @@ abstract final class RecordExporter {
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
               pw.Text(
-                fonts.printable(strings.recordAuthor),
+                fonts.printable(
+                  strings.recordAuthor(AppIdentity.name, AppIdentity.maker),
+                ),
                 style:
                     const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
               ),

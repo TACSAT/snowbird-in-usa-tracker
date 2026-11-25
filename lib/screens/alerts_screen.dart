@@ -31,6 +31,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
@@ -59,7 +60,7 @@ class AlertsScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(
-                  strings.alertsEmpty,
+                  strings.alertsEmpty(AppIdentity.name),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
@@ -206,7 +207,7 @@ Future<void> _askPermission(
   }
   if (!granted) {
     messenger.showSnackBar(
-      SnackBar(content: Text(strings.alertPermissionDenied)),
+      SnackBar(content: Text(strings.alertPermissionDenied(AppIdentity.name))),
     );
   }
 }

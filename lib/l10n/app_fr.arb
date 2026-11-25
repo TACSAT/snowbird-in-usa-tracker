@@ -1,18 +1,27 @@
 {
   "@@locale": "fr",
-  "@@author": "Veiðimaður - veidimadur.ca",
 
-  "appTitle": "SnowBird",
+  "@@author": "teagarden.net",
 
   "appDisclaimerTitle": "Outil de suivi personnel — pas un conseil",
 
-  "appDisclaimerBody": "SnowBird compte vos jours aux États-Unis et vous permet d'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "appDisclaimerBody": "{appName} compte vos jours aux États-Unis et vous permet d'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "@appDisclaimerBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "appDisclaimerAcknowledge": "Je comprends",
 
   "backupReminderTitle": "Garder vos données en sécurité",
 
-  "backupReminderBody": "SnowBird conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.",
+  "backupReminderBody": "{appName} conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.",
+  "@backupReminderBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "backupReminderAcknowledge": "Compris",
 
@@ -51,13 +60,19 @@
 
   "errorDepartureBefore": "La date de départ doit être égale ou postérieure à l'arrivée.",
 
-  "aboutTitle": "À propos de SnowBird",
+  "aboutTitle": "À propos de {appName}",
+  "@aboutTitle": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
-  "aboutAuthor": "Développé par Veiðimaður — veidimadur.ca",
-
-  "feedbackButton": "Envoyer des commentaires",
-
-  "donateButton": "Soutenir le développeur",
+  "aboutAuthor": "Créé et maintenu par {maker}",
+  "@aboutAuthor": {
+    "placeholders": {
+      "maker": { "type": "String" }
+    }
+  },
 
   "windowLast365": "365 derniers jours",
 
@@ -71,7 +86,12 @@
 
   "alertsTooltip": "Mes alertes",
 
-  "alertsEmpty": "Aucune alerte.\nSnowBird ne fixe aucune limite de lui-même — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.",
+  "alertsEmpty": "Aucune alerte.\n{appName} ne fixe aucune limite — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.",
+  "@alertsEmpty": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "addAlert": "Ajouter une alerte",
 
@@ -124,7 +144,12 @@
     }
   },
 
-  "alertPermissionDenied": "Les notifications sont désactivées pour SnowBird dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.",
+  "alertPermissionDenied": "Les notifications sont désactivées pour {appName} dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.",
+  "@alertPermissionDenied": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "alertNotificationTitle": "Votre cible de jours",
 
@@ -198,7 +223,9 @@
 
   "exportError": "Impossible de créer l'export : {reason}",
   "@exportError": {
-    "placeholders": { "reason": { "type": "String" } }
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
   },
 
   "exportEmpty": "Ajoutez d'abord un séjour — il n'y a encore rien à exporter.",
@@ -207,7 +234,9 @@
 
   "recordAsOf": "En date du {date}",
   "@recordAsOf": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": { "type": "String" }
+    }
   },
 
   "recordDisclaimer": "Ceci est une fiche personnelle, pas un conseil. Elle ne donne aucun avis en immigration, en fiscalité ni en droit. Vérifiez votre situation auprès d'un professionnel qualifié.",
@@ -226,7 +255,13 @@
 
   "recordColDetails": "Séjour / détails",
 
-  "recordAuthor": "Tenue avec SnowBird — Veiðimaður · veidimadur.ca",
+  "recordAuthor": "Tenue avec {appName} · {maker}",
+  "@recordAuthor": {
+    "placeholders": {
+      "appName": { "type": "String" },
+      "maker": { "type": "String" }
+    }
+  },
 
   "menuSettings": "Réglages",
 
@@ -264,7 +299,12 @@
 
   "aboutPrivacyTitle": "Votre vie privée",
 
-  "aboutPrivacyBody": "SnowBird n'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.",
+  "aboutPrivacyBody": "{appName} n'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.",
+  "@aboutPrivacyBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "aboutSourceButton": "Voir le code source",
 
@@ -272,11 +312,21 @@
 
   "referenceTitle": "Règles courantes de comptage",
 
-  "referenceIntro": "Voici des nombres que les gens suivent souvent. SnowBird n'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "referenceIntro": "Voici des nombres que les gens suivent souvent. {appName} n'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "@referenceIntro": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "referenceSptTitle": "Test de présence substantielle (É.-U.)",
 
-  "referenceSptBody": "Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l'an dernier, plus un sixième de l'année d'avant. SnowBird affiche cette valeur comme un nombre neutre.",
+  "referenceSptBody": "Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l'an dernier, plus un sixième de l'année d'avant. {appName} affiche cette valeur comme un nombre neutre.",
+  "@referenceSptBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "referenceHealthTitle": "Couverture santé provinciale",
 
@@ -288,7 +338,12 @@
 
   "referenceMythTitle": "Il n'existe aucune limite cumulative unique",
 
-  "referenceMythBody": "Il n'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l'admission par entrée, la discrétion de l'agent et des tests fiscaux distincts. C'est pourquoi SnowBird compte et ne juge jamais.",
+  "referenceMythBody": "Il n'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l'admission par entrée, la discrétion de l'agent et des tests fiscaux distincts. C'est pourquoi {appName} compte et ne juge jamais.",
+  "@referenceMythBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "sptDisclaimer": "Un nombre neutre, pas un conseil — touchez pour le contexte.",
 
@@ -344,7 +399,12 @@
 
   "storageProblemBody": "Une partie de vos données enregistrées n'a pas pu être lue; elle n'est donc ni affichée ni comptée. Rien n'a été effacé : l'original est conservé sur cet appareil, même après vos modifications.",
 
-  "storageNewerBody": "Vos données ont été enregistrées par une version plus récente de SnowBird. Veuillez mettre l'appli à jour. D'ici là, les changements à ces données ne peuvent pas être enregistrés, afin de ne rien écraser.",
+  "storageNewerBody": "Vos données ont été enregistrées par une version plus récente de {appName}. Veuillez mettre l'appli à jour. D'ici là, les changements à ces données ne peuvent pas être enregistrés, afin de ne rien écraser.",
+  "@storageNewerBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "alertInUsNow": "Sera mesuré quand vous aurez consigné le départ de votre séjour en cours",
 
@@ -487,5 +547,26 @@
 
   "settingsHighContrast": "Contraste élevé et texte gras",
 
-  "settingsHighContrastHelper": "Si désactivé, suit les réglages de contraste et de texte gras de votre téléphone, s'ils existent."
+  "settingsHighContrastHelper": "Si désactivé, suit les réglages de contraste et de texte gras de votre téléphone, s'ils existent.",
+
+  "aboutHelpTitle": "Aide et planification",
+
+  "aboutReport": "Signaler un problème",
+
+  "aboutRequest": "Demander une fonctionnalité",
+
+  "aboutStatus": "Suivre signalements et demandes",
+
+  "aboutRoadmap": "Ce qui est prévu",
+
+  "aboutContribute": "Faire une contribution volontaire",
+
+  "aboutContributeNote": "Les contributions sont facultatives et ne débloquent rien : toutes les fonctionnalités sont gratuites. Ces boutons ouvrent {maker}, ou GitHub pour le code source, dans votre navigateur.",
+  "@aboutContributeNote": {
+    "placeholders": {
+      "maker": { "type": "String" }
+    }
+  },
+
+  "aboutPrivacyPolicy": "Politique de confidentialité"
 }

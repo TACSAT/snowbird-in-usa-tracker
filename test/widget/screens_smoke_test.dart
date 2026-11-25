@@ -91,8 +91,7 @@ void main() {
     );
     await tester.pumpWidget(_host(home: const AboutScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('Send feedback'), findsOneWidget);
-    expect(find.text('Support the developer'), findsOneWidget);
+    expect(find.text('Report a problem'), findsOneWidget);
     expect(find.textContaining('Version 1.0.0'), findsOneWidget);
   });
 

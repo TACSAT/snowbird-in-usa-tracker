@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
@@ -87,7 +88,7 @@ class _TripListScreenState extends State<TripListScreen> {
       final strings = AppLocalizations.of(context);
       await _showAck(
         title: strings.appDisclaimerTitle,
-        body: strings.appDisclaimerBody,
+        body: strings.appDisclaimerBody(AppIdentity.name),
         button: strings.appDisclaimerAcknowledge,
       );
       await storage.setDisclaimerAcknowledged();
@@ -98,7 +99,7 @@ class _TripListScreenState extends State<TripListScreen> {
       final strings = AppLocalizations.of(context);
       await _showAck(
         title: strings.backupReminderTitle,
-        body: strings.backupReminderBody,
+        body: strings.backupReminderBody(AppIdentity.name),
         button: strings.backupReminderAcknowledge,
       );
       await storage.setBackupReminderShown();
@@ -115,7 +116,7 @@ class _TripListScreenState extends State<TripListScreen> {
       await _showAck(
         title: strings.storageProblemTitle,
         body: storage.loadProblem == StorageLoadProblem.newerVersion
-            ? strings.storageNewerBody
+            ? strings.storageNewerBody(AppIdentity.name)
             : strings.storageProblemBody,
         button: strings.backupReminderAcknowledge,
       );
@@ -270,7 +271,7 @@ class _TripListScreenState extends State<TripListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(strings.appTitle),
+        title: const Text(AppIdentity.name),
         centerTitle: false,
         actions: [
           IconButton(
