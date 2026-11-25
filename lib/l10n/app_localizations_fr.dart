@@ -466,4 +466,59 @@ class AppLocalizationsFr extends AppLocalizations {
   String alertNotificationBodySince(String date, int threshold) {
     return 'En date du $date, il s\'est écoulé $threshold jours depuis votre dernier séjour aux É.-U. — la cible que vous avez fixée.';
   }
+
+  @override
+  String get tripStillInUs => 'Je suis encore aux É.-U.';
+
+  @override
+  String get tripStillInUsHelper =>
+      'Laissez activé jusqu\'à ce que votre date de départ soit connue. Les jours comptent jusqu\'à aujourd\'hui.';
+
+  @override
+  String get tripOngoing => 'en cours';
+
+  @override
+  String tripDaysSoFar(String days) {
+    return '$days jusqu\'ici';
+  }
+
+  @override
+  String get tripStatusCurrent => 'En cours';
+
+  @override
+  String get errorTripOverlap =>
+      'Ces dates chevauchent un autre séjour réel. Sortir et revenir le même jour ne pose pas de problème.';
+
+  @override
+  String get errorFutureArrival =>
+      'Un séjour réel ne peut pas commencer dans le futur. Choisissez plutôt Planifié.';
+
+  @override
+  String get errorSaveFailed =>
+      'Votre changement n\'a pas pu être enregistré sur cet appareil.';
+
+  @override
+  String get storageProblemTitle => 'Des données enregistrées sont illisibles';
+
+  @override
+  String get storageProblemBody =>
+      'Une partie de vos données enregistrées n\'a pas pu être lue; elle n\'est donc ni affichée ni comptée. Rien n\'a été effacé : l\'original est conservé sur cet appareil, même après vos modifications.';
+
+  @override
+  String get storageNewerBody =>
+      'Vos données ont été enregistrées par une version plus récente de SnowBird. Veuillez mettre l\'appli à jour. D\'ici là, les changements à ces données ne peuvent pas être enregistrés, afin de ne rien écraser.';
+
+  @override
+  String get alertInUsNow =>
+      'Sera mesuré quand vous aurez consigné le départ de votre séjour en cours';
+
+  @override
+  String recordEntryLabel(String details) {
+    return 'Entrée : $details';
+  }
+
+  @override
+  String recordExitLabel(String details) {
+    return 'Sortie : $details';
+  }
 }

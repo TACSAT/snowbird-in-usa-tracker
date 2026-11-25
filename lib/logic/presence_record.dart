@@ -95,6 +95,7 @@ class PresenceRecord {
       thisCalendarYear: DayCounter.countDaysInCalendarYear(
         trips: trips,
         year: asOfDate.year,
+        asOf: asOfDate,
       ),
       rollingLast365: DayCounter.countDaysInLastDays(
         trips: trips,
@@ -104,6 +105,7 @@ class PresenceRecord {
       priorCalendarYear: DayCounter.countDaysInCalendarYear(
         trips: trips,
         year: asOfDate.year - 1,
+        asOf: asOfDate,
       ),
       spt: DayCounter.substantialPresence(trips: trips, asOf: asOfDate),
     );
@@ -151,11 +153,15 @@ class PresenceRecord {
       final entry = t.arrivalInfo;
       final exit = t.departureInfo;
       rows.add([
-        t.status == TripStatus.planned ? 'Planned' : 'Actual',
+        t.status == TripStatus.planned
+            ? 'Planned'
+            : t.isInProgress(asOf)
+                ? 'Actual (in progress)'
+                : 'Actual',
         t.name ?? '',
         _iso(t.arrivalDate),
-        _iso(t.departureDate),
-        '${t.daysInUS}',
+        t.departureDate == null ? '' : _iso(t.departureDate!),
+        '${t.daysPresent(asOf)}',
         _time(entry),
         entry?.timeZone ?? '',
         entry?.location ?? '',

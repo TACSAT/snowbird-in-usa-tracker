@@ -79,23 +79,42 @@ class AlertRepository extends ChangeNotifier {
 
   int get alertCount => _alerts.length;
 
-  Future<void> addAlert(DayAlert alert) async {
-    _alerts.add(alert);
-    await _persistAndReschedule();
-  }
+  Future<void> addAlert(DayAlert alert) => _commit([..._alerts, alert]);
 
   Future<void> updateAlert(DayAlert updated) async {
     final index = _alerts.indexWhere((a) => a.id == updated.id);
     if (index == -1) return;
-    _alerts[index] = updated;
-    await _persistAndReschedule();
+    await _commit([..._alerts]..[index] = updated);
   }
 
   Future<void> deleteAlert(String id) async {
-    final before = _alerts.length;
-    _alerts.removeWhere((a) => a.id == id);
-    if (_alerts.length != before) await _persistAndReschedule();
+    final kept = _alerts.where((a) => a.id != id).toList();
+    if (kept.length != _alerts.length) await _commit(kept);
   }
+
+  // EN: Publish the new list immediately so a following call builds on it, and put
+  //     the old one back if the device refuses the write: the screen must not show
+  //     an alert that was not saved.
+  // FR: Publier la nouvelle liste tout de suite pour qu'un appel suivant parte
+  //     d'elle, et remettre l'ancienne si l'appareil refuse l'écriture : l'écran ne
+  //     doit pas montrer une alerte non enregistrée.
+  Future<void> _commit(List<DayAlert> next) async {
+    final previous = List.of(_alerts);
+    _replace(next);
+    try {
+      await _storage.saveAlerts(next);
+    } on StorageWriteException {
+      _replace(previous);
+      notifyListeners();
+      rethrow;
+    }
+    await _pushScheduleToOS();
+    notifyListeners();
+  }
+
+  void _replace(List<DayAlert> next) => _alerts
+    ..clear()
+    ..addAll(next);
 
   // EN: Compute the current schedule: for each ENABLED alert, project the
   //     first date its user-set target is reached (actual + planned trips —
@@ -183,12 +202,6 @@ class AlertRepository extends ChangeNotifier {
         if (last == null) return null;
         return DateTime(last.year, last.month, last.day + alert.thresholdDays);
     }
-  }
-
-  Future<void> _persistAndReschedule() async {
-    await _storage.saveAlerts(_alerts);
-    await _pushScheduleToOS();
-    notifyListeners();
   }
 
   Future<void> _onTripsChanged() async {

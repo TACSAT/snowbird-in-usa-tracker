@@ -24,14 +24,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 
+// EN: What went wrong, if anything, while loading. Surfaced to the user because
+//     showing an empty history without explanation would look like data loss.
+// FR: Ce qui a mal tourné, le cas échéant, au chargement. Montré à l'utilisateur
+//     car un historique vide sans explication ressemblerait à une perte de données.
+enum StorageLoadProblem { none, unreadable, newerVersion }
+
+// EN: The device did not accept a write. Callers must tell the user and must not
+//     present the change as saved.
+// FR: L'appareil n'a pas accepté une écriture. L'appelant doit en aviser
+//     l'utilisateur et ne pas présenter le changement comme enregistré.
+class StorageWriteException implements Exception {
+  const StorageWriteException();
+}
+
 class StorageService {
-  // EN: SharedPreferences key under which the JSON-encoded trip list is stored.
-  //     The "v1" suffix makes a future format migration explicit — if the schema
-  //     ever changes, bump to "v2" and write a one-shot migration on first load.
-  // FR: Clé SharedPreferences sous laquelle la liste JSON des séjours est stockée.
-  //     Le suffixe « v1 » rend explicite une future migration de format — si le
-  //     schéma change, passer à « v2 » et écrire une migration unique au premier
-  //     chargement.
+  // EN: Version of the stored format (FR-12). 1 = a bare JSON list. 2 = an envelope
+  //     {"schemaVersion", "trips"|"alerts"} whose trips may have a null departure.
+  //     Every v1 record is already a valid v2 record, so that step changes nothing
+  //     in the records. Raise this whenever an older app would misread new data,
+  //     and convert in _records(). Version and data share one value so they can
+  //     never disagree after an interrupted write (FR-13).
+  // FR: Version du format stocké (FR-12). 1 = une simple liste JSON. 2 = une
+  //     enveloppe {"schemaVersion", "trips"|"alerts"} dont les séjours peuvent avoir
+  //     un départ null. Tout enregistrement v1 est déjà un v2 valide : cette étape
+  //     ne change rien aux enregistrements. Augmenter dès qu'une ancienne appli
+  //     lirait mal les nouvelles données, et convertir dans _records(). Version et
+  //     données partagent une seule valeur pour ne jamais diverger après une
+  //     écriture interrompue (FR-13).
+  static const schemaVersion = 2;
+
+  // EN: The key names keep their "v1" suffix although the content is versioned now:
+  //     renaming would split the history across two keys.
+  // FR: Les noms de clés gardent leur suffixe « v1 » bien que le contenu soit
+  //     désormais versionné : renommer scinderait l'historique entre deux clés.
   static const _kTripsKey = 'snowbird.trips.v1';
 
   // EN: Key for the user-defined alert list — same versioning convention.
@@ -70,113 +96,145 @@ class StorageService {
   //     réelle dans l'appli via main().
   StorageService(this._prefs);
 
-  // EN: Load the persisted trip list. Returns an empty list on first launch or if
-  //     the stored value is absent. If a single Trip record is malformed, it is
-  //     skipped (with a debug-only log) and the rest of the list is preserved.
-  //     This means a corrupt record never wipes the user's entire history.
-  // FR: Charger la liste des séjours persistés. Retourne une liste vide au premier
-  //     lancement ou si la valeur stockée est absente. Si un enregistrement Trip
-  //     est malformé, il est ignoré (avec un journal de débogage uniquement) et le
-  //     reste de la liste est préservé. Ainsi, un enregistrement corrompu n'efface
-  //     jamais tout l'historique de l'utilisateur.
-  List<Trip> loadTrips() {
-    final raw = _prefs.getString(_kTripsKey);
-    if (raw == null || raw.isEmpty) return [];
+  // EN: Worst problem met while loading. Raw text awaiting quarantine, per key. Keys
+  //     written by a newer app version, which this version must not overwrite.
+  // FR: Pire problème rencontré au chargement. Texte brut en attente de quarantaine,
+  //     par clé. Clés écrites par une version plus récente, que celle-ci ne doit
+  //     pas écraser.
+  StorageLoadProblem _loadProblem = StorageLoadProblem.none;
+  final Map<String, String> _toQuarantine = {};
+  final Set<String> _readOnly = {};
 
-    final List<dynamic> decoded;
+  StorageLoadProblem get loadProblem => _loadProblem;
+
+  // EN: Load the persisted trips. Bad records are skipped one by one so they never
+  //     hide the good ones, and the original text is kept for quarantine.
+  // FR: Charger les séjours persistés. Les enregistrements fautifs sont ignorés un à
+  //     un pour ne jamais masquer les bons, et le texte original est gardé pour la
+  //     quarantaine.
+  List<Trip> loadTrips() => _load(_kTripsKey, 'trips', Trip.fromJson);
+
+  // EN: Persist the full trip list, replacing what was stored. Throws
+  //     StorageWriteException if the device refuses, so a failure is never silent.
+  // FR: Persister la liste complète des séjours, en remplaçant l'ancienne. Lance
+  //     StorageWriteException si l'appareil refuse : un échec n'est jamais muet.
+  Future<void> saveTrips(List<Trip> trips) =>
+      _save(_kTripsKey, 'trips', trips.map((t) => t.toJson()).toList());
+
+  // EN: Alerts follow exactly the same rules as trips.
+  // FR: Les alertes suivent exactement les mêmes règles que les séjours.
+  List<DayAlert> loadAlerts() =>
+      _load(_kAlertsKey, 'alerts', DayAlert.fromJson);
+
+  Future<void> saveAlerts(List<DayAlert> alerts) =>
+      _save(_kAlertsKey, 'alerts', alerts.map((a) => a.toJson()).toList());
+
+  List<T> _load<T>(
+    String key,
+    String field,
+    T Function(Map<String, dynamic>) parse,
+  ) {
+    // EN: get() rather than getString(): the latter throws on a non-string value,
+    //     which would stop the app before its first screen.
+    // FR: get() plutôt que getString() : ce dernier lance une exception sur une
+    //     valeur non textuelle, ce qui arrêterait l'appli avant son premier écran.
+    final stored = _prefs.get(key);
+    if (stored == null || stored == '') return [];
+    final raw = stored.toString();
+
+    final List<dynamic> records;
     try {
-      decoded = jsonDecode(raw) as List<dynamic>;
-    } catch (e) {
-      // EN: The top-level JSON is unparseable — return empty rather than crash.
-      //     This can happen if storage was manually corrupted (rare) or if a
-      //     previous app version wrote an incompatible format.
-      // FR: Le JSON de niveau supérieur est non analysable — retourner vide
-      //     plutôt que de planter. Cela peut arriver si le stockage a été
-      //     corrompu manuellement (rare) ou si une version précédente a écrit
-      //     un format incompatible.
-      assert(() {
-        // ignore: avoid_print
-        print('[StorageService] Failed to decode trips JSON: $e');
-        return true;
-      }());
+      if (stored is! String) throw const FormatException('Not a string.');
+      final found = _records(jsonDecode(raw), field);
+      if (found == null) {
+        _readOnly.add(key);
+        _loadProblem = StorageLoadProblem.newerVersion;
+        return [];
+      }
+      records = found;
+    } on FormatException {
+      _markUnreadable(key, raw);
       return [];
     }
 
-    final trips = <Trip>[];
-    for (var i = 0; i < decoded.length; i++) {
+    final result = <T>[];
+    for (final record in records) {
+      // EN: Catch everything, not only FormatException: no single record, however
+      //     damaged, may prevent the app from opening.
+      // FR: Tout intercepter, pas seulement FormatException : aucun enregistrement,
+      //     si abîmé soit-il, ne doit empêcher l'appli de s'ouvrir.
       try {
-        trips.add(Trip.fromJson(decoded[i] as Map<String, dynamic>));
-      } on FormatException catch (e) {
+        result.add(parse(record as Map<String, dynamic>));
+      } catch (e) {
+        _markUnreadable(key, raw);
         assert(() {
           // ignore: avoid_print
-          print('[StorageService] Skipping malformed trip at index $i: $e');
+          print('[StorageService] Skipping malformed record in $key: $e');
           return true;
         }());
       }
     }
-    return trips;
+    return result;
   }
 
-  // EN: Persist the full trip list, replacing whatever was stored before.
-  //     The write is awaited to confirm it succeeded before the caller
-  //     considers the data durable.
-  // FR: Persister la liste complète des séjours, en remplaçant ce qui était
-  //     stocké auparavant. L'écriture est attendue pour confirmer son succès
-  //     avant que l'appelant considère les données durables.
-  Future<void> saveTrips(List<Trip> trips) async {
-    final encoded = jsonEncode(
-      trips.map((t) => t.toJson()).toList(),
-    );
-    await _prefs.setString(_kTripsKey, encoded);
+  // EN: Unwrap any supported version to its record list; null means "newer than
+  //     this app understands".
+  // FR: Extraire la liste d'enregistrements de toute version prise en charge ; null
+  //     signifie « plus récent que ce que cette appli comprend ».
+  List<dynamic>? _records(Object? decoded, String field) {
+    if (decoded is List) return decoded;
+    if (decoded is! Map) throw const FormatException('Unknown storage shape.');
+    final version = decoded['schemaVersion'];
+    if (version is! int) throw const FormatException('Missing schemaVersion.');
+    if (version > schemaVersion) return null;
+    final records = decoded[field];
+    if (records is! List) throw FormatException('Missing "$field" list.');
+    return records;
   }
 
-  // EN: Load the persisted user-defined alerts. Same resilience strategy as
-  //     loadTrips(): a malformed record — including one whose numeric values
-  //     fall outside InputLimits (DayAlert.fromJson enforces the caps) — is
-  //     skipped individually, never allowed to wipe or crash the rest.
-  // FR: Charger les alertes persistées définies par l'utilisateur. Même
-  //     stratégie de résilience que loadTrips() : un enregistrement malformé —
-  //     y compris un dont les valeurs numériques sortent des InputLimits
-  //     (DayAlert.fromJson applique les plafonds) — est ignoré individuellement,
-  //     sans jamais effacer ni faire planter le reste.
-  List<DayAlert> loadAlerts() {
-    final raw = _prefs.getString(_kAlertsKey);
-    if (raw == null || raw.isEmpty) return [];
-
-    final List<dynamic> decoded;
-    try {
-      decoded = jsonDecode(raw) as List<dynamic>;
-    } catch (e) {
-      assert(() {
-        // ignore: avoid_print
-        print('[StorageService] Failed to decode alerts JSON: $e');
-        return true;
-      }());
-      return [];
+  void _markUnreadable(String key, String raw) {
+    _toQuarantine[key] = raw;
+    if (_loadProblem == StorageLoadProblem.none) {
+      _loadProblem = StorageLoadProblem.unreadable;
     }
+  }
 
-    final alerts = <DayAlert>[];
-    for (var i = 0; i < decoded.length; i++) {
-      try {
-        alerts.add(DayAlert.fromJson(decoded[i] as Map<String, dynamic>));
-      } on FormatException catch (e) {
-        assert(() {
-          // ignore: avoid_print
-          print('[StorageService] Skipping malformed alert at index $i: $e');
-          return true;
-        }());
+  // EN: The original goes to quarantine BEFORE its key is overwritten, and a failed
+  //     copy aborts the save: better an unsaved change than a destroyed history.
+  // FR: L'original part en quarantaine AVANT que sa clé soit écrasée, et une copie
+  //     échouée annule l'enregistrement : mieux vaut un changement non enregistré
+  //     qu'un historique détruit.
+  Future<void> _save(String key, String field, List<Object> records) async {
+    if (_readOnly.contains(key)) throw const StorageWriteException();
+
+    final bad = _toQuarantine[key];
+    if (bad != null) {
+      final quarantineKey = '$key.quarantine';
+      final kept = _prefs.getStringList(quarantineKey) ?? const <String>[];
+      if (!kept.contains(bad)) {
+        await _write(
+          () => _prefs.setStringList(quarantineKey, [...kept, bad]),
+        );
       }
+      _toQuarantine.remove(key);
     }
-    return alerts;
+
+    final encoded = jsonEncode({'schemaVersion': schemaVersion, field: records});
+    await _write(() => _prefs.setString(key, encoded));
   }
 
-  // EN: Persist the full alert list — mirrors saveTrips().
-  // FR: Persister la liste complète des alertes — reflète saveTrips().
-  Future<void> saveAlerts(List<DayAlert> alerts) async {
-    final encoded = jsonEncode(
-      alerts.map((a) => a.toJson()).toList(),
-    );
-    await _prefs.setString(_kAlertsKey, encoded);
+  // EN: Platform code reports failure by returning false or by throwing; both
+  //     become one exception type.
+  // FR: La plateforme signale un échec par un retour false ou une exception ; les
+  //     deux deviennent un seul type d'exception.
+  Future<void> _write(Future<bool> Function() action) async {
+    bool ok;
+    try {
+      ok = await action();
+    } catch (_) {
+      ok = false;
+    }
+    if (!ok) throw const StorageWriteException();
   }
 
   // EN: Onboarding flags — read defaults to false (not yet shown) on first launch.

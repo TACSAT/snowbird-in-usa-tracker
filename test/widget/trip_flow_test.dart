@@ -44,6 +44,15 @@ Widget _wrap(StorageService storage, TripRepository trips) {
   );
 }
 
+// EN: A tall surface so the whole lazily-built form exists at once.
+// FR: Une grande surface pour que tout le formulaire, construit à la demande,
+//     existe d'un coup.
+void _tallView(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+}
+
 Future<(StorageService, TripRepository)> _freshRepo() async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
@@ -94,6 +103,7 @@ void main() {
 
   testWidgets('trip form renders its fields and enforces the mandatory dates',
       (tester) async {
+    _tallView(tester);
     SharedPreferences.setMockInitialValues({
       'snowbird.flags.disclaimerAck.v1': true,
       'snowbird.flags.backupReminderShown.v1': true,
@@ -186,5 +196,96 @@ void main() {
     expect(find.text('Image (PNG)'), findsOneWidget);
     expect(find.text('Spreadsheet (CSV)'), findsOneWidget);
     expect(find.text('Print'), findsOneWidget);
+  });
+
+  const onboarded = {
+    'snowbird.flags.disclaimerAck.v1': true,
+    'snowbird.flags.backupReminderShown.v1': true,
+  };
+
+  testWidgets('unreadable data is announced, not silently hidden',
+      (tester) async {
+    SharedPreferences.setMockInitialValues(
+      {...onboarded, 'snowbird.trips.v1': '[{"id":5}]'},
+    );
+    final storage = StorageService(await SharedPreferences.getInstance());
+    await tester.pumpWidget(_wrap(storage, TripRepository(storage)));
+    await tester.pumpAndSettle();
+    expect(find.text('Some saved data could not be read'), findsOneWidget);
+  });
+
+  testWidgets('an open trip shows as current and can be closed or blocked',
+      (tester) async {
+    _tallView(tester);
+    SharedPreferences.setMockInitialValues(onboarded);
+    final storage = StorageService(await SharedPreferences.getInstance());
+    final trips = TripRepository(storage);
+    final today = DateTime.now();
+    await trips.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(today.year, today.month, today.day - 2),
+        departureDate: null,
+        status: TripStatus.actual,
+      ),
+    );
+    await tester.pumpWidget(_wrap(storage, trips));
+    await tester.pumpAndSettle();
+    expect(find.text('Current'), findsOneWidget);
+    expect(find.textContaining('3 days so far'), findsOneWidget);
+
+    // EN: A new open trip starting today conflicts; the editor must stay open.
+    // FR: Un nouveau séjour ouvert dès aujourd'hui est en conflit ; l'éditeur doit
+    //     rester ouvert.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Arrival date'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I am still in the US'));
+    await tester.pumpAndSettle();
+    expect(find.text('Departure date'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('Save'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('overlap another actual trip'), findsOneWidget);
+    expect(trips.tripCount, 1);
+  });
+
+  testWidgets('a departure can be recorded on an open trip', (tester) async {
+    _tallView(tester);
+    SharedPreferences.setMockInitialValues(onboarded);
+    final storage = StorageService(await SharedPreferences.getInstance());
+    final trips = TripRepository(storage);
+    final today = DateTime.now();
+    await trips.addTrip(
+      Trip.create(
+        arrivalDate: DateTime(today.year, today.month, today.day),
+        departureDate: null,
+        status: TripStatus.actual,
+      ),
+    );
+    await tester.pumpWidget(_wrap(storage, trips));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(ListTile).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('I am still in the US'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Departure date'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Save'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(trips.trips.single.daysInUS, 1);
   });
 }

@@ -33,6 +33,7 @@ import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
+import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
 class TripEditScreen extends StatefulWidget {
@@ -56,6 +57,13 @@ class _TripEditScreenState extends State<TripEditScreen> {
   TripStatus _status = TripStatus.actual;
   DateTime? _arrival;
   DateTime? _departure;
+
+  // EN: "Still in the US" (FR-2). Only meaningful for an actual trip; it is an
+  //     explicit choice so that a forgotten departure is never read as open.
+  // FR: « Encore aux É.-U. » (FR-2). N'a de sens que pour un séjour réel ; c'est un
+  //     choix explicite pour qu'un départ oublié ne soit jamais lu comme ouvert.
+  bool _stillInUs = false;
+  bool get _isOpen => _status == TripStatus.actual && _stillInUs;
 
   // EN: Per-crossing optional fields — entry then exit. Times are TimeOfDay?,
   //     null meaning "not recorded".
@@ -83,6 +91,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
       _status = e.status;
       _arrival = e.arrivalDate;
       _departure = e.departureDate;
+      _stillInUs = e.departureDate == null;
     }
 
     _entryTz = TextEditingController(text: e?.arrivalInfo?.timeZone ?? '');
@@ -179,13 +188,22 @@ class _TripEditScreenState extends State<TripEditScreen> {
               placeholder: strings.optionalNotSet,
               onTap: () => _pickDate(isArrival: true),
             ),
-            _DateRow(
-              label: strings.fieldDepartureDate,
-              value: _departure,
-              localeName: strings.localeName,
-              placeholder: strings.optionalNotSet,
-              onTap: () => _pickDate(isArrival: false),
-            ),
+            if (_status == TripStatus.actual)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(strings.tripStillInUs),
+                subtitle: _stillInUs ? Text(strings.tripStillInUsHelper) : null,
+                value: _stillInUs,
+                onChanged: (v) => setState(() => _stillInUs = v),
+              ),
+            if (!_isOpen)
+              _DateRow(
+                label: strings.fieldDepartureDate,
+                value: _departure,
+                localeName: strings.localeName,
+                placeholder: strings.optionalNotSet,
+                onTap: () => _pickDate(isArrival: false),
+              ),
             const SizedBox(height: 8),
 
             TextFormField(
@@ -226,18 +244,19 @@ class _TripEditScreenState extends State<TripEditScreen> {
               strings: strings,
               onPickTime: () => _pickTime(isEntry: true),
             ),
-            _CrossingSection(
-              title: strings.exitDetailsTitle,
-              time: _exitTime,
-              timeLabel: strings.fieldCrossingTime,
-              placeholder: strings.optionalNotSet,
-              tz: _exitTz,
-              location: _exitLocation,
-              means: _exitMeans,
-              carrier: _exitCarrier,
-              strings: strings,
-              onPickTime: () => _pickTime(isEntry: false),
-            ),
+            if (!_isOpen)
+              _CrossingSection(
+                title: strings.exitDetailsTitle,
+                time: _exitTime,
+                timeLabel: strings.fieldCrossingTime,
+                placeholder: strings.optionalNotSet,
+                tz: _exitTz,
+                location: _exitLocation,
+                means: _exitMeans,
+                carrier: _exitCarrier,
+                strings: strings,
+                onPickTime: () => _pickTime(isEntry: false),
+              ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _save,
@@ -315,11 +334,12 @@ class _TripEditScreenState extends State<TripEditScreen> {
       complain(strings.errorArrivalRequired);
       return;
     }
-    if (_departure == null) {
+    final departure = _isOpen ? null : _departure;
+    if (departure == null && !_isOpen) {
       complain(strings.errorDepartureRequired);
       return;
     }
-    if (_departure!.isBefore(_arrival!)) {
+    if (departure != null && departure.isBefore(_arrival!)) {
       complain(strings.errorDepartureBefore);
       return;
     }
@@ -331,39 +351,56 @@ class _TripEditScreenState extends State<TripEditScreen> {
       meansOfTravel: _entryMeans.text,
       carrier: _entryCarrier.text,
     );
-    final exitInfo = CrossingInfo.fromInput(
-      timeMinutes: _fromTimeOfDay(_exitTime),
-      timeZone: _exitTz.text,
-      location: _exitLocation.text,
-      meansOfTravel: _exitMeans.text,
-      carrier: _exitCarrier.text,
-    );
+    // EN: An open stay has no exit crossing yet.
+    // FR: Un séjour ouvert n'a pas encore de passage de sortie.
+    final exitInfo = _isOpen
+        ? null
+        : CrossingInfo.fromInput(
+            timeMinutes: _fromTimeOfDay(_exitTime),
+            timeZone: _exitTz.text,
+            location: _exitLocation.text,
+            meansOfTravel: _exitMeans.text,
+            carrier: _exitCarrier.text,
+          );
 
     final existing = widget.existing;
-    if (existing == null) {
-      await repo.addTrip(
-        Trip.create(
-          arrivalDate: _arrival!,
-          departureDate: _departure!,
-          status: _status,
-          name: _name.text,
-          notes: _notes.text,
-          arrivalInfo: entryInfo,
-          departureInfo: exitInfo,
-        ),
+    try {
+      if (existing == null) {
+        await repo.addTrip(
+          Trip.create(
+            arrivalDate: _arrival!,
+            departureDate: departure,
+            status: _status,
+            name: _name.text,
+            notes: _notes.text,
+            arrivalInfo: entryInfo,
+            departureInfo: exitInfo,
+          ),
+        );
+      } else {
+        await repo.updateTrip(
+          existing.copyWith(
+            arrivalDate: _arrival,
+            departureDate: departure,
+            status: _status,
+            name: _name.text.trim().isEmpty ? null : _name.text.trim(),
+            notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
+            arrivalInfo: entryInfo,
+            departureInfo: exitInfo,
+          ),
+        );
+      }
+    } on TripValidationException catch (e) {
+      complain(
+        switch (e.problem) {
+          TripProblem.overlap => strings.errorTripOverlap,
+          TripProblem.futureArrival => strings.errorFutureArrival,
+        },
       );
-    } else {
-      await repo.updateTrip(
-        existing.copyWith(
-          arrivalDate: _arrival,
-          departureDate: _departure,
-          status: _status,
-          name: _name.text.trim().isEmpty ? null : _name.text.trim(),
-          notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
-          arrivalInfo: entryInfo,
-          departureInfo: exitInfo,
-        ),
-      );
+      return;
+    } on StorageWriteException {
+      complain(strings.errorSaveFailed);
+      return;
     }
     navigator.pop();
   }
@@ -371,6 +408,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
   Future<void> _confirmDelete() async {
     final strings = AppLocalizations.of(context);
     final repo = context.read<TripRepository>();
+    final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
     final confirmed = await showDialog<bool>(
@@ -392,7 +430,14 @@ class _TripEditScreenState extends State<TripEditScreen> {
     );
 
     if (confirmed == true) {
-      await repo.deleteTrip(widget.existing!.id);
+      try {
+        await repo.deleteTrip(widget.existing!.id);
+      } on StorageWriteException {
+        messenger.showSnackBar(
+          SnackBar(content: Text(strings.errorSaveFailed)),
+        );
+        return;
+      }
       navigator.pop();
     }
   }

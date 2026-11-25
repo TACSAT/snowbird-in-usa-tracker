@@ -49,6 +49,7 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
+import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 
 abstract final class RecordExporter {
@@ -74,6 +75,12 @@ abstract final class RecordExporter {
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
+        // EN: The library stops at 20 pages by default, which would refuse a long
+        //     history. Rows always fit a page (see _chunks), so layout terminates.
+        // FR: La bibliothèque s'arrête à 20 pages par défaut, ce qui refuserait un
+        //     long historique. Les rangées tiennent toujours sur une page (voir
+        //     _chunks), donc la mise en page se termine.
+        maxPages: 1000,
         margin: const pw.EdgeInsets.all(28),
         header: (context) => context.pageNumber == 1
             ? pw.SizedBox()
@@ -299,19 +306,32 @@ abstract final class RecordExporter {
       strings.recordColDetails,
     ].map(_pdf).toList();
 
-    final data = record.trips.map((trip) {
-      final dates =
-          '${dateFmt.format(trip.arrivalDate)} – ${dateFmt.format(trip.departureDate)}';
+    final data = <List<String>>[];
+    for (final trip in record.trips) {
+      final departure = trip.departureDate;
+      final dates = '${dateFmt.format(trip.arrivalDate)} – '
+          '${departure == null ? strings.tripOngoing : dateFmt.format(departure)}';
       final status = trip.status == TripStatus.planned
           ? strings.tripStatusPlanned
-          : strings.tripStatusActual;
-      return [
+          : trip.isInProgress(record.asOf)
+              ? strings.tripStatusCurrent
+              : strings.tripStatusActual;
+      // EN: A PDF table row cannot span pages, so long details continue on rows
+      //     whose other cells are blank. Nothing is dropped.
+      // FR: Une rangée de tableau PDF ne peut s'étendre sur deux pages, donc de
+      //     longs détails se poursuivent sur des rangées aux autres cellules vides.
+      //     Rien n'est omis.
+      final chunks = _chunks(_pdf(_details(trip, strings)));
+      data.add([
         _pdf(dates),
-        '${trip.daysInUS}',
+        '${trip.daysPresent(record.asOf)}',
         _pdf(status),
-        _pdf(_details(trip)),
-      ];
-    }).toList();
+        chunks.first,
+      ]);
+      for (final more in chunks.skip(1)) {
+        data.add(['', '', '', more]);
+      }
+    }
 
     return pw.TableHelper.fromTextArray(
       headers: headers,
@@ -332,21 +352,76 @@ abstract final class RecordExporter {
     );
   }
 
-  // EN: Compact "details" cell: trip name, then entry/exit locations, then notes —
-  //     only the parts that exist, joined so an empty trip shows an empty cell.
-  // FR: Cellule « détails » compacte : nom du séjour, puis lieux d'entrée/sortie,
-  //     puis notes — seulement les parties présentes, jointes pour qu'un séjour vide
-  //     affiche une cellule vide.
-  static String _details(Trip trip) {
-    final parts = <String>[];
-    if (trip.name != null) parts.add(trip.name!);
-    final entryLoc = trip.arrivalInfo?.location;
-    final exitLoc = trip.departureInfo?.location;
-    if (entryLoc != null || exitLoc != null) {
-      parts.add('${entryLoc ?? '—'} → ${exitLoc ?? '—'}');
+  // EN: "Details" cell: trip name, then EVERY recorded crossing field for entry and
+  //     exit, then notes — only the parts that exist. The record is evidence, so
+  //     what the user took the trouble to record is printed.
+  // FR: Cellule « détails » : nom du séjour, puis TOUS les champs de passage
+  //     consignés à l'entrée et à la sortie, puis notes — seulement les parties
+  //     présentes. La fiche est une preuve : ce que l'utilisateur a pris la peine de
+  //     consigner est imprimé.
+  static String _details(Trip trip, AppLocalizations strings) {
+    final entry = _crossing(trip.arrivalInfo);
+    final exit = _crossing(trip.departureInfo);
+    return [
+      if (trip.name != null) trip.name!,
+      if (entry.isNotEmpty) strings.recordEntryLabel(entry),
+      if (exit.isNotEmpty) strings.recordExitLabel(exit),
+      if (trip.notes != null) trip.notes!,
+    ].join('\n');
+  }
+
+  static String _crossing(CrossingInfo? info) {
+    if (info == null) return '';
+    final time = [
+      if (info.timeMinutes != null) info.formattedTime,
+      if (info.timeZone != null) info.timeZone!,
+    ].join(' ');
+    return [
+      if (time.isNotEmpty) time,
+      if (info.location != null) info.location!,
+      if (info.meansOfTravel != null) info.meansOfTravel!,
+      if (info.carrier != null) info.carrier!,
+    ].join(', ');
+  }
+
+  // EN: Split text into pieces that always fit on one page. The per-line estimate
+  //     is pessimistic (the widest letters), so a piece may look short but can never
+  //     overflow. Breaks at spaces; only an overlong single word is cut.
+  // FR: Découper le texte en morceaux tenant toujours sur une page. L'estimation par
+  //     ligne est pessimiste (lettres les plus larges) : un morceau peut sembler
+  //     court mais ne déborde jamais. Coupe aux espaces ; seul un mot trop long est
+  //     tranché.
+  static List<String> _chunks(String text) {
+    const charsPerLine = 25;
+    const maxLines = 35;
+    final lines = <String>[];
+    for (final paragraph in text.split('\n')) {
+      var line = '';
+      for (var word in paragraph.split(' ')) {
+        while (word.length > charsPerLine) {
+          if (line.isNotEmpty) {
+            lines.add('$line ');
+            line = '';
+          }
+          lines.add(word.substring(0, charsPerLine));
+          word = word.substring(charsPerLine);
+        }
+        if (line.isNotEmpty && line.length + 1 + word.length > charsPerLine) {
+          lines.add('$line ');
+          line = word;
+        } else {
+          line = line.isEmpty ? word : '$line $word';
+        }
+      }
+      lines.add('$line\n');
     }
-    if (trip.notes != null) parts.add(trip.notes!);
-    return parts.join('\n');
+    return [
+      for (var i = 0; i < lines.length; i += maxLines)
+        lines
+            .sublist(i, i + maxLines < lines.length ? i + maxLines : lines.length)
+            .join()
+            .trimRight(),
+    ];
   }
 
   // EN: Normalise a string to what standard-font Helvetica can render (Latin-1):

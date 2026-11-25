@@ -895,6 +895,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'As of {date}, it has been {threshold} days since your last US visit — the target you set.'**
   String alertNotificationBodySince(String date, int threshold);
+
+  /// No description provided for @tripStillInUs.
+  ///
+  /// In en, this message translates to:
+  /// **'I am still in the US'**
+  String get tripStillInUs;
+
+  /// No description provided for @tripStillInUsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave on until you know your departure date. Days count through today.'**
+  String get tripStillInUsHelper;
+
+  /// No description provided for @tripOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'ongoing'**
+  String get tripOngoing;
+
+  /// No description provided for @tripDaysSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} so far'**
+  String tripDaysSoFar(String days);
+
+  /// No description provided for @tripStatusCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get tripStatusCurrent;
+
+  /// No description provided for @errorTripOverlap.
+  ///
+  /// In en, this message translates to:
+  /// **'These dates overlap another actual trip. Leaving and returning on the same day is fine.'**
+  String get errorTripOverlap;
+
+  /// No description provided for @errorFutureArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'An actual trip cannot start in the future. Choose Planned instead.'**
+  String get errorFutureArrival;
+
+  /// No description provided for @errorSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your change could not be saved on this device.'**
+  String get errorSaveFailed;
+
+  /// No description provided for @storageProblemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Some saved data could not be read'**
+  String get storageProblemTitle;
+
+  /// No description provided for @storageProblemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of your saved data could not be read, so it is not shown or counted. Nothing has been erased: the original is kept on this device, even after you make changes.'**
+  String get storageProblemBody;
+
+  /// No description provided for @storageNewerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data was saved by a newer version of SnowBird. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.'**
+  String get storageNewerBody;
+
+  /// No description provided for @alertInUsNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be measured once you record a departure from your current trip'**
+  String get alertInUsNow;
+
+  /// No description provided for @recordEntryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry: {details}'**
+  String recordEntryLabel(String details);
+
+  /// No description provided for @recordExitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit: {details}'**
+  String recordExitLabel(String details);
 }
 
 class _AppLocalizationsDelegate

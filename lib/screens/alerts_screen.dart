@@ -35,7 +35,9 @@ import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
+import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/alert_repository.dart';
+import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
 class AlertsScreen extends StatelessWidget {
   const AlertsScreen({super.key});
@@ -99,8 +101,15 @@ class _AlertTile extends StatelessWidget {
     final summary = isSince
         ? strings.alertSummarySince(alert.thresholdDays)
         : strings.alertSummary(alert.thresholdDays, alert.windowDays);
-    final noReachText =
-        isSince ? strings.alertNoVisits : strings.alertNotReached;
+    final hasOpenTrip = context
+        .read<TripRepository>()
+        .trips
+        .any((t) => t.departureDate == null);
+    final noReachText = !isSince
+        ? strings.alertNotReached
+        : hasOpenTrip
+            ? strings.alertInUsNow
+            : strings.alertNoVisits;
 
     final reachDate = repo.projectedReachDate(alert);
     final projection = reachDate == null
@@ -117,10 +126,32 @@ class _AlertTile extends StatelessWidget {
       isThreeLine: alert.label != null,
       trailing: Switch(
         value: alert.enabled,
-        onChanged: (value) => repo.updateAlert(alert.copyWith(enabled: value)),
+        onChanged: (value) => _orReport(
+          ScaffoldMessenger.of(context),
+          strings,
+          () => repo.updateAlert(alert.copyWith(enabled: value)),
+        ),
       ),
       onTap: () => _openEditor(context, existing: alert),
     );
+  }
+}
+
+// EN: Run a save and report a refused write. Returns whether it succeeded, so an
+//     editor stays open with the user's input when it did not.
+// FR: Exécuter un enregistrement et signaler une écriture refusée. Retourne le
+//     succès, pour qu'un éditeur reste ouvert avec la saisie en cas d'échec.
+Future<bool> _orReport(
+  ScaffoldMessengerState messenger,
+  AppLocalizations strings,
+  Future<void> Function() save,
+) async {
+  try {
+    await save();
+    return true;
+  } on StorageWriteException {
+    messenger.showSnackBar(SnackBar(content: Text(strings.errorSaveFailed)));
+    return false;
   }
 }
 
@@ -426,35 +457,38 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
         _kind == AlertKind.sinceLastVisit ? threshold : int.parse(_window.text);
 
     final existing = widget.existing;
-    if (existing == null) {
-      await repo.addAlert(
-        DayAlert.create(
-          thresholdDays: threshold,
-          windowDays: windowDays,
-          hour: _time!.hour,
-          minute: _time!.minute,
-          leadDays: int.parse(_leadDays.text),
-          leadHours: int.parse(_leadHours.text),
-          enabled: _enabled,
-          kind: _kind,
-          label: _label.text,
-        ),
-      );
-    } else {
-      await repo.updateAlert(
-        existing.copyWith(
-          thresholdDays: threshold,
-          windowDays: windowDays,
-          hour: _time!.hour,
-          minute: _time!.minute,
-          leadDays: int.parse(_leadDays.text),
-          leadHours: int.parse(_leadHours.text),
-          enabled: _enabled,
-          kind: _kind,
-          label: _label.text.trim().isEmpty ? null : _label.text,
-        ),
-      );
-    }
+    final saved = await _orReport(messenger, strings, () async {
+      if (existing == null) {
+        await repo.addAlert(
+          DayAlert.create(
+            thresholdDays: threshold,
+            windowDays: windowDays,
+            hour: _time!.hour,
+            minute: _time!.minute,
+            leadDays: int.parse(_leadDays.text),
+            leadHours: int.parse(_leadHours.text),
+            enabled: _enabled,
+            kind: _kind,
+            label: _label.text,
+          ),
+        );
+      } else {
+        await repo.updateAlert(
+          existing.copyWith(
+            thresholdDays: threshold,
+            windowDays: windowDays,
+            hour: _time!.hour,
+            minute: _time!.minute,
+            leadDays: int.parse(_leadDays.text),
+            leadHours: int.parse(_leadHours.text),
+            enabled: _enabled,
+            kind: _kind,
+            label: _label.text.trim().isEmpty ? null : _label.text,
+          ),
+        );
+      }
+    });
+    if (!saved) return;
 
     // EN: Ask for OS permission AFTER the user has expressed intent by saving
     //     an alert — never at app launch. A refusal keeps the alert stored
@@ -476,6 +510,7 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
   Future<void> _confirmDelete(BuildContext context) async {
     final strings = AppLocalizations.of(context);
     final repo = context.read<AlertRepository>();
+    final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
     final confirmed = await showDialog<bool>(
@@ -497,8 +532,12 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
     );
 
     if (confirmed == true) {
-      await repo.deleteAlert(widget.existing!.id);
-      navigator.pop();
+      final deleted = await _orReport(
+        messenger,
+        strings,
+        () => repo.deleteAlert(widget.existing!.id),
+      );
+      if (deleted) navigator.pop();
     }
   }
 }

@@ -23,6 +23,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
+import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/record_exporter.dart';
 
@@ -73,6 +74,63 @@ void main() {
     final en = await AppLocalizations.delegate.load(const Locale('en'));
     final record =
         PresenceRecord.build(trips: trips, asOf: DateTime(2025, 6, 1));
+    final bytes = await RecordExporter.buildPdf(
+      record,
+      strings: en,
+      localeName: 'en',
+    );
+    expect(looksLikePdf(bytes), isTrue);
+  });
+
+  test('very long notes and every crossing field still produce a PDF',
+      () async {
+    final en = await AppLocalizations.delegate.load(const Locale('en'));
+    for (final filler in ['a\n', 'W', 'WWWW ', 'word ']) {
+      String fill(int n) => (filler * n).substring(0, n);
+      final crossing = CrossingInfo(
+        timeMinutes: 870,
+        timeZone: fill(60),
+        location: fill(120),
+        meansOfTravel: fill(60),
+        carrier: fill(120),
+      );
+      final record = PresenceRecord.build(
+        trips: [
+          Trip(
+            id: 'long',
+            arrivalDate: DateTime(2025, 1, 3),
+            departureDate: null,
+            status: TripStatus.actual,
+            notes: fill(2000),
+            arrivalInfo: crossing,
+            departureInfo: crossing,
+          ),
+        ],
+        asOf: DateTime(2025, 6, 1),
+      );
+      final bytes = await RecordExporter.buildPdf(
+        record,
+        strings: en,
+        localeName: 'en',
+      );
+      expect(looksLikePdf(bytes), isTrue, reason: filler);
+    }
+  });
+
+  test('a history longer than twenty pages exports', () async {
+    final en = await AppLocalizations.delegate.load(const Locale('en'));
+    final record = PresenceRecord.build(
+      trips: [
+        for (var i = 0; i < 1200; i++)
+          Trip(
+            id: '$i',
+            arrivalDate: DateTime(2010, 1, 1 + i * 2),
+            departureDate: DateTime(2010, 1, 1 + i * 2),
+            status: TripStatus.actual,
+          ),
+      ],
+      asOf: DateTime(2025, 6, 1),
+    );
     final bytes = await RecordExporter.buildPdf(
       record,
       strings: en,

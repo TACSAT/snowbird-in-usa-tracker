@@ -89,6 +89,23 @@ class _TripListScreenState extends State<TripListScreen> {
       );
       await storage.setBackupReminderShown();
     }
+
+    // EN: Shown at each launch while the problem lasts (the first successful save
+    //     clears it): silence here would look like lost trips (FR-13).
+    // FR: Montré à chaque lancement tant que le problème dure (le premier
+    //     enregistrement réussi le règle) : le silence ferait croire à des séjours
+    //     perdus (FR-13).
+    if (storage.loadProblem != StorageLoadProblem.none) {
+      if (!mounted) return;
+      final strings = AppLocalizations.of(context);
+      await _showAck(
+        title: strings.storageProblemTitle,
+        body: storage.loadProblem == StorageLoadProblem.newerVersion
+            ? strings.storageNewerBody
+            : strings.storageProblemBody,
+        button: strings.backupReminderAcknowledge,
+      );
+    }
   }
 
   // EN: Open the export sheet (FR-8): build the record from the current trips, let
@@ -443,7 +460,12 @@ class _TripTile extends StatelessWidget {
     final dateFmt = DateFormat.yMMMd(strings.localeName);
 
     final arrival = dateFmt.format(trip.arrivalDate);
-    final departure = dateFmt.format(trip.departureDate);
+    final departure = trip.departureDate == null
+        ? strings.tripOngoing
+        : dateFmt.format(trip.departureDate!);
+    final now = DateTime.now();
+    final isCurrent = trip.isInProgress(now);
+    final days = strings.daysCount(trip.daysPresent(now));
     final isPlanned = trip.status == TripStatus.planned;
 
     return ListTile(
@@ -458,12 +480,16 @@ class _TripTile extends StatelessWidget {
         strings.tripSubtitle(
           arrival,
           departure,
-          strings.daysCount(trip.daysInUS),
+          isCurrent ? strings.tripDaysSoFar(days) : days,
         ),
       ),
       trailing: Chip(
         label: Text(
-          isPlanned ? strings.tripStatusPlanned : strings.tripStatusActual,
+          isPlanned
+              ? strings.tripStatusPlanned
+              : isCurrent
+                  ? strings.tripStatusCurrent
+                  : strings.tripStatusActual,
         ),
         visualDensity: VisualDensity.compact,
       ),

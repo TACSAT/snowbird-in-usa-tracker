@@ -493,5 +493,48 @@
       "date": { "type": "String" },
       "threshold": { "type": "int" }
     }
+  },
+
+  "tripStillInUs": "I am still in the US",
+
+  "tripStillInUsHelper": "Leave on until you know your departure date. Days count through today.",
+
+  "tripOngoing": "ongoing",
+
+  "tripDaysSoFar": "{days} so far",
+  "@tripDaysSoFar": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "tripStatusCurrent": "Current",
+
+  "errorTripOverlap": "These dates overlap another actual trip. Leaving and returning on the same day is fine.",
+
+  "errorFutureArrival": "An actual trip cannot start in the future. Choose Planned instead.",
+
+  "errorSaveFailed": "Your change could not be saved on this device.",
+
+  "storageProblemTitle": "Some saved data could not be read",
+
+  "storageProblemBody": "Part of your saved data could not be read, so it is not shown or counted. Nothing has been erased: the original is kept on this device, even after you make changes.",
+
+  "storageNewerBody": "Your data was saved by a newer version of SnowBird. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.",
+
+  "alertInUsNow": "Will be measured once you record a departure from your current trip",
+
+  "recordEntryLabel": "Entry: {details}",
+  "@recordEntryLabel": {
+    "placeholders": {
+      "details": { "type": "String" }
+    }
+  },
+
+  "recordExitLabel": "Exit: {details}",
+  "@recordExitLabel": {
+    "placeholders": {
+      "details": { "type": "String" }
+    }
   }
 }

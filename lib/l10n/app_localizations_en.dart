@@ -460,4 +460,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String alertNotificationBodySince(String date, int threshold) {
     return 'As of $date, it has been $threshold days since your last US visit — the target you set.';
   }
+
+  @override
+  String get tripStillInUs => 'I am still in the US';
+
+  @override
+  String get tripStillInUsHelper =>
+      'Leave on until you know your departure date. Days count through today.';
+
+  @override
+  String get tripOngoing => 'ongoing';
+
+  @override
+  String tripDaysSoFar(String days) {
+    return '$days so far';
+  }
+
+  @override
+  String get tripStatusCurrent => 'Current';
+
+  @override
+  String get errorTripOverlap =>
+      'These dates overlap another actual trip. Leaving and returning on the same day is fine.';
+
+  @override
+  String get errorFutureArrival =>
+      'An actual trip cannot start in the future. Choose Planned instead.';
+
+  @override
+  String get errorSaveFailed =>
+      'Your change could not be saved on this device.';
+
+  @override
+  String get storageProblemTitle => 'Some saved data could not be read';
+
+  @override
+  String get storageProblemBody =>
+      'Part of your saved data could not be read, so it is not shown or counted. Nothing has been erased: the original is kept on this device, even after you make changes.';
+
+  @override
+  String get storageNewerBody =>
+      'Your data was saved by a newer version of SnowBird. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.';
+
+  @override
+  String get alertInUsNow =>
+      'Will be measured once you record a departure from your current trip';
+
+  @override
+  String recordEntryLabel(String details) {
+    return 'Entry: $details';
+  }
+
+  @override
+  String recordExitLabel(String details) {
+    return 'Exit: $details';
+  }
 }

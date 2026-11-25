@@ -288,8 +288,8 @@ class DayAlert {
       return v;
     }
 
-    final id = json['id'] as String?;
-    if (id == null || id.isEmpty) {
+    final id = json['id'];
+    if (id is! String || id.isEmpty) {
       throw const FormatException('DayAlert JSON is missing a non-empty "id".');
     }
 

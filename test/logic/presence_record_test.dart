@@ -107,4 +107,25 @@ void main() {
       }
     });
   });
+
+  test('totals, SPT and the trip row agree for a stay in progress', () {
+    for (final departure in [null, DateTime(2026, 12, 31)]) {
+      final r = PresenceRecord.build(
+        trips: [
+          Trip(
+            id: 'x',
+            arrivalDate: DateTime(2026, 11, 1),
+            departureDate: departure,
+            status: TripStatus.actual,
+          ),
+        ],
+        asOf: DateTime(2026, 11, 24),
+      );
+      expect(r.totals.thisCalendarYear, 24);
+      expect(r.totals.rollingLast365, 24);
+      expect(r.formattedSpt, '24');
+      expect(r.toCsv(), contains('Actual (in progress)'));
+      expect(r.toCsv(), contains(',24,'));
+    }
+  });
 }
