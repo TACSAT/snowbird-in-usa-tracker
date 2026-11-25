@@ -159,15 +159,13 @@ class CrossingInfo {
   factory CrossingInfo.fromJson(Map<String, dynamic> json) {
     return CrossingInfo(
       timeMinutes: _parseTime(json['time']),
-      timeZone:
-          _cap(json['timeZone'] as String?, InputLimits.maxTimeZoneLength),
-      location:
-          _cap(json['location'] as String?, InputLimits.maxLocationLength),
+      timeZone: _cap(_text(json, 'timeZone'), InputLimits.maxTimeZoneLength),
+      location: _cap(_text(json, 'location'), InputLimits.maxLocationLength),
       meansOfTravel: _cap(
-        json['meansOfTravel'] as String?,
+        _text(json, 'meansOfTravel'),
         InputLimits.maxMeansOfTravelLength,
       ),
-      carrier: _cap(json['carrier'] as String?, InputLimits.maxCarrierLength),
+      carrier: _cap(_text(json, 'carrier'), InputLimits.maxCarrierLength),
     );
   }
 
@@ -184,6 +182,16 @@ class CrossingInfo {
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  // EN: Read an optional string, rejecting other types with the FormatException the
+  //     storage layer expects instead of an uncaught TypeError.
+  // FR: Lire une chaîne optionnelle, en rejetant les autres types par la
+  //     FormatException attendue du stockage plutôt qu'une TypeError non gérée.
+  static String? _text(Map<String, dynamic> json, String key) {
+    final raw = json[key];
+    if (raw == null || raw is String) return raw as String?;
+    throw FormatException('CrossingInfo "$key" must be a string.');
+  }
 
   // EN: Trim, blank→null, truncate to [max]. Never throws — over-length is a
   //     usability matter, not a corruption.

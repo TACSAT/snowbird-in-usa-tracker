@@ -10,6 +10,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
+import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 
 void main() {
@@ -87,7 +88,7 @@ void main() {
     test('carries the not-advice line and the neutral summary numbers', () {
       final csv = PresenceRecord.build(trips: scenario(), asOf: asOf).toCsv();
       expect(csv, contains('not advice'));
-      expect(csv, contains('SnowBird — US Presence Record'));
+      expect(csv, contains('SENALOVIRA — US Presence Record'));
       // Summary values present.
       expect(csv, contains('41'));
       expect(csv, contains('53'));
@@ -106,5 +107,59 @@ void main() {
         );
       }
     });
+  });
+
+  test('totals, SPT and the trip row agree for a stay in progress', () {
+    for (final departure in [null, DateTime(2026, 12, 31)]) {
+      final r = PresenceRecord.build(
+        trips: [
+          Trip(
+            id: 'x',
+            arrivalDate: DateTime(2026, 11, 1),
+            departureDate: departure,
+            status: TripStatus.actual,
+          ),
+        ],
+        asOf: DateTime(2026, 11, 24),
+      );
+      expect(r.totals.thisCalendarYear, 24);
+      expect(r.totals.rollingLast365, 24);
+      expect(r.formattedSpt, '24');
+      expect(r.toCsv(), contains('Actual (in progress)'));
+      expect(r.toCsv(), contains(',24,'));
+    }
+  });
+
+  test('user text can never start a spreadsheet formula', () {
+    for (final lead in ['=', '+', '-', '@', '\t=', '\r=', '＝', '＋', '－', '＠']) {
+      final csv = PresenceRecord.build(
+        trips: [
+          Trip(
+            id: 'x',
+            arrivalDate: DateTime(2025, 1, 1),
+            departureDate: DateTime(2025, 1, 2),
+            status: TripStatus.actual,
+            name: '${lead}A1',
+            notes: '${lead}B1',
+            arrivalInfo: CrossingInfo(
+              timeZone: '${lead}C1',
+              location: '${lead}D1',
+              meansOfTravel: '${lead}E1',
+              carrier: '${lead}F1',
+            ),
+            departureInfo: CrossingInfo(carrier: '${lead}G1'),
+          ),
+        ],
+        asOf: asOf,
+      ).toCsv();
+      for (final cell in ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1']) {
+        expect(csv, contains("'$lead$cell"), reason: '$lead$cell');
+      }
+    }
+  });
+
+  test('ordinary text is left exactly as typed', () {
+    final csv = PresenceRecord.build(trips: scenario(), asOf: asOf).toCsv();
+    expect(csv, isNot(contains("'")));
   });
 }

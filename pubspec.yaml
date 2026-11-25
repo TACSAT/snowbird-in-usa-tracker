@@ -30,9 +30,9 @@ dependencies:
   #     flutter_timezone fournissent la base IANA et le fuseau courant de
   #     l'appareil pour que « 9 h locale » reste correct malgré les voyages et
   #     les changements d'heure.
-  flutter_local_notifications: ^19.0.0
-  timezone: ^0.10.0
-  flutter_timezone: ^4.1.1
+  flutter_local_notifications: ^23.0.4
+  timezone: ^0.11.2
+  flutter_timezone: ^5.1.1
   # EN: Provider is the state-management layer between the UI and TripRepository.
   #     Lightweight ChangeNotifier approach — no code generation, no magic.
   # FR: Provider est la couche de gestion d'état entre l'interface et TripRepository.
@@ -49,9 +49,7 @@ dependencies:
   #     were verified to declare NO Android permissions (no INTERNET) — the export
   #     is entirely on-device. IMPORTANT: never call `PdfGoogleFonts.*` — that is
   #     the one code path in `printing` that would fetch a font over the network;
-  #     we use the pdf package's standard Latin-1 Helvetica and normalise the
-  #     punctuation we emit instead of a downloaded font, so the no-network
-  #     invariant (NFR-1) is never broken.
+  #     we use the Roboto faces bundled in assets/fonts (NFR-1).
   # FR: L'export de la « fiche de présence aux É.-U. » vedette (PLAN.md FR-8).
   #     `printing` construit le PDF, le pixellise en image PNG et pilote la boîte
   #     de dialogue d'IMPRESSION du système ; `share_plus` remet le fichier CSV /
@@ -59,18 +57,15 @@ dependencies:
   #     ne déclarent AUCUNE permission Android (pas d'INTERNET) — l'export est
   #     entièrement sur l'appareil. IMPORTANT : ne jamais appeler `PdfGoogleFonts.*`
   #     — c'est le seul chemin de `printing` qui téléchargerait une police par le
-  #     réseau ; nous utilisons plutôt l'Helvetica standard Latin-1 du paquet pdf
-  #     et normalisons la ponctuation que nous produisons, au lieu d'une police
-  #     téléchargée, pour que l'invariant sans réseau (NFR-1) ne soit jamais brisé.
+  #     réseau ; nous utilisons les polices Roboto de assets/fonts (NFR-1).
   printing: ^5.14.3
   share_plus: ^13.2.0
   # EN: `pdf` builds the document; it ships transitively with `printing`, but we
   #     import it directly (pw.Document, PdfColors, PdfPageFormat) so it is listed
-  #     explicitly. Its standard fonts are used — no font is ever downloaded.
+  #     explicitly.
   # FR: `pdf` construit le document ; il arrive de façon transitive avec `printing`,
   #     mais nous l'importons directement (pw.Document, PdfColors, PdfPageFormat),
-  #     donc il est listé explicitement. Ses polices standard sont utilisées —
-  #     aucune police n'est jamais téléchargée.
+  #     donc il est listé explicitement.
   pdf: ^3.11.0
   # EN: `package_info_plus` reads the app's own version + build number from the
   #     installed bundle for the About screen (FR-18) — a local metadata read, no
@@ -90,8 +85,19 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  # EN: Already present transitively; listed so tests may fake the share sheet and
+  #     the browser.
+  # FR: Déjà présents de façon transitive ; listés pour simuler la feuille de partage
+  #     et le navigateur dans les tests.
+  plugin_platform_interface: ^2.1.8
+  share_plus_platform_interface: ^7.1.0
+  url_launcher_platform_interface: ^2.3.2
 
 # Generate localizations from lib/l10n/*.arb (see l10n.yaml).
 flutter:
   generate: true
   uses-material-design: true
+  # EN: PDF fonts (Apache 2.0, taken from the Flutter SDK) and their license.
+  # FR: Polices du PDF (Apache 2.0, tirées du SDK Flutter) et leur licence.
+  assets:
+    - assets/fonts/

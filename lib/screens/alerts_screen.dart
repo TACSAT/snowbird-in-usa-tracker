@@ -31,11 +31,18 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
+import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
+import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
+import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
+import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/alert_repository.dart';
+import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
 class AlertsScreen extends StatelessWidget {
   const AlertsScreen({super.key});
@@ -53,7 +60,7 @@ class AlertsScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(
-                  strings.alertsEmpty,
+                  strings.alertsEmpty(AppIdentity.name),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
@@ -99,15 +106,31 @@ class _AlertTile extends StatelessWidget {
     final summary = isSince
         ? strings.alertSummarySince(alert.thresholdDays)
         : strings.alertSummary(alert.thresholdDays, alert.windowDays);
-    final noReachText =
-        isSince ? strings.alertNoVisits : strings.alertNotReached;
+    final hasOpenTrip = context
+        .read<TripRepository>()
+        .trips
+        .any((t) => t.departureDate == null);
+    final noReachText = !isSince
+        ? strings.alertNotReached
+        : hasOpenTrip
+            ? strings.alertInUsNow
+            : strings.alertNoVisits;
 
     final reachDate = repo.projectedReachDate(alert);
-    final projection = reachDate == null
-        ? noReachText
-        : strings.alertProjectedReach(
-            DateFormat.yMMMMd(strings.localeName).format(reachDate),
-          );
+    // EN: A target met in the past is stated as such; a date still ahead (the next
+    //     crossing) is shown as a projection.
+    // FR: Une cible atteinte dans le passé est dite telle ; une date à venir (le
+    //     prochain franchissement) est montrée comme projection.
+    final reached = repo.isReached(alert);
+    final isSincePast = isSince && reached;
+    final projection = [
+      if (reached) strings.alertReached,
+      if (reachDate != null && !isSincePast)
+        strings.alertProjectedReach(
+          DateFormat.yMMMMd(strings.localeName).format(reachDate),
+        ),
+      if (reachDate == null && !reached) noReachText,
+    ].join('\n');
 
     return ListTile(
       title: Text(alert.label ?? summary),
@@ -115,11 +138,76 @@ class _AlertTile extends StatelessWidget {
         alert.label != null ? '$summary\n$projection' : projection,
       ),
       isThreeLine: alert.label != null,
-      trailing: Switch(
-        value: alert.enabled,
-        onChanged: (value) => repo.updateAlert(alert.copyWith(enabled: value)),
+      // EN: A switch beside a row is its own control; it must say which alert it is.
+      // FR: Un interrupteur à côté d'une rangée est un contrôle à part ; il doit dire
+      //     de quelle alerte il s'agit.
+      trailing: MergeSemantics(
+        child: Semantics(
+          label: strings.alertToggleLabel(
+            alert.label == null ? summary : '${alert.label}, $summary',
+          ),
+          child: Switch(
+            value: alert.enabled,
+            onChanged: (value) async {
+              final messenger = ScaffoldMessenger.of(context);
+              final scheduler = context.read<AlertScheduler>();
+              if (value) {
+                await _askPermission(scheduler, messenger, strings);
+              }
+              await _orReport(
+                messenger,
+                strings,
+                () => repo.updateAlert(alert.copyWith(enabled: value)),
+              );
+            },
+          ),
+        ),
       ),
       onTap: () => _openEditor(context, existing: alert),
+    );
+  }
+}
+
+// EN: Run a save and report a refused write. Returns whether it succeeded, so an
+//     editor stays open with the user's input when it did not.
+// FR: Exécuter un enregistrement et signaler une écriture refusée. Retourne le
+//     succès, pour qu'un éditeur reste ouvert avec la saisie en cas d'échec.
+Future<bool> _orReport(
+  ScaffoldMessengerState messenger,
+  AppLocalizations strings,
+  Future<void> Function() save,
+) async {
+  try {
+    await save();
+    return true;
+  } on StorageWriteException {
+    messenger.showSnackBar(SnackBar(content: Text(strings.errorSaveFailed)));
+    return false;
+  }
+}
+
+// EN: Ask for OS permission once the user has expressed intent — saving or enabling
+//     an alert, never at launch — and BEFORE scheduling, because iOS refuses what is
+//     scheduled without it. A refusal keeps the alert (the numbers are the user's)
+//     and says that delivery is off.
+// FR: Demander la permission de l'OS une fois l'intention exprimée — enregistrer ou
+//     activer une alerte, jamais au lancement — et AVANT de planifier, car iOS refuse
+//     ce qui est planifié sans elle. Un refus conserve l'alerte (les nombres sont à
+//     l'utilisateur) et indique que la livraison est coupée.
+Future<void> _askPermission(
+  AlertScheduler scheduler,
+  ScaffoldMessengerState messenger,
+  AppLocalizations strings,
+) async {
+  bool granted;
+  try {
+    granted = await scheduler.ensurePermissions();
+  } catch (_) {
+    granted = false;
+  }
+  if (!granted) {
+    messenger.showSnackBar(
+      SnackBar(content: Text(strings.alertPermissionDenied(AppIdentity.name))),
     );
   }
 }
@@ -160,6 +248,7 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
   //     l'enregistrement est bloqué jusque-là. 9 h n'est que la position
   //     initiale du sélecteur.
   TimeOfDay? _time;
+  bool _timeMissing = false;
   bool _enabled = true;
 
   // EN: Which kind of alert this is (FR-9 day-count vs FR-10 time-since-last-visit).
@@ -219,122 +308,128 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
       ),
       body: Form(
         key: _formKey,
-        child: ListView(
+        // EN: Not a lazy list: every field must exist for validation and for
+        //     scrolling to an error, even when off screen.
+        // FR: Pas une liste à la demande : chaque champ doit exister pour la
+        //     validation et pour défiler vers une erreur, même hors écran.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          children: [
-            // EN: Choose what the alert watches (FR-9 vs FR-10). Switching hides or
-            //     shows the rolling-window field below, since only the day-count
-            //     kind uses a window.
-            // FR: Choisir ce que l'alerte surveille (FR-9 vs FR-10). Le changement
-            //     masque ou affiche le champ de fenêtre glissante ci-dessous, car
-            //     seul le type compte de jours utilise une fenêtre.
-            Text(
-              strings.alertKindLabel,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            SegmentedButton<AlertKind>(
-              segments: [
-                ButtonSegment(
-                  value: AlertKind.dayCountThreshold,
-                  label: Text(strings.alertKindDayCount),
-                ),
-                ButtonSegment(
-                  value: AlertKind.sinceLastVisit,
-                  label: Text(strings.alertKindSinceVisit),
-                ),
-              ],
-              selected: {_kind},
-              onSelectionChanged: (s) => setState(() => _kind = s.first),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _label,
-              maxLength: kMaxAlertLabelLength,
-              decoration: InputDecoration(labelText: strings.alertLabelField),
-            ),
-            const SizedBox(height: 8),
-            _numberField(
-              controller: _threshold,
-              label: _kind == AlertKind.sinceLastVisit
-                  ? strings.alertThresholdSinceField
-                  : strings.alertThresholdField,
-              helper: _kind == AlertKind.sinceLastVisit
-                  ? strings.alertSinceHelper
-                  : null,
-              min: InputLimits.minThresholdDays,
-              max: InputLimits.maxThresholdDays,
-              strings: strings,
-            ),
-            // EN: The rolling-window field only applies to the day-count kind.
-            // FR: Le champ de fenêtre glissante ne s'applique qu'au type compte de
-            //     jours.
-            if (_kind == AlertKind.dayCountThreshold) ...[
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // EN: Choose what the alert watches (FR-9 vs FR-10). Switching hides or
+              //     shows the rolling-window field below, since only the day-count
+              //     kind uses a window.
+              // FR: Choisir ce que l'alerte surveille (FR-9 vs FR-10). Le changement
+              //     masque ou affiche le champ de fenêtre glissante ci-dessous, car
+              //     seul le type compte de jours utilise une fenêtre.
+              SectionHeading(
+                strings.alertKindLabel,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<AlertKind>(
+                segments: [
+                  ButtonSegment(
+                    value: AlertKind.dayCountThreshold,
+                    label: Text(strings.alertKindDayCount),
+                  ),
+                  ButtonSegment(
+                    value: AlertKind.sinceLastVisit,
+                    label: Text(strings.alertKindSinceVisit),
+                  ),
+                ],
+                selected: {_kind},
+                onSelectionChanged: (s) => setState(() => _kind = s.first),
+              ),
               const SizedBox(height: 16),
+              LabeledField(
+                controller: _label,
+                maxLength: kMaxAlertLabelLength,
+                label: strings.alertLabelField,
+              ),
+              const SizedBox(height: 8),
               _numberField(
-                controller: _window,
-                label: strings.alertWindowField,
-                helper: strings.alertWindowHelper,
-                min: InputLimits.minWindowDays,
-                max: InputLimits.maxWindowDays,
+                controller: _threshold,
+                label: _kind == AlertKind.sinceLastVisit
+                    ? strings.alertThresholdSinceField
+                    : strings.alertThresholdField,
+                helper: _kind == AlertKind.sinceLastVisit
+                    ? strings.alertSinceHelper
+                    : null,
+                min: InputLimits.minThresholdDays,
+                max: InputLimits.maxThresholdDays,
                 strings: strings,
               ),
-            ],
-            const SizedBox(height: 16),
-            // EN: Time picker row — shows "—" until a time is chosen.
-            // FR: Rangée du sélecteur d'heure — affiche « — » tant qu'aucune
-            //     heure n'est choisie.
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(strings.alertTimeField),
-              trailing: Text(
-                _time == null ? '—' : _time!.format(context),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              onTap: _pickTime,
-            ),
-            const Divider(),
-            Text(
-              strings.alertLeadField,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _numberField(
-                    controller: _leadDays,
-                    label: strings.alertLeadDaysField,
-                    min: InputLimits.minLeadDays,
-                    max: InputLimits.maxLeadDays,
-                    strings: strings,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _numberField(
-                    controller: _leadHours,
-                    label: strings.alertLeadHoursField,
-                    min: InputLimits.minLeadHours,
-                    max: InputLimits.maxLeadHours,
-                    strings: strings,
-                  ),
+              // EN: The rolling-window field only applies to the day-count kind.
+              // FR: Le champ de fenêtre glissante ne s'applique qu'au type compte de
+              //     jours.
+              if (_kind == AlertKind.dayCountThreshold) ...[
+                const SizedBox(height: 16),
+                _numberField(
+                  controller: _window,
+                  label: strings.alertWindowField,
+                  helper: strings.alertWindowHelper,
+                  min: InputLimits.minWindowDays,
+                  max: InputLimits.maxWindowDays,
+                  strings: strings,
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(strings.alertEnabledToggle),
-              value: _enabled,
-              onChanged: (v) => setState(() => _enabled = v),
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _save,
-              child: Text(strings.save),
-            ),
-          ],
+              const SizedBox(height: 16),
+              // EN: Time picker row — shows "—" until a time is chosen.
+              // FR: Rangée du sélecteur d'heure — affiche « — » tant qu'aucune
+              //     heure n'est choisie.
+              ValueRow(
+                label: strings.alertTimeField,
+                value: _time == null
+                    ? strings.optionalNotSet
+                    : _time!.format(context),
+                error: _timeMissing ? strings.errorTimeRequired : null,
+                onTap: _pickTime,
+              ),
+              const Divider(),
+              SectionHeading(
+                strings.alertLeadField,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _numberField(
+                      controller: _leadDays,
+                      label: strings.alertLeadDaysField,
+                      min: InputLimits.minLeadDays,
+                      max: InputLimits.maxLeadDays,
+                      strings: strings,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _numberField(
+                      controller: _leadHours,
+                      label: strings.alertLeadHoursField,
+                      min: InputLimits.minLeadHours,
+                      max: InputLimits.maxLeadHours,
+                      strings: strings,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(strings.alertEnabledToggle),
+                value: _enabled,
+                onChanged: (v) => setState(() => _enabled = v),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _save,
+                child: Text(strings.save),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -354,18 +449,15 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
     required AppLocalizations strings,
     String? helper,
   }) {
-    return TextFormField(
+    return LabeledField(
       controller: controller,
       keyboardType: TextInputType.number,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
         LengthLimitingTextInputFormatter(4),
       ],
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: helper,
-        counterText: '',
-      ),
+      label: label,
+      helper: helper,
       validator: (raw) {
         final value = int.tryParse(raw ?? '');
         if (value == null || value < min || value > max) {
@@ -377,20 +469,28 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
+    final picked = await pickTime(
+      context,
       // EN: 09:00 as the picker's STARTING position only (PLAN.md example) —
       //     nothing is saved until the user confirms a choice.
       // FR: 9 h comme position de DÉPART du sélecteur seulement (exemple du
       //     PLAN.md) — rien n'est enregistré tant que l'utilisateur ne
       //     confirme pas un choix.
-      initialTime: _time ?? const TimeOfDay(hour: 9, minute: 0),
+      _time ?? const TimeOfDay(hour: 9, minute: 0),
     );
-    if (picked != null) setState(() => _time = picked);
+    if (picked == null) return;
+    setState(() {
+      _time = picked;
+      _timeMissing = false;
+    });
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    // EN: No default time is invented; the missing choice is shown with the rest.
+    // FR: Aucune heure par défaut n'est inventée ; le choix manquant est montré avec
+    //     le reste.
+    setState(() => _timeMissing = _time == null);
+    if (!_formKey.currentState!.validate() || _timeMissing) return;
 
     // EN: Resolve everything context-dependent BEFORE any await — using a
     //     BuildContext across an async gap is unsound (the widget may have
@@ -404,15 +504,6 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
-    if (_time == null) {
-      // EN: No delivery time chosen — prompt the picker instead of inventing
-      //     a default behind the user's back.
-      // FR: Aucune heure de livraison choisie — ouvrir le sélecteur plutôt que
-      //     d'inventer un défaut dans le dos de l'utilisateur.
-      await _pickTime();
-      if (_time == null || !mounted) return;
-    }
-
     final threshold = int.parse(_threshold.text);
     // EN: The since-last-visit kind has no window. The model still stores a valid
     //     windowDays (it is never read for this kind), so we set it equal to the
@@ -425,50 +516,41 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
     final windowDays =
         _kind == AlertKind.sinceLastVisit ? threshold : int.parse(_window.text);
 
-    final existing = widget.existing;
-    if (existing == null) {
-      await repo.addAlert(
-        DayAlert.create(
-          thresholdDays: threshold,
-          windowDays: windowDays,
-          hour: _time!.hour,
-          minute: _time!.minute,
-          leadDays: int.parse(_leadDays.text),
-          leadHours: int.parse(_leadHours.text),
-          enabled: _enabled,
-          kind: _kind,
-          label: _label.text,
-        ),
-      );
-    } else {
-      await repo.updateAlert(
-        existing.copyWith(
-          thresholdDays: threshold,
-          windowDays: windowDays,
-          hour: _time!.hour,
-          minute: _time!.minute,
-          leadDays: int.parse(_leadDays.text),
-          leadHours: int.parse(_leadHours.text),
-          enabled: _enabled,
-          kind: _kind,
-          label: _label.text.trim().isEmpty ? null : _label.text,
-        ),
-      );
-    }
+    if (_enabled) await _askPermission(scheduler, messenger, strings);
 
-    // EN: Ask for OS permission AFTER the user has expressed intent by saving
-    //     an alert — never at app launch. A refusal keeps the alert stored
-    //     (the numbers are the user's) but tells them delivery is off.
-    // FR: Demander la permission OS APRÈS que l'utilisateur a exprimé son
-    //     intention en enregistrant une alerte — jamais au lancement. Un refus
-    //     conserve l'alerte (les nombres appartiennent à l'utilisateur) mais
-    //     l'informe que la livraison est coupée.
-    final granted = await scheduler.ensurePermissions();
-    if (!granted) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(strings.alertPermissionDenied)),
-      );
-    }
+    final existing = widget.existing;
+    final saved = await _orReport(messenger, strings, () async {
+      if (existing == null) {
+        await repo.addAlert(
+          DayAlert.create(
+            thresholdDays: threshold,
+            windowDays: windowDays,
+            hour: _time!.hour,
+            minute: _time!.minute,
+            leadDays: int.parse(_leadDays.text),
+            leadHours: int.parse(_leadHours.text),
+            enabled: _enabled,
+            kind: _kind,
+            label: _label.text,
+          ),
+        );
+      } else {
+        await repo.updateAlert(
+          existing.copyWith(
+            thresholdDays: threshold,
+            windowDays: windowDays,
+            hour: _time!.hour,
+            minute: _time!.minute,
+            leadDays: int.parse(_leadDays.text),
+            leadHours: int.parse(_leadHours.text),
+            enabled: _enabled,
+            kind: _kind,
+            label: _label.text.trim().isEmpty ? null : _label.text,
+          ),
+        );
+      }
+    });
+    if (!saved) return;
 
     navigator.pop();
   }
@@ -476,6 +558,7 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
   Future<void> _confirmDelete(BuildContext context) async {
     final strings = AppLocalizations.of(context);
     final repo = context.read<AlertRepository>();
+    final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
     final confirmed = await showDialog<bool>(
@@ -497,8 +580,12 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
     );
 
     if (confirmed == true) {
-      await repo.deleteAlert(widget.existing!.id);
-      navigator.pop();
+      final deleted = await _orReport(
+        messenger,
+        strings,
+        () => repo.deleteAlert(widget.existing!.id),
+      );
+      if (deleted) navigator.pop();
     }
   }
 }

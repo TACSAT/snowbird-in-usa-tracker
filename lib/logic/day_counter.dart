@@ -81,6 +81,11 @@ class SubstantialPresenceResult {
   // FR: Le total pondéré en décimal — pour l'affichage seulement ; les
   //     comparaisons ou tests devraient préférer [totalSixths] pour rester exacts.
   double get total => totalSixths / 6;
+
+  // EN: Neutral text: a whole number when exact, otherwise two decimals.
+  // FR: Texte neutre : un entier si exact, sinon deux décimales.
+  String get formatted =>
+      totalSixths % 6 == 0 ? '${totalSixths ~/ 6}' : total.toStringAsFixed(2);
 }
 
 // EN: Namespace class for pure day-counting functions. Not instantiable — all
@@ -91,60 +96,38 @@ class SubstantialPresenceResult {
 //     classe maintient une surface d'API propre et facilite les alias d'import si
 //     nécessaire.
 abstract final class DayCounter {
-  // EN: Count total days within [windowStart, windowEnd] inclusive, for all trips
-  //     whose status is in [includeStatuses]. Only the calendar overlap between
-  //     a trip and the window contributes — a trip that starts before the window
-  //     or ends after it is clamped to the window boundaries.
-  //
-  //     No double-counting: each calendar day in the window is counted at most once
-  //     per trip. Overlapping trips (unusual but possible in planned data) could
-  //     double-count — this function does not de-duplicate. If de-duplication is
-  //     ever needed, add a separate function; do not complicate this one.
-  //
-  // FR: Compter les jours totaux dans [windowStart, windowEnd] inclus, pour tous
-  //     les séjours dont le statut figure dans [includeStatuses]. Seul le
-  //     chevauchement calendaire entre un séjour et la fenêtre contribue — un séjour
-  //     qui commence avant la fenêtre ou se termine après est borné aux limites de
-  //     la fenêtre.
-  //
-  //     Pas de double comptage : chaque jour calendaire de la fenêtre est compté au
-  //     plus une fois par séjour. Des séjours qui se chevauchent (inhabituel mais
-  //     possible dans des données planifiées) pourraient être comptés en double —
-  //     cette fonction ne déduplique pas. Si la déduplication est un jour nécessaire,
-  //     ajouter une fonction séparée ; ne pas compliquer celle-ci.
+  // EN: Count UNIQUE calendar days within [windowStart, windowEnd] inclusive, across
+  //     all trips whose status is in [includeStatuses]. A day covered by several
+  //     trips counts once: leaving and re-entering on one date is one day of
+  //     presence. Actual trips are clipped to [asOf] (default: today), because days
+  //     that have not happened are not presence; planned trips are not clipped.
+  // FR: Compter les jours calendaires UNIQUES dans [windowStart, windowEnd] inclus,
+  //     pour tous les séjours dont le statut figure dans [includeStatuses]. Un jour
+  //     couvert par plusieurs séjours compte une fois : sortir et rentrer le même
+  //     jour fait un seul jour de présence. Les séjours réels sont bornés à [asOf]
+  //     (par défaut : aujourd'hui), car des jours non vécus ne sont pas de la
+  //     présence ; les séjours planifiés ne sont pas bornés.
   static int countDaysInWindow({
     required List<Trip> trips,
     required DateTime windowStart,
     required DateTime windowEnd,
+    DateTime? asOf,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
   }) {
     assert(
       !windowEnd.isBefore(windowStart),
       'windowEnd must not precede windowStart.',
     );
-
-    var total = 0;
-    for (final trip in trips) {
-      if (!includeStatuses.contains(trip.status)) continue;
-
-      // EN: Clamp the trip to the window. If there is no overlap at all,
-      //     clampedStart will be after clampedEnd and the difference will be
-      //     negative — skip it.
-      // FR: Borner le séjour à la fenêtre. S'il n'y a aucun chevauchement,
-      //     clampedStart sera après clampedEnd et la différence sera négative —
-      //     on saute ce séjour.
-      final clampedStart = trip.arrivalDate.isAfter(windowStart)
-          ? trip.arrivalDate
-          : windowStart;
-      final clampedEnd = trip.departureDate.isBefore(windowEnd)
-          ? trip.departureDate
-          : windowEnd;
-
-      if (!clampedEnd.isBefore(clampedStart)) {
-        total += _daysBetween(clampedStart, clampedEnd) + 1;
-      }
-    }
-    return total;
+    final effectiveAsOf = asOf ?? DateTime.now();
+    final spans = _mergedSpans(
+      trips.where((t) => includeStatuses.contains(t.status)).map(
+            (t) => (
+              _dayNumber(t.arrivalDate),
+              _dayNumber(t.effectiveEnd(effectiveAsOf)),
+            ),
+          ),
+    );
+    return _countInSpans(spans, _dayNumber(windowStart), _dayNumber(windowEnd));
   }
 
   // EN: Count days in a rolling window that ends today (or [today] if supplied,
@@ -178,6 +161,7 @@ abstract final class DayCounter {
       trips: trips,
       windowStart: start,
       windowEnd: end,
+      asOf: end,
       includeStatuses: includeStatuses,
     );
   }
@@ -190,12 +174,14 @@ abstract final class DayCounter {
   static int countDaysInCalendarYear({
     required List<Trip> trips,
     required int year,
+    DateTime? asOf,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
   }) {
     return countDaysInWindow(
       trips: trips,
       windowStart: DateTime(year, 1, 1),
       windowEnd: DateTime(year, 12, 31),
+      asOf: asOf,
       includeStatuses: includeStatuses,
     );
   }
@@ -237,16 +223,19 @@ abstract final class DayCounter {
       trips: trips,
       windowStart: DateTime(year, 1, 1),
       windowEnd: asOfDate,
+      asOf: asOfDate,
       includeStatuses: includeStatuses,
     );
     final prior = countDaysInCalendarYear(
       trips: trips,
       year: year - 1,
+      asOf: asOfDate,
       includeStatuses: includeStatuses,
     );
     final secondPrior = countDaysInCalendarYear(
       trips: trips,
       year: year - 2,
+      asOf: asOfDate,
       includeStatuses: includeStatuses,
     );
 
@@ -309,6 +298,7 @@ abstract final class DayCounter {
     required int thresholdDays,
     required int windowDays,
     required DateTime from,
+    bool crossingOnly = false,
     Set<TripStatus> includeStatuses = const {
       TripStatus.actual,
       TripStatus.planned,
@@ -340,51 +330,50 @@ abstract final class DayCounter {
     //     construction.
     if (thresholdDays > windowDays) return null;
 
-    // EN: Once the scan date passes the latest departure, no new day can enter
-    //     the window and the count is non-increasing — scanning further is
-    //     pointless. If there are no considered trips at all, there is nothing
-    //     to reach.
-    // FR: Une fois la date de parcours passée le dernier départ, aucun nouveau
-    //     jour ne peut entrer dans la fenêtre et le compte est non croissant —
-    //     poursuivre est inutile. S'il n'y a aucun séjour considéré, il n'y a
-    //     rien à atteindre.
-    DateTime? lastDeparture;
-    for (final trip in trips) {
-      if (!includeStatuses.contains(trip.status)) continue;
-      if (lastDeparture == null || trip.departureDate.isAfter(lastDeparture)) {
-        lastDeparture = trip.departureDate;
+    // EN: Projection looks forward, so actual trips are NOT clipped to today here:
+    //     an expected departure counts in full, and an open stay is assumed to
+    //     continue (the mid-trip alert of FR-9 depends on it), up to the ceiling.
+    // FR: La projection regarde vers l'avant, donc les séjours réels ne sont PAS
+    //     bornés à aujourd'hui : un départ prévu compte en entier et un séjour
+    //     ouvert est présumé se poursuivre (l'alerte en cours de séjour de FR-9 en
+    //     dépend), jusqu'au plafond.
+    final start = _dayNumber(from);
+    final ceiling = start + InputLimits.maxReachSearchDays;
+    final spans = _mergedSpans(
+      trips.where((t) => includeStatuses.contains(t.status)).map((t) {
+        final departure = t.departureDate;
+        return (
+          _dayNumber(t.arrivalDate),
+          departure == null ? ceiling : _dayNumber(departure),
+        );
+      }),
+    );
+    if (spans.isEmpty) return null;
+
+    // EN: Once the scan passes the last covered day, no new day can enter the
+    //     window and the count is non-increasing — scanning further is pointless.
+    //     Merging once, outside the loop, keeps each step cheap (NFR-6).
+    // FR: Une fois le dernier jour couvert passé, aucun nouveau jour ne peut entrer
+    //     dans la fenêtre et le compte est non croissant — poursuivre est inutile.
+    //     Fusionner une seule fois, hors boucle, garde chaque pas léger (NFR-6).
+    final lastDay = spans.last.$2;
+    final scanEnd =
+        lastDay < start ? start : (lastDay > ceiling ? ceiling : lastDay);
+    // EN: With [crossingOnly], a day counts only if the day before was still below
+    //     the target. A notification announces the moment of crossing; without this,
+    //     a target already reached would be "reached today" every single day.
+    // FR: Avec [crossingOnly], un jour ne compte que si la veille était encore sous
+    //     la cible. Une notification annonce le moment du franchissement ; sans cela,
+    //     une cible déjà atteinte serait « atteinte aujourd'hui » chaque jour.
+    var wasReached = crossingOnly &&
+        _countInSpans(spans, start - windowDays, start - 1) >= thresholdDays;
+    for (var day = start; day <= scanEnd; day++) {
+      final count = _countInSpans(spans, day - (windowDays - 1), day);
+      if (count < thresholdDays) {
+        wasReached = false;
+      } else if (!wasReached) {
+        return DateTime(from.year, from.month, from.day + (day - start));
       }
-    }
-    if (lastDeparture == null) return null;
-
-    final start = _dateOnly(from);
-    final scanEnd = lastDeparture.isAfter(start) ? lastDeparture : start;
-
-    // EN: Number of calendar days to scan, capped by the absolute safety
-    //     ceiling (see InputLimits.maxReachSearchDays). All date stepping below
-    //     uses the DateTime constructor's day-normalisation instead of
-    //     add/subtract(Duration) — Durations are absolute time and would drift
-    //     by an hour across DST changes, corrupting the calendar date.
-    // FR: Nombre de jours calendaires à parcourir, plafonné par le plafond de
-    //     sécurité absolu (voir InputLimits.maxReachSearchDays). Tous les pas de
-    //     date ci-dessous utilisent la normalisation de jour du constructeur
-    //     DateTime au lieu de add/subtract(Duration) — les Durations sont du
-    //     temps absolu et dériveraient d'une heure à travers les changements
-    //     d'heure, corrompant la date calendaire.
-    var scanLength = _daysBetween(start, scanEnd);
-    if (scanLength > InputLimits.maxReachSearchDays) {
-      scanLength = InputLimits.maxReachSearchDays;
-    }
-
-    for (var i = 0; i <= scanLength; i++) {
-      final d = DateTime(start.year, start.month, start.day + i);
-      final count = countDaysInWindow(
-        trips: trips,
-        windowStart: DateTime(d.year, d.month, d.day - (windowDays - 1)),
-        windowEnd: d,
-        includeStatuses: includeStatuses,
-      );
-      if (count >= thresholdDays) return d;
     }
     return null;
   }
@@ -399,6 +388,11 @@ abstract final class DayCounter {
   //     (FR-10) : la date d'atteinte est cette date plus la cible de jours écoulés de
   //     l'utilisateur. Par défaut, séjours RÉELS uniquement — « depuis mon dernier
   //     séjour » signifie un séjour ayant eu lieu, pas un séjour planifié.
+  //
+  //     Null while a considered trip is open: the user has not left, so there is
+  //     no elapsed time to measure.
+  //     Null tant qu'un séjour considéré est ouvert : l'utilisateur n'est pas
+  //     reparti, il n'y a donc aucun temps écoulé à mesurer.
   static DateTime? lastDeparture({
     required List<Trip> trips,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
@@ -406,9 +400,9 @@ abstract final class DayCounter {
     DateTime? last;
     for (final trip in trips) {
       if (!includeStatuses.contains(trip.status)) continue;
-      if (last == null || trip.departureDate.isAfter(last)) {
-        last = trip.departureDate;
-      }
+      final departure = trip.departureDate;
+      if (departure == null) return null;
+      if (last == null || departure.isAfter(last)) last = departure;
     }
     return last;
   }
@@ -422,20 +416,48 @@ abstract final class DayCounter {
   //     frontière de la fenêtre au fil de la journée.
   static DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 
-  // EN: Whole calendar days from [a] to [b] (a ≤ b expected). Anchored in UTC
-  //     before subtracting, because local-midnight DateTimes are 23 or 25 hours
-  //     apart across a DST change — raw difference().inDays truncates that to
-  //     the wrong day count (e.g. Jan 1 → Mar 16 in a DST zone would yield 73
-  //     instead of 74). UTC has no DST, so the subtraction is always exact.
-  // FR: Jours calendaires entiers de [a] à [b] (a ≤ b attendu). Ancré en UTC
-  //     avant la soustraction, car des DateTime à minuit local sont séparés de
-  //     23 ou 25 heures à travers un changement d'heure — difference().inDays
-  //     brut tronquerait vers le mauvais nombre de jours (p. ex. 1 jan. →
-  //     16 mars dans un fuseau à heure d'été donnerait 73 au lieu de 74). L'UTC
-  //     n'a pas d'heure d'été, donc la soustraction est toujours exacte.
-  static int _daysBetween(DateTime a, DateTime b) {
-    final ua = DateTime.utc(a.year, a.month, a.day);
-    final ub = DateTime.utc(b.year, b.month, b.day);
-    return ub.difference(ua).inDays;
+  // EN: Serial number of a calendar day. Anchored in UTC because local midnights are
+  //     23 or 25 hours apart across a DST change, and a raw difference would be off
+  //     by a day; integers then make interval arithmetic exact.
+  // FR: Numéro de série d'un jour calendaire. Ancré en UTC car les minuits locaux
+  //     sont séparés de 23 ou 25 heures lors d'un changement d'heure, et une
+  //     différence brute serait fausse d'un jour ; les entiers rendent ensuite
+  //     l'arithmétique d'intervalles exacte.
+  static int _dayNumber(DateTime d) =>
+      DateTime.utc(d.year, d.month, d.day).millisecondsSinceEpoch ~/
+      Duration.millisecondsPerDay;
+
+  // EN: Sort inclusive (first, last) spans and fuse the ones that overlap, so the
+  //     result is disjoint and every day exists at most once. Inverted spans (an
+  //     actual trip entirely in the future, after clipping) are dropped.
+  // FR: Trier les intervalles inclusifs (premier, dernier) et fusionner ceux qui se
+  //     chevauchent : le résultat est disjoint et chaque jour existe au plus une
+  //     fois. Les intervalles inversés (séjour réel entièrement futur, après
+  //     bornage) sont écartés.
+  static List<(int, int)> _mergedSpans(Iterable<(int, int)> raw) {
+    final sorted = raw.where((s) => s.$2 >= s.$1).toList()
+      ..sort((a, b) => a.$1.compareTo(b.$1));
+    final merged = <(int, int)>[];
+    for (final span in sorted) {
+      if (merged.isNotEmpty && span.$1 <= merged.last.$2) {
+        final (first, last) = merged.removeLast();
+        merged.add((first, span.$2 > last ? span.$2 : last));
+      } else {
+        merged.add(span);
+      }
+    }
+    return merged;
+  }
+
+  // EN: Days of disjoint [spans] that fall inside the inclusive window.
+  // FR: Jours des intervalles disjoints [spans] situés dans la fenêtre inclusive.
+  static int _countInSpans(List<(int, int)> spans, int start, int end) {
+    var total = 0;
+    for (final (first, last) in spans) {
+      final from = first > start ? first : start;
+      final to = last < end ? last : end;
+      if (to >= from) total += to - from + 1;
+    }
+    return total;
   }
 }

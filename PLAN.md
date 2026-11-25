@@ -1,10 +1,8 @@
-# SnowBird-In-USA-Tracker — Project Plan
+# SENALOVIRA (working name, formerly SnowBird) — Project Plan
 
-_Last updated: 2026-07-11 (feature-complete for UAT: trip logbook + full field set,
-image/PDF/CSV export, day-count & time-since-last-visit alerts, on-screen SPT,
-Settings (language/theme/font), About/Reference/feedback/donate, one-time backup
-reminder. 86 tests pass, analyze clean, release APK builds with no INTERNET
-permission. Pre-2026-07-11: formal FR/NFR; OS-backup durability; expanded fields)_
+_Last updated: 2026-11-24. The July build was called feature-complete but was not; a review
+found gaps in counting, persistence, exports, alerts and accessibility, since fixed (see
+"Status after the November review" at the end). Not yet tested on a physical device._
 
 ## Strategic context — why this app exists beyond itself
 
@@ -231,9 +229,10 @@ invariants (published arithmetic, never verdicts) and the bilingual code-style r
   framed as "these are rules people track — ask your professional," so the user is not
   typing a number into a blank box from memory. It informs; it never prescribes or judges.
 - **FR-16 — Feedback, bug reports & donations as external links.** In-app buttons open
-  external browser links (a no-backend hosted form / public GitHub Issues / `mailto:` for
-  feedback; PayPal.me / Ko-fi for donations). No backend, no in-app purchase, nothing gated
-  behind donating.
+  pages on teagarden.net in the browser: report a problem, request a feature, track both,
+  see what is planned, contribute voluntarily, privacy policy. Nothing is sent by the app,
+  no in-app purchase, nothing gated behind contributing. _(Revised 2026-11-25; replaces the
+  Tally / PayPal / Ko-fi options discussed below.)_
 - **FR-17 — Bilingual EN/FR throughout.** Every user-facing string is localised in English
   and French via the l10n pipeline; no hard-coded strings in widgets. ✅
 - **FR-18 — Diagnostics without telemetry.** An About/diagnostics area shows the app version
@@ -343,10 +342,11 @@ rules and avoids the store 30% cut.
 **Donations** — a "Support the developer" button that opens an external browser link:
 - _Recommended:_ **PayPal.me** (most familiar to the snowbird demographic) and/or
   **Ko-fi** / **Buy Me a Coffee** (simple, low fees, one-time or recurring).
-- **Open the donation link in the external browser, not via in-app purchase.** Apple
-  restricts IAP-based donations and takes a cut; an external web link for a developer
-  tip is the clean, compliant path. Do not gate any app feature behind donating —
-  donations are gratitude, not a paywall.
+- **Store rules are not settled (checked 2026-11-25).** Apple has rejected free apps for an
+  optional external "tip" link, including for the US storefront; Google exempts tax-exempt
+  donations, which a contribution to a developer is not. Check both current policies before
+  submission, and be ready to ship without the in-app button. Never gate a feature behind a
+  contribution: they are gratitude, not a paywall.
 
 ## Coding standards & repository
 
@@ -365,9 +365,8 @@ rules and avoids the store 30% cut.
   //     ne gonflent jamais le total.
   ```
 - This bilingual-verbose-comment rule applies to all Dart/code files in this project.
-- **Author attribution in documentation is always `Veiðimaður - veidimadur.ca`.** Use
-  this exact form (name + site) wherever documentation credits the author — README, the
-  in-app About screen, store listings, the `LICENSE` copyright line, etc.
+- **Creator and maintainer is `teagarden.net`** (since 2026-11-25), wherever the
+  documentation, app, exports or store listings credit one.
 
 ## Distribution and the competitive landscape
 
@@ -409,6 +408,31 @@ Presence Record for the border, your accountant, or your insurer."
   use. Costs nothing, answers the live positioning question before the US$124 in
   store fees is spent.
 
+## Change of foundation: days by place and by work (direction approved 2026-11-25)
+
+The owner approved widening the app **before its first release**: the market for an app mainly
+for Canadians wintering in the United States is considered too crowded. It will serve full-time
+RV travellers, seasonal and travelling workers, and snowbirds, of any citizenship, counting days
+in Canada and its provinces and territories, the United States, Mexico and
+Saint-Pierre-et-Miquelon, and optionally days worked.
+
+[`REQUIREMENTS-places.md`](REQUIREMENTS-places.md) is authoritative for this and **overrides
+this plan where they differ**. Its decisions were accepted 2026-11-25; nothing is built yet.
+
+| This plan | Becomes |
+|---|---|
+| What this is; core features 1 to 7 | Any tracked place, not only the US |
+| Positioning (verdicts vs. arithmetic; no accounts, cloud or location) | **Unchanged** |
+| FR-1 to FR-5 (trips) | Stays, stops, splitting, day visits |
+| FR-6, FR-7 (counts, SPT) | Days present table; SPT under the United States only |
+| FR-8 (US Presence Record) | Presence Record, with a one-country choice, and a daily ledger |
+| FR-9, FR-10 (alerts) | Each names a place |
+| FR-12, FR-13 (data) | Schema 3; existing counts must not change |
+| FR-15 (reference) | Every country, no unsourced figures |
+| FR-17 (languages) | Spanish proposed |
+| Distribution | Wider audience; competitors re-listed in its section 15 |
+| Store release | After that document's steps 0 to 7; the US-only version is not published |
+
 ## Out of scope (for now)
 
 - Automatic border / location detection.
@@ -416,7 +440,8 @@ Presence Record for the border, your accountant, or your insurer."
 - Immigration-rule or tax **verdicts** of any kind. (Note: the Substantial Presence
   *arithmetic* moved into MVP in the 2026-07-10 revision — computing the published
   formula is in scope; judging the result is not.)
-- Multi-country / Schengen tracking. (A generic multi-jurisdiction day engine is the
+- Schengen tracking. (_Multi-country tracking is now in scope, see above. The rest of this
+  note is the July reasoning._ A generic multi-jurisdiction day engine is the
   explicit _future_ direction for the secure-by-design app family — see Strategic
   context — but it is not this MVP and it would require legal-grade correctness
   before being marketed.)
@@ -455,3 +480,21 @@ Presence Record for the border, your accountant, or your insurer."
    placeholder feedback/donate/source URLs in `lib/config/app_links.dart`; add app
    icons + store screenshots; on-device UAT (visual rendering, print/share sheets,
    real notification delivery, iOS build/signing).
+
+## Status after the November review (2026-11-24)
+
+Where this differs from a tick above, this section governs.
+
+- **FR-2:** open trips (no departure) are supported for actual trips.
+- **FR-3 / FR-6:** what-if and custom ranges are on the Explore screen.
+- **FR-5:** actual trips may share a border day but not otherwise overlap, and may not start
+  in the future; planned trips may overlap. The 2,000-trip cap is enforced.
+- **FR-8:** PDF (US Letter, bundled font) shows every crossing detail; PNG is one image per
+  page; a localised plain-text export serves screen readers; CSV headers stay in English by
+  decision.
+- **FR-9 / FR-10 / FR-19:** alerts fire on the crossing day only; permission is asked first.
+- **FR-12 / FR-13:** stored data is versioned; unreadable data is quarantined and announced.
+- **FR-20 / FR-21:** every screen is tested at large text in both languages. High contrast
+  with bold text follows the phone or an in-app switch.
+- **Open:** device testing, French review, the teagarden.net app pages, final name, icon, signing key,
+  privacy policy publication, and the remaining dependency upgrades.

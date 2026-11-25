@@ -25,7 +25,14 @@ enum TripStatus { actual, planned }
 class Trip {
   final String id;
   final DateTime arrivalDate;
-  final DateTime departureDate;
+
+  // EN: Null means an OPEN stay: the user is in the US and has not left yet (FR-2).
+  //     Only an actual trip may be open. A null is better than asking the user to
+  //     invent a date, which would then be counted as if it had happened.
+  // FR: Null signifie un séjour OUVERT : l'utilisateur est aux É.-U. et n'est pas
+  //     encore reparti (FR-2). Seul un séjour réel peut être ouvert. Mieux vaut un
+  //     null que de demander une date inventée, ensuite comptée comme vécue.
+  final DateTime? departureDate;
   final TripStatus status;
 
   // EN: Optional user-given name for the trip, recording its purpose so the user
@@ -83,15 +90,17 @@ class Trip {
   //     garantis uniques par appareil.
   factory Trip.create({
     required DateTime arrivalDate,
-    required DateTime departureDate,
+    required DateTime? departureDate,
     required TripStatus status,
     String? name,
     String? notes,
     CrossingInfo? arrivalInfo,
     CrossingInfo? departureInfo,
   }) {
-    if (!departureDate.isAtSameMomentAs(arrivalDate) &&
-        departureDate.isBefore(arrivalDate)) {
+    if (departureDate == null && status == TripStatus.planned) {
+      throw ArgumentError('A planned trip needs a departureDate.');
+    }
+    if (departureDate != null && departureDate.isBefore(arrivalDate)) {
       throw ArgumentError(
         'departureDate ($departureDate) must not precede arrivalDate ($arrivalDate).',
       );
@@ -99,7 +108,7 @@ class Trip {
     return Trip(
       id: const Uuid().v4(),
       arrivalDate: _dateOnly(arrivalDate),
-      departureDate: _dateOnly(departureDate),
+      departureDate: departureDate == null ? null : _dateOnly(departureDate),
       status: status,
       name: _capText(name, InputLimits.maxTripNameLength),
       notes: _capText(notes, InputLimits.maxNotesLength),
@@ -128,17 +137,65 @@ class Trip {
   //     23 heures et difference().inDays brut perdrait silencieusement un jour
   //     (p. ex. 8 – 10 mars dans un fuseau à heure d'été donnerait 2 jours au
   //     lieu de 3). L'UTC n'a pas d'heure d'été.
-  int get daysInUS =>
-      DateTime.utc(departureDate.year, departureDate.month, departureDate.day)
-          .difference(
-            DateTime.utc(
-              arrivalDate.year,
-              arrivalDate.month,
-              arrivalDate.day,
-            ),
-          )
-          .inDays +
-      1;
+  //     Null for an open trip: its full length is not known yet.
+  //     Null pour un séjour ouvert : sa durée complète n'est pas encore connue.
+  int? get daysInUS {
+    final departure = departureDate;
+    return departure == null ? null : _inclusiveDays(arrivalDate, departure);
+  }
+
+  // EN: Days to show for this trip as of [asOf]. An actual trip is clipped to asOf
+  //     because days that have not happened cannot be presence; a planned trip
+  //     shows its whole intended span. This keeps each row consistent with the
+  //     totals, which apply the same rule.
+  // FR: Jours à afficher pour ce séjour au [asOf]. Un séjour réel est borné à asOf
+  //     car des jours non vécus ne sont pas de la présence ; un séjour planifié
+  //     montre toute sa durée prévue. Chaque ligne reste ainsi cohérente avec les
+  //     totaux, qui appliquent la même règle.
+  int daysPresent(DateTime asOf) {
+    final end = effectiveEnd(asOf);
+    return end.isBefore(arrivalDate) ? 0 : _inclusiveDays(arrivalDate, end);
+  }
+
+  // EN: Last day that counts as of [asOf] — the single definition of the clipping
+  //     rule, shared with DayCounter. May precede the arrival: then nothing counts.
+  // FR: Dernier jour compté au [asOf] — l'unique définition de la règle de bornage,
+  //     partagée avec DayCounter. Peut précéder l'arrivée : alors rien ne compte.
+  DateTime effectiveEnd(DateTime asOf) {
+    final today = _dateOnly(asOf);
+    final departure = departureDate ?? today;
+    if (status == TripStatus.planned) return departure;
+    return departure.isAfter(today) ? today : departure;
+  }
+
+  // EN: True while an actual stay has begun but not ended, whether it is open or
+  //     has an expected departure in the future.
+  // FR: Vrai tant qu'un séjour réel a commencé sans être terminé, qu'il soit ouvert
+  //     ou qu'il ait un départ prévu dans le futur.
+  bool isInProgress(DateTime asOf) {
+    final today = _dateOnly(asOf);
+    return status == TripStatus.actual &&
+        !arrivalDate.isAfter(today) &&
+        (departureDate?.isAfter(today) ?? true);
+  }
+
+  // EN: Two actual trips conflict when they share more than a boundary day. Leaving
+  //     and re-entering on the same date is ordinary and must stay allowed, hence
+  //     the strict comparisons. An open trip has no end, so it conflicts with
+  //     anything departing after its arrival.
+  // FR: Deux séjours réels sont en conflit s'ils partagent plus qu'un jour limite.
+  //     Sortir et rentrer le même jour est courant et doit rester permis, d'où les
+  //     comparaisons strictes. Un séjour ouvert n'a pas de fin : il est en conflit
+  //     avec tout séjour dont le départ suit son arrivée.
+  bool conflictsWith(Trip other) {
+    if (status != TripStatus.actual || other.status != TripStatus.actual) {
+      return false;
+    }
+    final end = departureDate;
+    final otherEnd = other.departureDate;
+    return (otherEnd == null || arrivalDate.isBefore(otherEnd)) &&
+        (end == null || other.arrivalDate.isBefore(end));
+  }
 
   // EN: Return a new Trip with selected fields replaced. All unchanged fields are
   //     copied from the original — callers never mutate the instance directly.
@@ -148,7 +205,7 @@ class Trip {
   Trip copyWith({
     String? id,
     DateTime? arrivalDate,
-    DateTime? departureDate,
+    Object? departureDate = _sentinel,
     TripStatus? status,
     Object? name = _sentinel,
     Object? notes = _sentinel,
@@ -159,8 +216,11 @@ class Trip {
       id: id ?? this.id,
       arrivalDate:
           arrivalDate != null ? _dateOnly(arrivalDate) : this.arrivalDate,
-      departureDate:
-          departureDate != null ? _dateOnly(departureDate) : this.departureDate,
+      departureDate: departureDate == _sentinel
+          ? this.departureDate
+          : departureDate == null
+              ? null
+              : _dateOnly(departureDate as DateTime),
       status: status ?? this.status,
       name: name == _sentinel ? this.name : name as String?,
       notes: notes == _sentinel ? this.notes : notes as String?,
@@ -183,7 +243,12 @@ class Trip {
   Map<String, dynamic> toJson() => {
         'id': id,
         'arrivalDate': _isoDate(arrivalDate),
-        'departureDate': _isoDate(departureDate),
+        // EN: The key is always written, null included: a MISSING key is damage,
+        //     and must never be mistaken for a stay that is still open.
+        // FR: La clé est toujours écrite, null compris : une clé ABSENTE est un
+        //     dommage et ne doit jamais passer pour un séjour encore ouvert.
+        'departureDate':
+            departureDate == null ? null : _isoDate(departureDate!),
         'status': status.name,
         if (name != null) 'name': name,
         if (notes != null) 'notes': notes,
@@ -208,27 +273,39 @@ class Trip {
   //     StorageService puisse l'intercepter et ignorer ou rejeter l'enregistrement
   //     sans faire planter l'appli.
   factory Trip.fromJson(Map<String, dynamic> json) {
-    final arrival = DateTime.tryParse(json['arrivalDate'] as String? ?? '');
-    final departure = DateTime.tryParse(json['departureDate'] as String? ?? '');
+    // EN: Every value is type-checked before use. A cast would throw TypeError,
+    //     which is not the FormatException this method promises.
+    // FR: Chaque valeur est vérifiée avant usage. Une conversion lancerait une
+    //     TypeError, et non la FormatException que cette méthode promet.
+    String? readText(String key) {
+      final raw = json[key];
+      if (raw == null || raw is String) return raw as String?;
+      throw FormatException('Trip JSON "$key" must be a string.');
+    }
+
+    final arrival = DateTime.tryParse(readText('arrivalDate') ?? '');
+    final departureRaw = readText('departureDate');
+    final departure = DateTime.tryParse(departureRaw ?? '');
+    final isOpen = json.containsKey('departureDate') && departureRaw == null;
 
     if (arrival == null) {
       throw const FormatException(
         'Trip JSON is missing a valid "arrivalDate".',
       );
     }
-    if (departure == null) {
+    if (departure == null && !isOpen) {
       throw const FormatException(
         'Trip JSON is missing a valid "departureDate".',
       );
     }
-    if (departure.isBefore(arrival)) {
+    if (departure != null && departure.isBefore(arrival)) {
       throw FormatException(
         'Trip "departureDate" (${_isoDate(departure)}) precedes '
         '"arrivalDate" (${_isoDate(arrival)}).',
       );
     }
 
-    final statusRaw = json['status'] as String? ?? '';
+    final statusRaw = readText('status') ?? '';
     final TripStatus status;
     try {
       status = TripStatus.values.byName(statusRaw);
@@ -236,7 +313,11 @@ class Trip {
       throw FormatException('Unknown trip status: "$statusRaw".');
     }
 
-    final id = json['id'] as String?;
+    if (isOpen && status == TripStatus.planned) {
+      throw const FormatException('A planned trip needs a "departureDate".');
+    }
+
+    final id = readText('id');
     if (id == null || id.isEmpty) {
       throw const FormatException('Trip JSON is missing a non-empty "id".');
     }
@@ -270,10 +351,10 @@ class Trip {
     return Trip(
       id: id,
       arrivalDate: _dateOnly(arrival),
-      departureDate: _dateOnly(departure),
+      departureDate: departure == null ? null : _dateOnly(departure),
       status: status,
-      name: _capText(json['name'] as String?, InputLimits.maxTripNameLength),
-      notes: _capText(json['notes'] as String?, InputLimits.maxNotesLength),
+      name: _capText(readText('name'), InputLimits.maxTripNameLength),
+      notes: _capText(readText('notes'), InputLimits.maxNotesLength),
       arrivalInfo: parseCrossing('arrivalInfo'),
       departureInfo: parseCrossing('departureInfo'),
     );
@@ -293,7 +374,8 @@ class Trip {
 
   @override
   String toString() => 'Trip(id: $id, arrival: ${_isoDate(arrivalDate)}, '
-      'departure: ${_isoDate(departureDate)}, status: ${status.name})';
+      'departure: ${departureDate == null ? 'open' : _isoDate(departureDate!)}, '
+      'status: ${status.name})';
 
   // ---------------------------------------------------------------------------
   // Private helpers
@@ -315,6 +397,15 @@ class Trip {
   // FR: Supprimer la composante horaire pour que toutes les dates soient ancrées
   //     à minuit.
   static DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
+
+  // EN: Inclusive calendar days, anchored in UTC so DST cannot drop a day.
+  // FR: Jours calendaires inclusifs, ancrés en UTC pour que l'heure d'été ne
+  //     fasse perdre aucun jour.
+  static int _inclusiveDays(DateTime a, DateTime b) =>
+      DateTime.utc(b.year, b.month, b.day)
+          .difference(DateTime.utc(a.year, a.month, a.day))
+          .inDays +
+      1;
 
   // EN: Format a DateTime as a YYYY-MM-DD string for JSON serialisation.
   // FR: Formater un DateTime en chaîne AAAA-MM-JJ pour la sérialisation JSON.

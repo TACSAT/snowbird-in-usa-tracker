@@ -28,8 +28,19 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
+
+// EN: Why a trip was refused. The UI turns these into localised, neutral messages.
+// FR: Pourquoi un séjour a été refusé. L'interface en fait des messages neutres et
+//     localisés.
+enum TripProblem { overlap, futureArrival, tooMany }
+
+class TripValidationException implements Exception {
+  final TripProblem problem;
+  const TripValidationException(this.problem);
+}
 
 class TripRepository extends ChangeNotifier {
   final StorageService _storage;
@@ -42,7 +53,16 @@ class TripRepository extends ChangeNotifier {
   //     qu'il y ait exactement un seul chemin de code pouvant modifier la liste.
   final List<Trip> _trips = [];
 
-  TripRepository(this._storage) {
+  // EN: Injectable clock, so "today" is deterministic in tests.
+  // FR: Horloge injectable, pour un « aujourd'hui » déterministe dans les tests.
+  final DateTime Function() _now;
+
+  // EN: Tail of the mutation queue; see _mutate().
+  // FR: Fin de la file des mutations ; voir _mutate().
+  Future<void> _tail = Future<void>.value();
+
+  TripRepository(this._storage, {DateTime Function()? now})
+      : _now = now ?? DateTime.now {
     // EN: Load persisted trips synchronously during construction. SharedPreferences
     //     returns a synchronous value after its async initialisation (completed in
     //     main() before this constructor runs), so there is no I/O latency here.
@@ -73,57 +93,82 @@ class TripRepository extends ChangeNotifier {
   // FR: Ajouter un nouveau séjour, persister et notifier les écouteurs. L'appelant
   //     est responsable de fournir un Trip avec un UUID valide (utiliser
   //     Trip.create() pour en obtenir un).
-  Future<void> addTrip(Trip trip) async {
-    _trips.add(trip);
-    await _persist();
+  //     Throws TripValidationException or StorageWriteException.
+  //     Lance TripValidationException ou StorageWriteException.
+  Future<void> addTrip(Trip trip) => _mutate((current) {
+        if (current.length >= InputLimits.maxTrips) {
+          throw const TripValidationException(TripProblem.tooMany);
+        }
+        _validate(trip, current);
+        return [...current, trip];
+      });
+
+  // EN: Update an existing trip matched by ID; a stale ID is a silent no-op. Dates
+  //     are validated only when they change, so a note can still be fixed on an
+  //     overlapping pair stored before overlaps were refused.
+  // FR: Mettre à jour un séjour existant par ID ; un ID périmé est sans effet. Les
+  //     dates ne sont validées que si elles changent, pour qu'une note reste
+  //     modifiable sur une paire chevauchante enregistrée avant ce refus.
+  Future<void> updateTrip(Trip updated) => _mutate((current) {
+        final index = current.indexWhere((t) => t.id == updated.id);
+        if (index == -1) return null;
+        final old = current[index];
+        if (old.arrivalDate != updated.arrivalDate ||
+            old.departureDate != updated.departureDate ||
+            old.status != updated.status) {
+          _validate(updated, current);
+        }
+        return [...current]..[index] = updated;
+      });
+
+  // EN: Remove a trip by ID. Silent no-op if the ID is not found (delete was already
+  //     applied, e.g. from a retry).
+  // FR: Supprimer un séjour par ID. Sans effet si l'ID est introuvable (suppression
+  //     déjà appliquée, p. ex. après une nouvelle tentative).
+  Future<void> deleteTrip(String id) => _mutate((current) {
+        final kept = current.where((t) => t.id != id).toList();
+        return kept.length == current.length ? null : kept;
+      });
+
+  // EN: Planned trips are free to overlap: comparing alternatives is their purpose.
+  //     An actual trip must have begun and must not conflict with another one. A
+  //     future DEPARTURE is allowed (an expected date); counts clip it to today.
+  // FR: Les séjours planifiés peuvent se chevaucher : comparer des options est leur
+  //     but. Un séjour réel doit avoir commencé et ne pas être en conflit avec un
+  //     autre. Un DÉPART futur est permis (date prévue) ; les comptes le bornent à
+  //     aujourd'hui.
+  void _validate(Trip trip, List<Trip> current) {
+    if (trip.status != TripStatus.actual) return;
+    if (trip.arrivalDate.isAfter(_now())) {
+      throw const TripValidationException(TripProblem.futureArrival);
+    }
+    if (current.any((t) => t.id != trip.id && t.conflictsWith(trip))) {
+      throw const TripValidationException(TripProblem.overlap);
+    }
   }
 
-  // EN: Update an existing trip matched by ID. If no trip with that ID exists,
-  //     this is a silent no-op — the caller passed a stale reference.
-  // FR: Mettre à jour un séjour existant identifié par ID. Si aucun séjour avec
-  //     cet ID n'existe, l'opération est silencieuse — l'appelant a passé une
-  //     référence périmée.
-  Future<void> updateTrip(Trip updated) async {
-    final index = _trips.indexWhere((t) => t.id == updated.id);
-    if (index == -1) return;
-    _trips[index] = updated;
-    await _persist();
-  }
-
-  // EN: Remove a trip by ID, persist, and notify. Silent no-op if the ID is not
-  //     found (delete was already applied, e.g. from a retry).
-  // FR: Supprimer un séjour par ID, persister et notifier. Opération silencieuse
-  //     si l'ID n'est pas trouvé (la suppression a déjà été appliquée, p. ex.
-  //     après une nouvelle tentative).
-  Future<void> deleteTrip(String id) async {
-    final before = _trips.length;
-    _trips.removeWhere((t) => t.id == id);
-    if (_trips.length != before) await _persist();
-  }
-
-  // EN: Replace the entire trip list with an imported backup. This is a
-  //     destructive operation — always show a confirmation dialog before calling
-  //     this from the UI so the user cannot accidentally overwrite their data.
-  // FR: Remplacer toute la liste des séjours par une sauvegarde importée. C'est
-  //     une opération destructrice — toujours afficher une boîte de dialogue de
-  //     confirmation avant d'appeler ceci depuis l'interface pour que l'utilisateur
-  //     ne puisse pas écraser ses données par accident.
-  Future<void> replaceAll(List<Trip> imported) async {
-    _trips
-      ..clear()
-      ..addAll(imported);
-    await _persist();
-  }
-
-  // EN: Persist the current list and notify listeners in one step. Centralising
-  //     this here ensures we never forget to call notifyListeners() after a
-  //     storage write, or call it before the write completes.
-  // FR: Persister la liste courante et notifier les écouteurs en une seule étape.
-  //     Centraliser ceci ici garantit qu'on n'oubliera jamais d'appeler
-  //     notifyListeners() après une écriture dans le stockage, ni de l'appeler
-  //     avant que l'écriture soit terminée.
-  Future<void> _persist() async {
-    await _storage.saveTrips(_trips);
-    notifyListeners();
+  // EN: The only path that changes the list. Mutations run one at a time, so two
+  //     quick saves cannot both pass validation against the same old list; memory
+  //     changes only AFTER the device accepted the write, so the screen never shows
+  //     something that was not saved. [change] returns null for "nothing to do".
+  // FR: Le seul chemin qui modifie la liste. Les mutations passent une à la fois :
+  //     deux enregistrements rapides ne peuvent être validés contre la même ancienne
+  //     liste ; la mémoire ne change qu'APRÈS l'écriture acceptée par l'appareil,
+  //     donc l'écran ne montre jamais ce qui n'est pas enregistré. [change] retourne
+  //     null pour « rien à faire ».
+  Future<void> _mutate(List<Trip>? Function(List<Trip> current) change) {
+    final result = _tail.then((_) async {
+      final next = change(List.unmodifiable(_trips));
+      if (next == null) return;
+      await _storage.saveTrips(next);
+      _trips
+        ..clear()
+        ..addAll(next);
+      notifyListeners();
+    });
+    // EN: A failed mutation must not block the ones queued after it.
+    // FR: Une mutation échouée ne doit pas bloquer celles qui la suivent.
+    _tail = result.catchError((Object _) {});
+    return result;
   }
 }

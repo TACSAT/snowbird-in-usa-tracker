@@ -555,4 +555,133 @@ void main() {
       );
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // EN: Integrity rules — unique days, no future presence, open-ended stays.
+  // FR: Règles d'intégrité — jours uniques, aucune présence future, séjours ouverts.
+  // ---------------------------------------------------------------------------
+
+  group('integrity', () {
+    final asOf = DateTime(2026, 11, 24);
+    int year(List<Trip> trips, {Set<TripStatus>? include}) =>
+        DayCounter.countDaysInCalendarYear(
+          trips: trips,
+          year: 2026,
+          asOf: asOf,
+          includeStatuses: include ?? const {TripStatus.actual},
+        );
+    Trip open(String arrival) => Trip(
+          id: 'open',
+          arrivalDate: DateTime.parse(arrival),
+          departureDate: null,
+          status: TripStatus.actual,
+        );
+
+    test('a shared border day counts once', () {
+      expect(
+        year([
+          actual('2026-01-10', '2026-01-20'),
+          actual('2026-01-01', '2026-01-10'),
+        ]),
+        20,
+      );
+    });
+
+    test('duplicate, nested and adjacent trips count unique days only', () {
+      expect(
+        year([
+          actual('2026-01-01', '2026-01-31'),
+          actual('2026-01-01', '2026-01-31'),
+          actual('2026-01-05', '2026-01-06'),
+          actual('2026-02-01', '2026-02-02'),
+        ]),
+        33,
+      );
+    });
+
+    test('unique days hold across a DST change', () {
+      expect(
+        year([
+          actual('2026-03-07', '2026-03-09'),
+          actual('2026-03-08', '2026-03-10'),
+        ]),
+        4,
+      );
+    });
+
+    test('actual and planned overlap counts once when both are included', () {
+      expect(
+        year(
+          [
+            actual('2026-01-01', '2026-01-10'),
+            planned('2026-01-10', '2026-01-12'),
+          ],
+          include: {TripStatus.actual, TripStatus.planned},
+        ),
+        12,
+      );
+    });
+
+    test('future days of an actual trip are not counted; planned are kept', () {
+      expect(year([actual('2026-11-01', '2026-12-31')]), 24);
+      expect(year([actual('2026-12-01', '2026-12-31')]), 0);
+      expect(
+        year(
+          [planned('2026-12-01', '2026-12-31')],
+          include: {TripStatus.planned},
+        ),
+        31,
+      );
+    });
+
+    test('an open trip counts through asOf in windows and SPT', () {
+      final trips = [open('2026-11-01')];
+      expect(year(trips), 24);
+      expect(
+        DayCounter.substantialPresence(trips: trips, asOf: asOf)
+            .currentYearDays,
+        24,
+      );
+      expect(
+        DayCounter.countDaysInLastDays(trips: trips, days: 10, today: asOf),
+        10,
+      );
+    });
+
+    test('projection assumes an open stay continues', () {
+      expect(
+        DayCounter.firstDateReachingThreshold(
+          trips: [open('2026-11-01')],
+          thresholdDays: 30,
+          windowDays: 365,
+          from: asOf,
+        ),
+        DateTime(2026, 11, 30),
+      );
+    });
+
+    test('projection does not double-count a shared day', () {
+      expect(
+        DayCounter.firstDateReachingThreshold(
+          trips: [
+            actual('2026-11-01', '2026-11-10'),
+            actual('2026-11-10', '2026-11-30'),
+          ],
+          thresholdDays: 20,
+          windowDays: 365,
+          from: DateTime(2026, 11, 1),
+        ),
+        DateTime(2026, 11, 20),
+      );
+    });
+
+    test('there is no last departure while a visit is open', () {
+      expect(
+        DayCounter.lastDeparture(
+          trips: [actual('2026-01-01', '2026-01-10'), open('2026-11-01')],
+        ),
+        isNull,
+      );
+    });
+  });
 }

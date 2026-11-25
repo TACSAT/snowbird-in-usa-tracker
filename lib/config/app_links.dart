@@ -1,36 +1,36 @@
-// EN: External web links for the Feedback, Donate, and Source buttons (FR-16).
-//     They open in the OS browser via url_launcher — the app itself sends nothing
-//     and needs no INTERNET permission (the browser makes the request, not us).
+// EN: Web pages opened by the About screen (FR-16), in the OS browser via url_launcher and
+//     only when tapped: the app itself sends nothing and has no INTERNET permission.
 //
-//     ⚠ THESE ARE PLACEHOLDERS. Before release, the project owner must replace each
-//     value with the real endpoint (a no-backend feedback form or the public GitHub
-//     Issues URL for feedback; a PayPal.me / Ko-fi link for donations; the public
-//     repository URL for source). They are gathered here, in one file, so there is a
-//     single place to set them and nothing is hard-coded in a widget.
+//     The path names no app on purpose. An installed app cannot change its links, so they
+//     must keep working if the name changes. Only the language is passed, so the page
+//     opens in the language of the app; never a version, a device or any user data.
 //
-// FR: Liens web externes pour les boutons Commentaires, Don et Source (FR-16). Ils
-//     s'ouvrent dans le navigateur de l'OS via url_launcher — l'appli elle-même
-//     n'envoie rien et n'a pas besoin de la permission INTERNET (c'est le navigateur
-//     qui fait la requête, pas nous).
+//     ⚠ These pages must exist before release: run tools/check_links.sh.
 //
-//     ⚠ CE SONT DES ESPACES RÉSERVÉS. Avant la publication, le propriétaire du
-//     projet doit remplacer chaque valeur par le vrai point de terminaison (un
-//     formulaire de commentaires sans serveur ou l'URL publique des Issues GitHub
-//     pour les commentaires ; un lien PayPal.me / Ko-fi pour les dons ; l'URL du
-//     dépôt public pour la source). Ils sont regroupés ici, dans un seul fichier,
-//     pour qu'il y ait un seul endroit où les définir et que rien ne soit codé en
-//     dur dans un widget.
+// FR: Pages web ouvertes par l'écran À propos (FR-16), dans le navigateur de l'OS via
+//     url_launcher et seulement au toucher : l'appli n'envoie rien et n'a pas la permission
+//     INTERNET.
+//
+//     Le chemin ne nomme volontairement aucune appli. Une appli installée ne peut changer
+//     ses liens ; ils doivent donc survivre à un changement de nom. Seule la langue est
+//     transmise, pour que la page s'ouvre dans celle de l'appli ; jamais une version, un
+//     appareil ou une donnée de l'utilisateur.
+//
+//     ⚠ Ces pages doivent exister avant la publication : lancer tools/check_links.sh.
+
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
+
+enum AppPage { report, request, status, roadmap, contribute, privacy }
 
 abstract final class AppLinks {
-  // EN: Placeholder — replace with the real feedback destination.
-  // FR: Espace réservé — remplacer par la vraie destination de commentaires.
-  static const String feedbackUrl = 'https://veidimadur.ca/snowbird/feedback';
+  static Uri page(AppPage page, String languageCode) => Uri.https(
+        AppIdentity.maker,
+        '/apps/days/${page.name}',
+        {'lang': languageCode},
+      );
 
-  // EN: Placeholder — replace with the real donation destination.
-  // FR: Espace réservé — remplacer par la vraie destination de don.
-  static const String donateUrl = 'https://veidimadur.ca/snowbird/support';
-
-  // EN: Placeholder — replace with the public source-code repository.
-  // FR: Espace réservé — remplacer par le dépôt public du code source.
-  static const String sourceUrl = 'https://veidimadur.ca/snowbird/source';
+  // EN: The public source-code repository.
+  // FR: Le dépôt public du code source.
+  static const String sourceUrl =
+      'https://github.com/TACSAT/snowbird-in-usa-tracker';
 }

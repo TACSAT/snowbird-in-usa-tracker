@@ -1,18 +1,27 @@
 {
   "@@locale": "fr",
-  "@@author": "Veiðimaður - veidimadur.ca",
 
-  "appTitle": "SnowBird",
+  "@@author": "teagarden.net",
 
   "appDisclaimerTitle": "Outil de suivi personnel — pas un conseil",
 
-  "appDisclaimerBody": "SnowBird compte vos jours aux États-Unis et vous permet d'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "appDisclaimerBody": "{appName} compte vos jours aux États-Unis et vous permet d'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "@appDisclaimerBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "appDisclaimerAcknowledge": "Je comprends",
 
   "backupReminderTitle": "Garder vos données en sécurité",
 
-  "backupReminderBody": "SnowBird conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.",
+  "backupReminderBody": "{appName} conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.",
+  "@backupReminderBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "backupReminderAcknowledge": "Compris",
 
@@ -20,7 +29,7 @@
 
   "tripStatusPlanned": "Planifié",
 
-  "daysCount": "{count, plural, =1{1 jour} other{{count} jours}}",
+  "daysCount": "{count, plural, =0{0 jour} =1{1 jour} other{{count} jours}}",
   "@daysCount": {
     "placeholders": {
       "count": { "type": "int" }
@@ -51,28 +60,17 @@
 
   "errorDepartureBefore": "La date de départ doit être égale ou postérieure à l'arrivée.",
 
-  "aboutTitle": "À propos de SnowBird",
-
-  "aboutBody": "SnowBird est un suivi de séjours gratuit, open source et respectueux de la vie privée. Vos données ne quittent jamais votre appareil.",
-
-  "aboutAuthor": "Développé par Veiðimaður — veidimadur.ca",
-
-  "feedbackButton": "Envoyer des commentaires",
-
-  "donateButton": "Soutenir le développeur",
-
-  "exportBackup": "Exporter la sauvegarde",
-
-  "importBackup": "Importer la sauvegarde",
-
-  "importBackupConfirm": "L'importation remplacera toutes les données de séjour actuelles. Continuer ?",
-
-  "importSuccess": "Sauvegarde importée avec succès.",
-
-  "importError": "Impossible d'importer la sauvegarde : {reason}",
-  "@importError": {
+  "aboutTitle": "À propos de {appName}",
+  "@aboutTitle": {
     "placeholders": {
-      "reason": { "type": "String" }
+      "appName": { "type": "String" }
+    }
+  },
+
+  "aboutAuthor": "Créé et maintenu par {maker}",
+  "@aboutAuthor": {
+    "placeholders": {
+      "maker": { "type": "String" }
     }
   },
 
@@ -88,7 +86,12 @@
 
   "alertsTooltip": "Mes alertes",
 
-  "alertsEmpty": "Aucune alerte.\nSnowBird ne fixe aucune limite de lui-même — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.",
+  "alertsEmpty": "Aucune alerte.\n{appName} ne fixe aucune limite — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.",
+  "@alertsEmpty": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "addAlert": "Ajouter une alerte",
 
@@ -109,8 +112,6 @@
   "alertTimeField": "Heure de livraison",
 
   "alertLeadField": "Préavis",
-
-  "alertLeadNone": "Le jour même",
 
   "alertLeadDaysField": "Jours avant",
 
@@ -143,7 +144,12 @@
     }
   },
 
-  "alertPermissionDenied": "Les notifications sont désactivées pour SnowBird dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.",
+  "alertPermissionDenied": "Les notifications sont désactivées pour {appName} dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.",
+  "@alertPermissionDenied": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "alertNotificationTitle": "Votre cible de jours",
 
@@ -217,7 +223,9 @@
 
   "exportError": "Impossible de créer l'export : {reason}",
   "@exportError": {
-    "placeholders": { "reason": { "type": "String" } }
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
   },
 
   "exportEmpty": "Ajoutez d'abord un séjour — il n'y a encore rien à exporter.",
@@ -226,7 +234,9 @@
 
   "recordAsOf": "En date du {date}",
   "@recordAsOf": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": { "type": "String" }
+    }
   },
 
   "recordDisclaimer": "Ceci est une fiche personnelle, pas un conseil. Elle ne donne aucun avis en immigration, en fiscalité ni en droit. Vérifiez votre situation auprès d'un professionnel qualifié.",
@@ -245,7 +255,13 @@
 
   "recordColDetails": "Séjour / détails",
 
-  "recordAuthor": "Tenue avec SnowBird — Veiðimaður · veidimadur.ca",
+  "recordAuthor": "Tenue avec {appName} · {maker}",
+  "@recordAuthor": {
+    "placeholders": {
+      "appName": { "type": "String" },
+      "maker": { "type": "String" }
+    }
+  },
 
   "menuSettings": "Réglages",
 
@@ -283,7 +299,12 @@
 
   "aboutPrivacyTitle": "Votre vie privée",
 
-  "aboutPrivacyBody": "SnowBird n'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.",
+  "aboutPrivacyBody": "{appName} n'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.",
+  "@aboutPrivacyBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "aboutSourceButton": "Voir le code source",
 
@@ -291,11 +312,21 @@
 
   "referenceTitle": "Règles courantes de comptage",
 
-  "referenceIntro": "Voici des nombres que les gens suivent souvent. SnowBird n'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "referenceIntro": "Voici des nombres que les gens suivent souvent. {appName} n'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d'un professionnel qualifié.",
+  "@referenceIntro": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "referenceSptTitle": "Test de présence substantielle (É.-U.)",
 
-  "referenceSptBody": "Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l'an dernier, plus un sixième de l'année d'avant. SnowBird affiche cette valeur comme un nombre neutre.",
+  "referenceSptBody": "Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l'an dernier, plus un sixième de l'année d'avant. {appName} affiche cette valeur comme un nombre neutre.",
+  "@referenceSptBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "referenceHealthTitle": "Couverture santé provinciale",
 
@@ -307,7 +338,12 @@
 
   "referenceMythTitle": "Il n'existe aucune limite cumulative unique",
 
-  "referenceMythBody": "Il n'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l'admission par entrée, la discrétion de l'agent et des tests fiscaux distincts. C'est pourquoi SnowBird compte et ne juge jamais.",
+  "referenceMythBody": "Il n'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l'admission par entrée, la discrétion de l'agent et des tests fiscaux distincts. C'est pourquoi {appName} compte et ne juge jamais.",
+  "@referenceMythBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "sptDisclaimer": "Un nombre neutre, pas un conseil — touchez pour le contexte.",
 
@@ -336,5 +372,201 @@
       "date": { "type": "String" },
       "threshold": { "type": "int" }
     }
-  }
+  },
+
+  "tripStillInUs": "Je suis encore aux É.-U.",
+
+  "tripStillInUsHelper": "Laissez activé jusqu'à ce que votre date de départ soit connue. Les jours comptent jusqu'à aujourd'hui.",
+
+  "tripOngoing": "en cours",
+
+  "tripDaysSoFar": "{days} jusqu'ici",
+  "@tripDaysSoFar": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "tripStatusCurrent": "En cours",
+
+  "errorTripOverlap": "Ces dates chevauchent un autre séjour réel. Sortir et revenir le même jour ne pose pas de problème.",
+
+  "errorFutureArrival": "Un séjour réel ne peut pas commencer dans le futur. Choisissez plutôt Planifié.",
+
+  "errorSaveFailed": "Votre changement n'a pas pu être enregistré sur cet appareil.",
+
+  "storageProblemTitle": "Des données enregistrées sont illisibles",
+
+  "storageProblemBody": "Une partie de vos données enregistrées n'a pas pu être lue; elle n'est donc ni affichée ni comptée. Rien n'a été effacé : l'original est conservé sur cet appareil, même après vos modifications.",
+
+  "storageNewerBody": "Vos données ont été enregistrées par une version plus récente de {appName}. Veuillez mettre l'appli à jour. D'ici là, les changements à ces données ne peuvent pas être enregistrés, afin de ne rien écraser.",
+  "@storageNewerBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
+
+  "alertInUsNow": "Sera mesuré quand vous aurez consigné le départ de votre séjour en cours",
+
+  "recordEntryLabel": "Entrée : {details}",
+  "@recordEntryLabel": {
+    "placeholders": {
+      "details": { "type": "String" }
+    }
+  },
+
+  "recordExitLabel": "Sortie : {details}",
+  "@recordExitLabel": {
+    "placeholders": {
+      "details": { "type": "String" }
+    }
+  },
+
+  "clearTime": "Effacer l'heure",
+
+  "errorTimeRequired": "Choisissez une heure de livraison.",
+
+  "alertReached": "Atteinte en date d'aujourd'hui",
+
+  "exploreTitle": "Explorer les jours et projets",
+
+  "exploreRangeHeading": "Jours dans une période",
+
+  "rangeFrom": "Du",
+
+  "rangeTo": "Au",
+
+  "rangeActual": "Jours réels à ce jour : {days}",
+  "@rangeActual": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "rangeWithPlanned": "Séjours planifiés compris : {days}",
+  "@rangeWithPlanned": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "whatIfHeading": "Et si je faisais ce séjour?",
+
+  "whatIfIntro": "Choisissez des dates possibles pour voir vos comptes. Rien n'est enregistré sans votre choix.",
+
+  "whatIfArrival": "Arrivée possible",
+
+  "whatIfDeparture": "Départ possible",
+
+  "whatIfWithout": "Sans ce séjour : {value}",
+  "@whatIfWithout": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfWith": "Avec ce séjour : {value}",
+  "@whatIfWith": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfYear": "Année civile {year}, jusqu'au {date}",
+  "@whatIfYear": {
+    "placeholders": {
+      "year": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfLast365": "365 jours se terminant le {date}",
+  "@whatIfLast365": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSpt": "Valeur de présence substantielle, projetée au {date}",
+  "@whatIfSpt": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSave": "Enregistrer comme séjour planifié",
+
+  "whatIfSaved": "Séjour planifié enregistré.",
+
+  "whatIfClear": "Effacer",
+
+  "assumeOpenTrip": "Les comptes incluant les séjours planifiés supposent que votre séjour en cours se poursuit jusqu'à ce que vous consigniez un départ.",
+
+  "assumeStalePlanned": "{count, plural, =0{Comprend 0 séjour planifié dont les dates sont passées.} =1{Comprend 1 séjour planifié dont les dates sont passées. Marquez-le comme réel ou supprimez-le.} other{Comprend {count} séjours planifiés dont les dates sont passées. Marquez-les comme réels ou supprimez-les.}}",
+  "@assumeStalePlanned": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "errorTooManyTrips": "La limite de {count} séjours est atteinte. Supprimez un séjour pour en ajouter un autre.",
+  "@errorTooManyTrips": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "alertToggleLabel": "Alerte active : {name}",
+  "@alertToggleLabel": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "exportAsText": "Texte brut (pour lecteurs d'écran)",
+
+  "recordLine": "{label} : {value}",
+  "@recordLine": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "value": { "type": "String" }
+    }
+  },
+
+  "recordTripNumber": "Séjour {number} sur {total}",
+  "@recordTripNumber": {
+    "placeholders": {
+      "number": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "recordTripName": "Nom du séjour",
+
+  "recordNotes": "Notes",
+
+  "settingsHighContrast": "Contraste élevé et texte gras",
+
+  "settingsHighContrastHelper": "Si désactivé, suit les réglages de contraste et de texte gras de votre téléphone, s'ils existent.",
+
+  "aboutHelpTitle": "Aide et planification",
+
+  "aboutReport": "Signaler un problème",
+
+  "aboutRequest": "Demander une fonctionnalité",
+
+  "aboutStatus": "Suivre signalements et demandes",
+
+  "aboutRoadmap": "Ce qui est prévu",
+
+  "aboutContribute": "Faire une contribution volontaire",
+
+  "aboutContributeNote": "Les contributions sont facultatives et ne débloquent rien : toutes les fonctionnalités sont gratuites. Ces boutons ouvrent {maker}, ou GitHub pour le code source, dans votre navigateur.",
+  "@aboutContributeNote": {
+    "placeholders": {
+      "maker": { "type": "String" }
+    }
+  },
+
+  "aboutPrivacyPolicy": "Politique de confidentialité"
 }

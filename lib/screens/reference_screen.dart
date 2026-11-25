@@ -17,7 +17,9 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 
 class ReferenceScreen extends StatelessWidget {
   const ReferenceScreen({super.key});
@@ -41,20 +43,28 @@ class ReferenceScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                strings.referenceIntro,
+                strings.referenceIntro(AppIdentity.name),
                 style: theme.textTheme.bodyMedium,
               ),
             ),
           ),
           const SizedBox(height: 8),
-          _item(theme, strings.referenceSptTitle, strings.referenceSptBody),
+          _item(
+            theme,
+            strings.referenceSptTitle,
+            strings.referenceSptBody(AppIdentity.name),
+          ),
           _item(
             theme,
             strings.referenceHealthTitle,
             strings.referenceHealthBody,
           ),
           _item(theme, strings.referenceEntryTitle, strings.referenceEntryBody),
-          _item(theme, strings.referenceMythTitle, strings.referenceMythBody),
+          _item(
+            theme,
+            strings.referenceMythTitle,
+            strings.referenceMythBody(AppIdentity.name),
+          ),
         ],
       ),
     );
@@ -66,7 +76,7 @@ class ReferenceScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.titleMedium),
+              SectionHeading(title, style: theme.textTheme.titleMedium),
               const SizedBox(height: 6),
               Text(body, style: theme.textTheme.bodyMedium),
             ],

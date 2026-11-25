@@ -9,14 +9,12 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appTitle => 'SnowBird';
-
-  @override
   String get appDisclaimerTitle => 'Outil de suivi personnel — pas un conseil';
 
   @override
-  String get appDisclaimerBody =>
-      'SnowBird compte vos jours aux États-Unis et vous permet d\'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n\'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  String appDisclaimerBody(String appName) {
+    return '$appName compte vos jours aux États-Unis et vous permet d\'imprimer ou de partager cet historique. Il ne donne pas de conseils en immigration, en fiscalité ou en droit, et n\'indique pas si un séjour est « sûr ». Vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  }
 
   @override
   String get appDisclaimerAcknowledge => 'Je comprends';
@@ -25,8 +23,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get backupReminderTitle => 'Garder vos données en sécurité';
 
   @override
-  String get backupReminderBody =>
-      'SnowBird conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.';
+  String backupReminderBody(String appName) {
+    return '$appName conserve tout sur cet appareil uniquement — rien ne nous est jamais envoyé. Vos séjours sont inclus dans la sauvegarde normale de votre téléphone (iCloud ou Google) et se transfèrent donc automatiquement vers un nouveau téléphone. Assurez-vous que la sauvegarde de votre téléphone est activée.';
+  }
 
   @override
   String get backupReminderAcknowledge => 'Compris';
@@ -44,6 +43,7 @@ class AppLocalizationsFr extends AppLocalizations {
       locale: localeName,
       other: '$count jours',
       one: '1 jour',
+      zero: '0 jour',
     );
     return '$_temp0';
   }
@@ -88,37 +88,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'La date de départ doit être égale ou postérieure à l\'arrivée.';
 
   @override
-  String get aboutTitle => 'À propos de SnowBird';
+  String aboutTitle(String appName) {
+    return 'À propos de $appName';
+  }
 
   @override
-  String get aboutBody =>
-      'SnowBird est un suivi de séjours gratuit, open source et respectueux de la vie privée. Vos données ne quittent jamais votre appareil.';
-
-  @override
-  String get aboutAuthor => 'Développé par Veiðimaður — veidimadur.ca';
-
-  @override
-  String get feedbackButton => 'Envoyer des commentaires';
-
-  @override
-  String get donateButton => 'Soutenir le développeur';
-
-  @override
-  String get exportBackup => 'Exporter la sauvegarde';
-
-  @override
-  String get importBackup => 'Importer la sauvegarde';
-
-  @override
-  String get importBackupConfirm =>
-      'L\'importation remplacera toutes les données de séjour actuelles. Continuer ?';
-
-  @override
-  String get importSuccess => 'Sauvegarde importée avec succès.';
-
-  @override
-  String importError(String reason) {
-    return 'Impossible d\'importer la sauvegarde : $reason';
+  String aboutAuthor(String maker) {
+    return 'Créé et maintenu par $maker';
   }
 
   @override
@@ -140,8 +116,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get alertsTooltip => 'Mes alertes';
 
   @override
-  String get alertsEmpty =>
-      'Aucune alerte.\nSnowBird ne fixe aucune limite de lui-même — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.';
+  String alertsEmpty(String appName) {
+    return 'Aucune alerte.\n$appName ne fixe aucune limite — si vous voulez un rappel à un nombre que vous choisissez, appuyez sur + pour en créer un.';
+  }
 
   @override
   String get addAlert => 'Ajouter une alerte';
@@ -176,9 +153,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get alertLeadField => 'Préavis';
 
   @override
-  String get alertLeadNone => 'Le jour même';
-
-  @override
   String get alertLeadDaysField => 'Jours avant';
 
   @override
@@ -207,8 +181,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get alertPermissionDenied =>
-      'Les notifications sont désactivées pour SnowBird dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.';
+  String alertPermissionDenied(String appName) {
+    return 'Les notifications sont désactivées pour $appName dans les réglages de votre appareil ; cette alerte ne peut donc pas être livrée.';
+  }
 
   @override
   String get alertNotificationTitle => 'Votre cible de jours';
@@ -337,7 +312,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get recordColDetails => 'Séjour / détails';
 
   @override
-  String get recordAuthor => 'Tenue avec SnowBird — Veiðimaður · veidimadur.ca';
+  String recordAuthor(String appName, String maker) {
+    return 'Tenue avec $appName · $maker';
+  }
 
   @override
   String get menuSettings => 'Réglages';
@@ -387,8 +364,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aboutPrivacyTitle => 'Votre vie privée';
 
   @override
-  String get aboutPrivacyBody =>
-      'SnowBird n\'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n\'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.';
+  String aboutPrivacyBody(String appName) {
+    return '$appName n\'a aucun compte, aucun nuage et aucun suivi. Tout ce que vous saisissez reste sur cet appareil et n\'est jamais envoyé au développeur. Vos données sont incluses dans la sauvegarde normale de votre téléphone (iCloud ou Google) et vous suivent donc vers un nouveau téléphone.';
+  }
 
   @override
   String get aboutSourceButton => 'Voir le code source';
@@ -400,15 +378,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get referenceTitle => 'Règles courantes de comptage';
 
   @override
-  String get referenceIntro =>
-      'Voici des nombres que les gens suivent souvent. SnowBird n\'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  String referenceIntro(String appName) {
+    return 'Voici des nombres que les gens suivent souvent. $appName n\'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+  }
 
   @override
   String get referenceSptTitle => 'Test de présence substantielle (É.-U.)';
 
   @override
-  String get referenceSptBody =>
-      'Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l\'an dernier, plus un sixième de l\'année d\'avant. SnowBird affiche cette valeur comme un nombre neutre.';
+  String referenceSptBody(String appName) {
+    return 'Un test de résidence fiscale américaine fondé sur un compte pondéré sur trois ans : tous vos jours cette année, plus un tiers de l\'an dernier, plus un sixième de l\'année d\'avant. $appName affiche cette valeur comme un nombre neutre.';
+  }
 
   @override
   String get referenceHealthTitle => 'Couverture santé provinciale';
@@ -429,8 +409,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Il n\'existe aucune limite cumulative unique';
 
   @override
-  String get referenceMythBody =>
-      'Il n\'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l\'admission par entrée, la discrétion de l\'agent et des tests fiscaux distincts. C\'est pourquoi SnowBird compte et ne juge jamais.';
+  String referenceMythBody(String appName) {
+    return 'Il n\'existe aucune limite unique de « jours » cumulés que cette appli pourrait appliquer pour vous. Les avocats en immigration qualifient souvent la « règle des 180 jours » de mythe ; les vraies contraintes sont l\'admission par entrée, la discrétion de l\'agent et des tests fiscaux distincts. C\'est pourquoi $appName compte et ne juge jamais.';
+  }
 
   @override
   String get sptDisclaimer =>
@@ -466,4 +447,218 @@ class AppLocalizationsFr extends AppLocalizations {
   String alertNotificationBodySince(String date, int threshold) {
     return 'En date du $date, il s\'est écoulé $threshold jours depuis votre dernier séjour aux É.-U. — la cible que vous avez fixée.';
   }
+
+  @override
+  String get tripStillInUs => 'Je suis encore aux É.-U.';
+
+  @override
+  String get tripStillInUsHelper =>
+      'Laissez activé jusqu\'à ce que votre date de départ soit connue. Les jours comptent jusqu\'à aujourd\'hui.';
+
+  @override
+  String get tripOngoing => 'en cours';
+
+  @override
+  String tripDaysSoFar(String days) {
+    return '$days jusqu\'ici';
+  }
+
+  @override
+  String get tripStatusCurrent => 'En cours';
+
+  @override
+  String get errorTripOverlap =>
+      'Ces dates chevauchent un autre séjour réel. Sortir et revenir le même jour ne pose pas de problème.';
+
+  @override
+  String get errorFutureArrival =>
+      'Un séjour réel ne peut pas commencer dans le futur. Choisissez plutôt Planifié.';
+
+  @override
+  String get errorSaveFailed =>
+      'Votre changement n\'a pas pu être enregistré sur cet appareil.';
+
+  @override
+  String get storageProblemTitle => 'Des données enregistrées sont illisibles';
+
+  @override
+  String get storageProblemBody =>
+      'Une partie de vos données enregistrées n\'a pas pu être lue; elle n\'est donc ni affichée ni comptée. Rien n\'a été effacé : l\'original est conservé sur cet appareil, même après vos modifications.';
+
+  @override
+  String storageNewerBody(String appName) {
+    return 'Vos données ont été enregistrées par une version plus récente de $appName. Veuillez mettre l\'appli à jour. D\'ici là, les changements à ces données ne peuvent pas être enregistrés, afin de ne rien écraser.';
+  }
+
+  @override
+  String get alertInUsNow =>
+      'Sera mesuré quand vous aurez consigné le départ de votre séjour en cours';
+
+  @override
+  String recordEntryLabel(String details) {
+    return 'Entrée : $details';
+  }
+
+  @override
+  String recordExitLabel(String details) {
+    return 'Sortie : $details';
+  }
+
+  @override
+  String get clearTime => 'Effacer l\'heure';
+
+  @override
+  String get errorTimeRequired => 'Choisissez une heure de livraison.';
+
+  @override
+  String get alertReached => 'Atteinte en date d\'aujourd\'hui';
+
+  @override
+  String get exploreTitle => 'Explorer les jours et projets';
+
+  @override
+  String get exploreRangeHeading => 'Jours dans une période';
+
+  @override
+  String get rangeFrom => 'Du';
+
+  @override
+  String get rangeTo => 'Au';
+
+  @override
+  String rangeActual(String days) {
+    return 'Jours réels à ce jour : $days';
+  }
+
+  @override
+  String rangeWithPlanned(String days) {
+    return 'Séjours planifiés compris : $days';
+  }
+
+  @override
+  String get whatIfHeading => 'Et si je faisais ce séjour?';
+
+  @override
+  String get whatIfIntro =>
+      'Choisissez des dates possibles pour voir vos comptes. Rien n\'est enregistré sans votre choix.';
+
+  @override
+  String get whatIfArrival => 'Arrivée possible';
+
+  @override
+  String get whatIfDeparture => 'Départ possible';
+
+  @override
+  String whatIfWithout(String value) {
+    return 'Sans ce séjour : $value';
+  }
+
+  @override
+  String whatIfWith(String value) {
+    return 'Avec ce séjour : $value';
+  }
+
+  @override
+  String whatIfYear(String year, String date) {
+    return 'Année civile $year, jusqu\'au $date';
+  }
+
+  @override
+  String whatIfLast365(String date) {
+    return '365 jours se terminant le $date';
+  }
+
+  @override
+  String whatIfSpt(String date) {
+    return 'Valeur de présence substantielle, projetée au $date';
+  }
+
+  @override
+  String get whatIfSave => 'Enregistrer comme séjour planifié';
+
+  @override
+  String get whatIfSaved => 'Séjour planifié enregistré.';
+
+  @override
+  String get whatIfClear => 'Effacer';
+
+  @override
+  String get assumeOpenTrip =>
+      'Les comptes incluant les séjours planifiés supposent que votre séjour en cours se poursuit jusqu\'à ce que vous consigniez un départ.';
+
+  @override
+  String assumeStalePlanned(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Comprend $count séjours planifiés dont les dates sont passées. Marquez-les comme réels ou supprimez-les.',
+      one:
+          'Comprend 1 séjour planifié dont les dates sont passées. Marquez-le comme réel ou supprimez-le.',
+      zero: 'Comprend 0 séjour planifié dont les dates sont passées.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorTooManyTrips(int count) {
+    return 'La limite de $count séjours est atteinte. Supprimez un séjour pour en ajouter un autre.';
+  }
+
+  @override
+  String alertToggleLabel(String name) {
+    return 'Alerte active : $name';
+  }
+
+  @override
+  String get exportAsText => 'Texte brut (pour lecteurs d\'écran)';
+
+  @override
+  String recordLine(String label, String value) {
+    return '$label : $value';
+  }
+
+  @override
+  String recordTripNumber(int number, int total) {
+    return 'Séjour $number sur $total';
+  }
+
+  @override
+  String get recordTripName => 'Nom du séjour';
+
+  @override
+  String get recordNotes => 'Notes';
+
+  @override
+  String get settingsHighContrast => 'Contraste élevé et texte gras';
+
+  @override
+  String get settingsHighContrastHelper =>
+      'Si désactivé, suit les réglages de contraste et de texte gras de votre téléphone, s\'ils existent.';
+
+  @override
+  String get aboutHelpTitle => 'Aide et planification';
+
+  @override
+  String get aboutReport => 'Signaler un problème';
+
+  @override
+  String get aboutRequest => 'Demander une fonctionnalité';
+
+  @override
+  String get aboutStatus => 'Suivre signalements et demandes';
+
+  @override
+  String get aboutRoadmap => 'Ce qui est prévu';
+
+  @override
+  String get aboutContribute => 'Faire une contribution volontaire';
+
+  @override
+  String aboutContributeNote(String maker) {
+    return 'Les contributions sont facultatives et ne débloquent rien : toutes les fonctionnalités sont gratuites. Ces boutons ouvrent $maker, ou GitHub pour le code source, dans votre navigateur.';
+  }
+
+  @override
+  String get aboutPrivacyPolicy => 'Politique de confidentialité';
 }

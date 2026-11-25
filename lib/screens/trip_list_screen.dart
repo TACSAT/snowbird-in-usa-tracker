@@ -17,26 +17,29 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart';
 import 'package:snowbird_in_usa_tracker/services/record_exporter.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
-// EN: The four ways to export the US Presence Record (FR-8).
-// FR: Les quatre façons d'exporter la fiche de présence (FR-8).
-enum _ExportChoice { pdf, image, csv, print }
+// EN: The ways to export the US Presence Record (FR-8).
+// FR: Les façons d'exporter la fiche de présence (FR-8).
+enum _ExportChoice { pdf, text, image, csv, print }
 
 // EN: Overflow-menu destinations (FR-14/15/20).
 // FR: Destinations du menu de débordement (FR-14/15/20).
-enum _Menu { reference, settings, about }
+enum _Menu { explore, reference, settings, about }
 
 class TripListScreen extends StatefulWidget {
   const TripListScreen({super.key});
@@ -46,6 +49,18 @@ class TripListScreen extends StatefulWidget {
 }
 
 class _TripListScreenState extends State<TripListScreen> {
+  // EN: Locates the export button on screen, where an iPad anchors its share popover.
+  // FR: Situe le bouton d'export à l'écran, où l'iPad ancre sa bulle de partage.
+  final _exportButtonKey = GlobalKey();
+
+  Rect _shareOrigin() {
+    final box = _exportButtonKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) {
+      return const Rect.fromLTWH(0, 0, 1, 1);
+    }
+    return box.localToGlobal(Offset.zero) & box.size;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -73,7 +88,7 @@ class _TripListScreenState extends State<TripListScreen> {
       final strings = AppLocalizations.of(context);
       await _showAck(
         title: strings.appDisclaimerTitle,
-        body: strings.appDisclaimerBody,
+        body: strings.appDisclaimerBody(AppIdentity.name),
         button: strings.appDisclaimerAcknowledge,
       );
       await storage.setDisclaimerAcknowledged();
@@ -84,10 +99,27 @@ class _TripListScreenState extends State<TripListScreen> {
       final strings = AppLocalizations.of(context);
       await _showAck(
         title: strings.backupReminderTitle,
-        body: strings.backupReminderBody,
+        body: strings.backupReminderBody(AppIdentity.name),
         button: strings.backupReminderAcknowledge,
       );
       await storage.setBackupReminderShown();
+    }
+
+    // EN: Shown at each launch while the problem lasts (the first successful save
+    //     clears it): silence here would look like lost trips (FR-13).
+    // FR: Montré à chaque lancement tant que le problème dure (le premier
+    //     enregistrement réussi le règle) : le silence ferait croire à des séjours
+    //     perdus (FR-13).
+    if (storage.loadProblem != StorageLoadProblem.none) {
+      if (!mounted) return;
+      final strings = AppLocalizations.of(context);
+      await _showAck(
+        title: strings.storageProblemTitle,
+        body: storage.loadProblem == StorageLoadProblem.newerVersion
+            ? strings.storageNewerBody(AppIdentity.name)
+            : strings.storageProblemBody,
+        button: strings.backupReminderAcknowledge,
+      );
     }
   }
 
@@ -115,31 +147,44 @@ class _TripListScreenState extends State<TripListScreen> {
 
     final choice = await showModalBottomSheet<_ExportChoice>(
       context: context,
+      // EN: Scrolls and may use the full height, or large text would push the last
+      //     choices off screen.
+      // FR: Défile et peut prendre toute la hauteur, sinon le grand texte pousserait
+      //     les derniers choix hors de l'écran.
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf_outlined),
-              title: Text(strings.exportAsPdf),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.pdf),
-            ),
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: Text(strings.exportAsImage),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.image),
-            ),
-            ListTile(
-              leading: const Icon(Icons.table_chart_outlined),
-              title: Text(strings.exportAsCsv),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.csv),
-            ),
-            ListTile(
-              leading: const Icon(Icons.print_outlined),
-              title: Text(strings.exportPrint),
-              onTap: () => Navigator.pop(ctx, _ExportChoice.print),
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf_outlined),
+                title: Text(strings.exportAsPdf),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.pdf),
+              ),
+              ListTile(
+                leading: const Icon(Icons.notes),
+                title: Text(strings.exportAsText),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.text),
+              ),
+              ListTile(
+                leading: const Icon(Icons.image_outlined),
+                title: Text(strings.exportAsImage),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.image),
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart_outlined),
+                title: Text(strings.exportAsCsv),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.csv),
+              ),
+              ListTile(
+                leading: const Icon(Icons.print_outlined),
+                title: Text(strings.exportPrint),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.print),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -152,15 +197,24 @@ class _TripListScreenState extends State<TripListScreen> {
             record,
             strings: strings,
             localeName: localeName,
+            origin: _shareOrigin(),
+          );
+        case _ExportChoice.text:
+          await RecordExporter.shareText(
+            record,
+            strings: strings,
+            localeName: localeName,
+            origin: _shareOrigin(),
           );
         case _ExportChoice.image:
           await RecordExporter.shareImage(
             record,
             strings: strings,
             localeName: localeName,
+            origin: _shareOrigin(),
           );
         case _ExportChoice.csv:
-          await RecordExporter.shareCsv(record);
+          await RecordExporter.shareCsv(record, origin: _shareOrigin());
         case _ExportChoice.print:
           await RecordExporter.printRecord(
             record,
@@ -179,6 +233,7 @@ class _TripListScreenState extends State<TripListScreen> {
   // FR: Diriger une sélection du menu vers son écran.
   void _onMenu(BuildContext context, _Menu item) {
     final Widget screen = switch (item) {
+      _Menu.explore => const ExploreScreen(),
       _Menu.reference => const ReferenceScreen(),
       _Menu.settings => const SettingsScreen(),
       _Menu.about => const AboutScreen(),
@@ -216,10 +271,11 @@ class _TripListScreenState extends State<TripListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(strings.appTitle),
+        title: const Text(AppIdentity.name),
         centerTitle: false,
         actions: [
           IconButton(
+            key: _exportButtonKey,
             icon: const Icon(Icons.ios_share_rounded),
             tooltip: strings.exportRecord,
             onPressed: _openExportSheet,
@@ -234,6 +290,10 @@ class _TripListScreenState extends State<TripListScreen> {
           PopupMenuButton<_Menu>(
             onSelected: (item) => _onMenu(context, item),
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _Menu.explore,
+                child: Text(strings.exploreTitle),
+              ),
               PopupMenuItem(
                 value: _Menu.reference,
                 child: Text(strings.menuReference),
@@ -261,18 +321,22 @@ class _TripListScreenState extends State<TripListScreen> {
                 ),
               ),
             )
-          : Column(
-              children: [
-                _SummaryCard(trips: trips),
-                const Divider(height: 1),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: trips.length,
-                    itemBuilder: (context, index) =>
-                        _TripTile(trip: trips[index]),
-                  ),
-                ),
-              ],
+          // EN: The summary scrolls WITH the list: pinned above it, large text left
+          //     no room for the trips themselves (NFR-5).
+          // FR: Le résumé défile AVEC la liste : épinglé au-dessus, le grand texte ne
+          //     laissait aucune place aux séjours (NFR-5).
+          : ListView.builder(
+              padding: const EdgeInsets.only(bottom: 88),
+              itemCount: trips.length + 1,
+              itemBuilder: (context, index) => index == 0
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _SummaryCard(trips: trips),
+                        const Divider(height: 1),
+                      ],
+                    )
+                  : _TripTile(trip: trips[index - 1]),
             ),
       floatingActionButton: FloatingActionButton(
         tooltip: strings.addTrip,
@@ -324,7 +388,10 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(strings.summaryHeading, style: theme.textTheme.titleSmall),
+          SectionHeading(
+            strings.summaryHeading,
+            style: theme.textTheme.titleSmall,
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -335,6 +402,7 @@ class _SummaryCard extends StatelessWidget {
                   days: strings.daysCount(thisYear),
                 ),
               ),
+              const SizedBox(width: 16),
               Expanded(
                 child: _StatBlock(
                   value: '$last365',
@@ -344,44 +412,65 @@ class _SummaryCard extends StatelessWidget {
               ),
             ],
           ),
+          // EN: One tap from the counts to the planning question (FR-3).
+          // FR: Un toucher des comptes à la question de planification (FR-3).
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
+              ),
+              child: Text(strings.exploreTitle),
+            ),
+          ),
           const Divider(height: 20),
           // EN: SPT figure block — tapping it opens the neutral reference page so
           //     the number always travels with its context and its not-advice note.
           // FR: Bloc de la valeur SPT — le toucher ouvre la page de référence neutre
           //     pour que le nombre voyage toujours avec son contexte et sa mention
           //     « pas un conseil ».
-          InkWell(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const ReferenceScreen()),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        strings.recordSptLabel,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                    Text(sptText, style: theme.textTheme.titleLarge),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.info_outline,
-                      size: 18,
-                      color: theme.colorScheme.outline,
-                    ),
-                  ],
-                ),
-                Text(
-                  strings.sptDisclaimer,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: theme.colorScheme.outline,
+          MergeSemantics(
+            child: Semantics(
+              button: true,
+              child: InkWell(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ReferenceScreen(),
                   ),
                 ),
-              ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              strings.recordSptLabel,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ),
+                          Text(sptText, style: theme.textTheme.titleLarge),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.info_outline,
+                            size: 18,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ],
+                      ),
+                      Text(
+                        strings.sptDisclaimer,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -411,6 +500,7 @@ class _StatBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
+      container: true,
       label: '$label: $days',
       child: ExcludeSemantics(
         child: Column(
@@ -443,33 +533,58 @@ class _TripTile extends StatelessWidget {
     final dateFmt = DateFormat.yMMMd(strings.localeName);
 
     final arrival = dateFmt.format(trip.arrivalDate);
-    final departure = dateFmt.format(trip.departureDate);
+    final departure = trip.departureDate == null
+        ? strings.tripOngoing
+        : dateFmt.format(trip.departureDate!);
+    final now = DateTime.now();
+    final isCurrent = trip.isInProgress(now);
+    final days = strings.daysCount(trip.daysPresent(now));
     final isPlanned = trip.status == TripStatus.planned;
 
-    return ListTile(
-      leading: Icon(
-        isPlanned ? Icons.event_outlined : Icons.flight_land_rounded,
-        color: isPlanned ? theme.colorScheme.secondary : null,
+    // EN: At large text a trailing chip leaves no width for the dates, so it moves
+    //     below them.
+    // FR: En grand texte, une puce à droite ne laisse aucune largeur aux dates ; elle
+    //     passe donc dessous.
+    final largeText = MediaQuery.textScalerOf(context).scale(14) / 14 > 1.3;
+    // EN: An unnamed trip already has its dates as title; do not repeat them.
+    // FR: Un séjour sans nom a déjà ses dates pour titre ; ne pas les répéter.
+    final hasName = trip.name?.isNotEmpty ?? false;
+    final daysText = isCurrent ? strings.tripDaysSoFar(days) : days;
+    final subtitle =
+        hasName ? strings.tripSubtitle(arrival, departure, daysText) : daysText;
+    final chip = Chip(
+      label: Text(
+        isPlanned
+            ? strings.tripStatusPlanned
+            : isCurrent
+                ? strings.tripStatusCurrent
+                : strings.tripStatusActual,
       ),
-      title: Text(
-        trip.name?.isNotEmpty == true ? trip.name! : '$arrival – $departure',
-      ),
-      subtitle: Text(
-        strings.tripSubtitle(
-          arrival,
-          departure,
-          strings.daysCount(trip.daysInUS),
+      visualDensity: VisualDensity.compact,
+    );
+
+    // EN: One stop for screen readers: the trip and its status together.
+    // FR: Un seul arrêt pour les lecteurs d'écran : le séjour avec son statut.
+    return MergeSemantics(
+      child: ListTile(
+        leading: Icon(
+          isPlanned ? Icons.event_outlined : Icons.flight_land_rounded,
+          color: isPlanned ? theme.colorScheme.secondary : null,
         ),
-      ),
-      trailing: Chip(
-        label: Text(
-          isPlanned ? strings.tripStatusPlanned : strings.tripStatusActual,
+        title: Text(
+          trip.name?.isNotEmpty == true ? trip.name! : '$arrival – $departure',
         ),
-        visualDensity: VisualDensity.compact,
-      ),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => TripEditScreen(existing: trip),
+        subtitle: largeText
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text(subtitle), chip],
+              )
+            : Text(subtitle),
+        trailing: largeText ? null : chip,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => TripEditScreen(existing: trip),
+          ),
         ),
       ),
     );

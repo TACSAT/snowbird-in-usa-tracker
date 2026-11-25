@@ -61,12 +61,14 @@ void main() {
 
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Text size in this app'), findsOneWidget);
 
     expect(settings.themeMode, ThemeMode.system);
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
     expect(settings.themeMode, ThemeMode.dark);
+
+    await tester.scrollUntilVisible(find.text('Text size in this app'), 200);
+    expect(find.text('Text size in this app'), findsOneWidget);
   });
 
   testWidgets('Reference page renders its intro and items', (tester) async {
@@ -89,8 +91,7 @@ void main() {
     );
     await tester.pumpWidget(_host(home: const AboutScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('Send feedback'), findsOneWidget);
-    expect(find.text('Support the developer'), findsOneWidget);
+    expect(find.text('Report a problem'), findsOneWidget);
     expect(find.textContaining('Version 1.0.0'), findsOneWidget);
   });
 

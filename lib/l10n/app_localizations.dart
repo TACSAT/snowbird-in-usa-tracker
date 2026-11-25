@@ -98,12 +98,6 @@ abstract class AppLocalizations {
     Locale('fr')
   ];
 
-  /// The application name shown in the OS task switcher and title bar.
-  ///
-  /// In en, this message translates to:
-  /// **'SnowBird'**
-  String get appTitle;
-
   /// Title of the first-launch disclaimer dialog.
   ///
   /// In en, this message translates to:
@@ -113,8 +107,8 @@ abstract class AppLocalizations {
   /// Body of the first-launch disclaimer dialog.
   ///
   /// In en, this message translates to:
-  /// **'SnowBird counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is \'safe\'. Verify your own situation with a qualified professional.'**
-  String get appDisclaimerBody;
+  /// **'{appName} counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is \'safe\'. Verify your own situation with a qualified professional.'**
+  String appDisclaimerBody(String appName);
 
   /// Button label to dismiss the disclaimer dialog.
   ///
@@ -131,8 +125,8 @@ abstract class AppLocalizations {
   /// Body of the one-time backup reminder. Shown once at setup, never repeated.
   ///
   /// In en, this message translates to:
-  /// **'SnowBird keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.'**
-  String get backupReminderBody;
+  /// **'{appName} keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone\'s normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.'**
+  String backupReminderBody(String appName);
 
   /// Button label to dismiss the backup reminder.
   ///
@@ -233,62 +227,14 @@ abstract class AppLocalizations {
   /// About screen title.
   ///
   /// In en, this message translates to:
-  /// **'About SnowBird'**
-  String get aboutTitle;
-
-  /// About screen description.
-  ///
-  /// In en, this message translates to:
-  /// **'SnowBird is a free, open-source, privacy-first trip tracker. Your data never leaves your device.'**
-  String get aboutBody;
+  /// **'About {appName}'**
+  String aboutTitle(String appName);
 
   /// Author credit line on the About screen.
   ///
   /// In en, this message translates to:
-  /// **'Built by Veiðimaður — veidimadur.ca'**
-  String get aboutAuthor;
-
-  /// Button that opens the feedback link.
-  ///
-  /// In en, this message translates to:
-  /// **'Send feedback'**
-  String get feedbackButton;
-
-  /// Button that opens the donation link.
-  ///
-  /// In en, this message translates to:
-  /// **'Support the developer'**
-  String get donateButton;
-
-  /// Menu item / button to export a backup file.
-  ///
-  /// In en, this message translates to:
-  /// **'Export backup'**
-  String get exportBackup;
-
-  /// Menu item / button to import a backup file.
-  ///
-  /// In en, this message translates to:
-  /// **'Import backup'**
-  String get importBackup;
-
-  /// Confirmation dialog body before overwriting data with a backup.
-  ///
-  /// In en, this message translates to:
-  /// **'Importing will replace all current trip data. Continue?'**
-  String get importBackupConfirm;
-
-  /// Snack bar message after a successful import.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup imported successfully.'**
-  String get importSuccess;
-
-  /// Snack bar message when import fails.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not import backup: {reason}'**
-  String importError(String reason);
+  /// **'Created and maintained by {maker}'**
+  String aboutAuthor(String maker);
 
   /// Day-count window label for rolling 365 days.
   ///
@@ -329,8 +275,8 @@ abstract class AppLocalizations {
   /// Empty state for the alerts screen; restates the zero-defaults positioning.
   ///
   /// In en, this message translates to:
-  /// **'No alerts.\nSnowBird sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.'**
-  String get alertsEmpty;
+  /// **'No alerts.\n{appName} sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.'**
+  String alertsEmpty(String appName);
 
   /// FAB tooltip and screen title for creating an alert.
   ///
@@ -392,12 +338,6 @@ abstract class AppLocalizations {
   /// **'Advance notice'**
   String get alertLeadField;
 
-  /// Lead option: notify on the reach day, no advance.
-  ///
-  /// In en, this message translates to:
-  /// **'On the day itself'**
-  String get alertLeadNone;
-
   /// Numeric field: whole days of advance notice.
   ///
   /// In en, this message translates to:
@@ -443,8 +383,8 @@ abstract class AppLocalizations {
   /// Shown when the OS notification permission is refused.
   ///
   /// In en, this message translates to:
-  /// **'Notifications are turned off for SnowBird in your device settings, so this alert cannot be delivered.'**
-  String get alertPermissionDenied;
+  /// **'Notifications are turned off for {appName} in your device settings, so this alert cannot be delivered.'**
+  String alertPermissionDenied(String appName);
 
   /// Default notification title when the alert has no user label. Neutral — the target is the user's.
   ///
@@ -671,8 +611,8 @@ abstract class AppLocalizations {
   /// Footer credit line on the record.
   ///
   /// In en, this message translates to:
-  /// **'Kept with SnowBird — Veiðimaður · veidimadur.ca'**
-  String get recordAuthor;
+  /// **'Kept with {appName} · {maker}'**
+  String recordAuthor(String appName, String maker);
 
   /// Overflow menu item opening Settings.
   ///
@@ -767,8 +707,8 @@ abstract class AppLocalizations {
   /// About screen: privacy statement.
   ///
   /// In en, this message translates to:
-  /// **'SnowBird has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.'**
-  String get aboutPrivacyBody;
+  /// **'{appName} has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone\'s normal backup (iCloud or Google), so it moves to a new phone with you.'**
+  String aboutPrivacyBody(String appName);
 
   /// Button opening the public source repository.
   ///
@@ -791,8 +731,8 @@ abstract class AppLocalizations {
   /// Reference screen intro; restates the no-defaults, not-advice stance.
   ///
   /// In en, this message translates to:
-  /// **'These are numbers people commonly track. SnowBird sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.'**
-  String get referenceIntro;
+  /// **'These are numbers people commonly track. {appName} sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.'**
+  String referenceIntro(String appName);
 
   /// Reference item heading: IRS SPT.
   ///
@@ -803,8 +743,8 @@ abstract class AppLocalizations {
   /// Reference item: neutral SPT description.
   ///
   /// In en, this message translates to:
-  /// **'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. SnowBird shows this figure as a neutral number.'**
-  String get referenceSptBody;
+  /// **'A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. {appName} shows this figure as a neutral number.'**
+  String referenceSptBody(String appName);
 
   /// Reference item heading: provincial health.
   ///
@@ -839,8 +779,8 @@ abstract class AppLocalizations {
   /// Reference item: why the app never renders a verdict.
   ///
   /// In en, this message translates to:
-  /// **'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why SnowBird counts and never judges.'**
-  String get referenceMythBody;
+  /// **'There is no one cumulative \'days\' limit this app could enforce for you. Immigration lawyers often call the \'180-day rule\' a myth; the real constraints are the per-entry admission, the officer\'s discretion, and separate tax tests. That is why {appName} counts and never judges.'**
+  String referenceMythBody(String appName);
 
   /// Required not-advice note shown next to the on-screen SPT figure (FR-7/FR-14).
   ///
@@ -895,6 +835,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'As of {date}, it has been {threshold} days since your last US visit — the target you set.'**
   String alertNotificationBodySince(String date, int threshold);
+
+  /// No description provided for @tripStillInUs.
+  ///
+  /// In en, this message translates to:
+  /// **'I am still in the US'**
+  String get tripStillInUs;
+
+  /// No description provided for @tripStillInUsHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave on until you know your departure date. Days count through today.'**
+  String get tripStillInUsHelper;
+
+  /// No description provided for @tripOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'ongoing'**
+  String get tripOngoing;
+
+  /// No description provided for @tripDaysSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} so far'**
+  String tripDaysSoFar(String days);
+
+  /// No description provided for @tripStatusCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get tripStatusCurrent;
+
+  /// No description provided for @errorTripOverlap.
+  ///
+  /// In en, this message translates to:
+  /// **'These dates overlap another actual trip. Leaving and returning on the same day is fine.'**
+  String get errorTripOverlap;
+
+  /// No description provided for @errorFutureArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'An actual trip cannot start in the future. Choose Planned instead.'**
+  String get errorFutureArrival;
+
+  /// No description provided for @errorSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your change could not be saved on this device.'**
+  String get errorSaveFailed;
+
+  /// No description provided for @storageProblemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Some saved data could not be read'**
+  String get storageProblemTitle;
+
+  /// No description provided for @storageProblemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of your saved data could not be read, so it is not shown or counted. Nothing has been erased: the original is kept on this device, even after you make changes.'**
+  String get storageProblemBody;
+
+  /// No description provided for @storageNewerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data was saved by a newer version of {appName}. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.'**
+  String storageNewerBody(String appName);
+
+  /// No description provided for @alertInUsNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be measured once you record a departure from your current trip'**
+  String get alertInUsNow;
+
+  /// No description provided for @recordEntryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry: {details}'**
+  String recordEntryLabel(String details);
+
+  /// No description provided for @recordExitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit: {details}'**
+  String recordExitLabel(String details);
+
+  /// No description provided for @clearTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear time'**
+  String get clearTime;
+
+  /// No description provided for @errorTimeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a delivery time.'**
+  String get errorTimeRequired;
+
+  /// No description provided for @alertReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached as of today'**
+  String get alertReached;
+
+  /// No description provided for @exploreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore days and plans'**
+  String get exploreTitle;
+
+  /// No description provided for @exploreRangeHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Days in a period'**
+  String get exploreRangeHeading;
+
+  /// No description provided for @rangeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get rangeFrom;
+
+  /// No description provided for @rangeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get rangeTo;
+
+  /// No description provided for @rangeActual.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual days so far: {days}'**
+  String rangeActual(String days);
+
+  /// No description provided for @rangeWithPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Including planned trips: {days}'**
+  String rangeWithPlanned(String days);
+
+  /// No description provided for @whatIfHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'What if I take this trip?'**
+  String get whatIfHeading;
+
+  /// No description provided for @whatIfIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose possible dates to see your counts. Nothing is saved unless you choose to.'**
+  String get whatIfIntro;
+
+  /// No description provided for @whatIfArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible arrival'**
+  String get whatIfArrival;
+
+  /// No description provided for @whatIfDeparture.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible departure'**
+  String get whatIfDeparture;
+
+  /// No description provided for @whatIfWithout.
+  ///
+  /// In en, this message translates to:
+  /// **'Without this trip: {value}'**
+  String whatIfWithout(String value);
+
+  /// No description provided for @whatIfWith.
+  ///
+  /// In en, this message translates to:
+  /// **'With this trip: {value}'**
+  String whatIfWith(String value);
+
+  /// No description provided for @whatIfYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar year {year}, through {date}'**
+  String whatIfYear(String year, String date);
+
+  /// No description provided for @whatIfLast365.
+  ///
+  /// In en, this message translates to:
+  /// **'365 days ending {date}'**
+  String whatIfLast365(String date);
+
+  /// No description provided for @whatIfSpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Substantial Presence figure, projected to {date}'**
+  String whatIfSpt(String date);
+
+  /// No description provided for @whatIfSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as a planned trip'**
+  String get whatIfSave;
+
+  /// No description provided for @whatIfSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned trip saved.'**
+  String get whatIfSaved;
+
+  /// No description provided for @whatIfClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get whatIfClear;
+
+  /// No description provided for @assumeOpenTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts that include planned trips assume your current trip continues until you record a departure.'**
+  String get assumeOpenTrip;
+
+  /// No description provided for @assumeStalePlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Includes 1 planned trip whose dates have passed. Mark it as actual or delete it.} other{Includes {count} planned trips whose dates have passed. Mark them as actual or delete them.}}'**
+  String assumeStalePlanned(int count);
+
+  /// No description provided for @errorTooManyTrips.
+  ///
+  /// In en, this message translates to:
+  /// **'The limit of {count} trips is reached. Delete a trip to add another.'**
+  String errorTooManyTrips(int count);
+
+  /// No description provided for @alertToggleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert active: {name}'**
+  String alertToggleLabel(String name);
+
+  /// No description provided for @exportAsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain text (for screen readers)'**
+  String get exportAsText;
+
+  /// No description provided for @recordLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String recordLine(String label, String value);
+
+  /// No description provided for @recordTripNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip {number} of {total}'**
+  String recordTripNumber(int number, int total);
+
+  /// No description provided for @recordTripName.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip name'**
+  String get recordTripName;
+
+  /// No description provided for @recordNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get recordNotes;
+
+  /// No description provided for @settingsHighContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast and bold text'**
+  String get settingsHighContrast;
+
+  /// No description provided for @settingsHighContrastHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, follows your phone\'s contrast and bold text settings where available.'**
+  String get settingsHighContrastHelper;
+
+  /// No description provided for @aboutHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help and planning'**
+  String get aboutHelpTitle;
+
+  /// No description provided for @aboutReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem'**
+  String get aboutReport;
+
+  /// No description provided for @aboutRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a feature'**
+  String get aboutRequest;
+
+  /// No description provided for @aboutStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Track reports and requests'**
+  String get aboutStatus;
+
+  /// No description provided for @aboutRoadmap.
+  ///
+  /// In en, this message translates to:
+  /// **'What is planned'**
+  String get aboutRoadmap;
+
+  /// No description provided for @aboutContribute.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a voluntary contribution'**
+  String get aboutContribute;
+
+  /// No description provided for @aboutContributeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Contributions are optional and unlock nothing: every feature is free. These buttons open {maker}, or GitHub for the source code, in your browser.'**
+  String aboutContributeNote(String maker);
+
+  /// No description provided for @aboutPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get aboutPrivacyPolicy;
 }
 
 class _AppLocalizationsDelegate

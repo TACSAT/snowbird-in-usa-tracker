@@ -1,51 +1,41 @@
 {
   "@@locale": "en",
-  "@@author": "Veiðimaður - veidimadur.ca",
 
-  "appTitle": "SnowBird",
-  "@appTitle": {
-    "description": "The application name shown in the OS task switcher and title bar."
-  },
+  "@@author": "teagarden.net",
 
   "appDisclaimerTitle": "A personal tracking tool — not advice",
-  "@appDisclaimerTitle": {
-    "description": "Title of the first-launch disclaimer dialog."
-  },
+  "@appDisclaimerTitle": { "description": "Title of the first-launch disclaimer dialog." },
 
-  "appDisclaimerBody": "SnowBird counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is 'safe'. Verify your own situation with a qualified professional.",
+  "appDisclaimerBody": "{appName} counts your US trip days and lets you print or share that record. It does not give immigration, tax, or legal advice, and it does not tell you whether any stay is 'safe'. Verify your own situation with a qualified professional.",
   "@appDisclaimerBody": {
-    "description": "Body of the first-launch disclaimer dialog."
+    "description": "Body of the first-launch disclaimer dialog.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
   },
 
   "appDisclaimerAcknowledge": "I understand",
-  "@appDisclaimerAcknowledge": {
-    "description": "Button label to dismiss the disclaimer dialog."
-  },
+  "@appDisclaimerAcknowledge": { "description": "Button label to dismiss the disclaimer dialog." },
 
   "backupReminderTitle": "Keeping your data safe",
-  "@backupReminderTitle": {
-    "description": "Title of the one-time setup backup reminder (FR-11)."
-  },
+  "@backupReminderTitle": { "description": "Title of the one-time setup backup reminder (FR-11)." },
 
-  "backupReminderBody": "SnowBird keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone's normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.",
+  "backupReminderBody": "{appName} keeps everything on this device only — nothing is ever sent to us. Your trips are included in your phone's normal backup (iCloud or Google), so they move to a new phone automatically. Please make sure your phone backup is turned on.",
   "@backupReminderBody": {
-    "description": "Body of the one-time backup reminder. Shown once at setup, never repeated."
+    "description": "Body of the one-time backup reminder. Shown once at setup, never repeated.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
   },
 
   "backupReminderAcknowledge": "Got it",
-  "@backupReminderAcknowledge": {
-    "description": "Button label to dismiss the backup reminder."
-  },
+  "@backupReminderAcknowledge": { "description": "Button label to dismiss the backup reminder." },
 
   "tripStatusActual": "Actual",
-  "@tripStatusActual": {
-    "description": "Label for a completed (already taken) trip."
-  },
+  "@tripStatusActual": { "description": "Label for a completed (already taken) trip." },
 
   "tripStatusPlanned": "Planned",
-  "@tripStatusPlanned": {
-    "description": "Label for a future, intended trip."
-  },
+  "@tripStatusPlanned": { "description": "Label for a future, intended trip." },
 
   "daysCount": "{count, plural, =1{1 day} other{{count} days}}",
   "@daysCount": {
@@ -56,9 +46,7 @@
   },
 
   "tripListEmpty": "No trips recorded yet.\nTap + to add your first trip.",
-  "@tripListEmpty": {
-    "description": "Placeholder shown when the trip list is empty."
-  },
+  "@tripListEmpty": { "description": "Placeholder shown when the trip list is empty." },
 
   "addTrip": "Add trip",
   "@addTrip": { "description": "FAB tooltip and screen title for adding a trip." },
@@ -91,44 +79,21 @@
   "@fieldNotes": { "description": "Label for the optional notes field." },
 
   "errorDepartureBefore": "Departure must be on or after arrival.",
-  "@errorDepartureBefore": {
-    "description": "Validation error when departure precedes arrival."
-  },
+  "@errorDepartureBefore": { "description": "Validation error when departure precedes arrival." },
 
-  "aboutTitle": "About SnowBird",
-  "@aboutTitle": { "description": "About screen title." },
-
-  "aboutBody": "SnowBird is a free, open-source, privacy-first trip tracker. Your data never leaves your device.",
-  "@aboutBody": { "description": "About screen description." },
-
-  "aboutAuthor": "Built by Veiðimaður — veidimadur.ca",
-  "@aboutAuthor": { "description": "Author credit line on the About screen." },
-
-  "feedbackButton": "Send feedback",
-  "@feedbackButton": { "description": "Button that opens the feedback link." },
-
-  "donateButton": "Support the developer",
-  "@donateButton": { "description": "Button that opens the donation link." },
-
-  "exportBackup": "Export backup",
-  "@exportBackup": { "description": "Menu item / button to export a backup file." },
-
-  "importBackup": "Import backup",
-  "@importBackup": { "description": "Menu item / button to import a backup file." },
-
-  "importBackupConfirm": "Importing will replace all current trip data. Continue?",
-  "@importBackupConfirm": {
-    "description": "Confirmation dialog body before overwriting data with a backup."
-  },
-
-  "importSuccess": "Backup imported successfully.",
-  "@importSuccess": { "description": "Snack bar message after a successful import." },
-
-  "importError": "Could not import backup: {reason}",
-  "@importError": {
-    "description": "Snack bar message when import fails.",
+  "aboutTitle": "About {appName}",
+  "@aboutTitle": {
+    "description": "About screen title.",
     "placeholders": {
-      "reason": { "type": "String" }
+      "appName": { "type": "String" }
+    }
+  },
+
+  "aboutAuthor": "Created and maintained by {maker}",
+  "@aboutAuthor": {
+    "description": "Author credit line on the About screen.",
+    "placeholders": {
+      "maker": { "type": "String" }
     }
   },
 
@@ -150,8 +115,13 @@
   "alertsTooltip": "My alerts",
   "@alertsTooltip": { "description": "Tooltip for the alerts icon in the app bar." },
 
-  "alertsEmpty": "No alerts.\nSnowBird sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.",
-  "@alertsEmpty": { "description": "Empty state for the alerts screen; restates the zero-defaults positioning." },
+  "alertsEmpty": "No alerts.\n{appName} sets no limits of its own — if you want a reminder at a number you choose, tap + to create one.",
+  "@alertsEmpty": {
+    "description": "Empty state for the alerts screen; restates the zero-defaults positioning.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "addAlert": "Add alert",
   "@addAlert": { "description": "FAB tooltip and screen title for creating an alert." },
@@ -182,9 +152,6 @@
 
   "alertLeadField": "Advance notice",
   "@alertLeadField": { "description": "Section label for how far ahead of the reach date to notify." },
-
-  "alertLeadNone": "On the day itself",
-  "@alertLeadNone": { "description": "Lead option: notify on the reach day, no advance." },
 
   "alertLeadDaysField": "Days before",
   "@alertLeadDaysField": { "description": "Numeric field: whole days of advance notice." },
@@ -224,8 +191,13 @@
     }
   },
 
-  "alertPermissionDenied": "Notifications are turned off for SnowBird in your device settings, so this alert cannot be delivered.",
-  "@alertPermissionDenied": { "description": "Shown when the OS notification permission is refused." },
+  "alertPermissionDenied": "Notifications are turned off for {appName} in your device settings, so this alert cannot be delivered.",
+  "@alertPermissionDenied": {
+    "description": "Shown when the OS notification permission is refused.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "alertNotificationTitle": "Your day-count target",
   "@alertNotificationTitle": { "description": "Default notification title when the alert has no user label. Neutral — the target is the user's." },
@@ -325,7 +297,9 @@
   "exportError": "Could not create the export: {reason}",
   "@exportError": {
     "description": "Snack bar shown when export fails.",
-    "placeholders": { "reason": { "type": "String" } }
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
   },
 
   "exportEmpty": "Add a trip first — there is nothing to export yet.",
@@ -337,7 +311,9 @@
   "recordAsOf": "As of {date}",
   "@recordAsOf": {
     "description": "The as-of date line on the record.",
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": { "type": "String" }
+    }
   },
 
   "recordDisclaimer": "This is a personal record, not advice. It gives no immigration, tax, or legal opinion. Verify your situation with a qualified professional.",
@@ -364,8 +340,14 @@
   "recordColDetails": "Trip / details",
   "@recordColDetails": { "description": "Record table column: name and crossing notes." },
 
-  "recordAuthor": "Kept with SnowBird — Veiðimaður · veidimadur.ca",
-  "@recordAuthor": { "description": "Footer credit line on the record." },
+  "recordAuthor": "Kept with {appName} · {maker}",
+  "@recordAuthor": {
+    "description": "Footer credit line on the record.",
+    "placeholders": {
+      "appName": { "type": "String" },
+      "maker": { "type": "String" }
+    }
+  },
 
   "menuSettings": "Settings",
   "@menuSettings": { "description": "Overflow menu item opening Settings." },
@@ -418,8 +400,13 @@
   "aboutPrivacyTitle": "Your privacy",
   "@aboutPrivacyTitle": { "description": "About screen: privacy section heading." },
 
-  "aboutPrivacyBody": "SnowBird has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone's normal backup (iCloud or Google), so it moves to a new phone with you.",
-  "@aboutPrivacyBody": { "description": "About screen: privacy statement." },
+  "aboutPrivacyBody": "{appName} has no account, no cloud, and no tracking. Everything you enter stays on this device and is never sent to the developer. Your data is included in your phone's normal backup (iCloud or Google), so it moves to a new phone with you.",
+  "@aboutPrivacyBody": {
+    "description": "About screen: privacy statement.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "aboutSourceButton": "View the source code",
   "@aboutSourceButton": { "description": "Button opening the public source repository." },
@@ -430,14 +417,24 @@
   "referenceTitle": "Common day-count rules",
   "@referenceTitle": { "description": "Reference screen title (FR-15)." },
 
-  "referenceIntro": "These are numbers people commonly track. SnowBird sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.",
-  "@referenceIntro": { "description": "Reference screen intro; restates the no-defaults, not-advice stance." },
+  "referenceIntro": "These are numbers people commonly track. {appName} sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.",
+  "@referenceIntro": {
+    "description": "Reference screen intro; restates the no-defaults, not-advice stance.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "referenceSptTitle": "US Substantial Presence Test",
   "@referenceSptTitle": { "description": "Reference item heading: IRS SPT." },
 
-  "referenceSptBody": "A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. SnowBird shows this figure as a neutral number.",
-  "@referenceSptBody": { "description": "Reference item: neutral SPT description." },
+  "referenceSptBody": "A US tax residency test based on a weighted count over three years: all your days this year, plus one third of last year, plus one sixth of the year before. {appName} shows this figure as a neutral number.",
+  "@referenceSptBody": {
+    "description": "Reference item: neutral SPT description.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "referenceHealthTitle": "Provincial health coverage",
   "@referenceHealthTitle": { "description": "Reference item heading: provincial health." },
@@ -454,8 +451,13 @@
   "referenceMythTitle": "There is no single cumulative limit",
   "@referenceMythTitle": { "description": "Reference item heading: the 180-day myth." },
 
-  "referenceMythBody": "There is no one cumulative 'days' limit this app could enforce for you. Immigration lawyers often call the '180-day rule' a myth; the real constraints are the per-entry admission, the officer's discretion, and separate tax tests. That is why SnowBird counts and never judges.",
-  "@referenceMythBody": { "description": "Reference item: why the app never renders a verdict." },
+  "referenceMythBody": "There is no one cumulative 'days' limit this app could enforce for you. Immigration lawyers often call the '180-day rule' a myth; the real constraints are the per-entry admission, the officer's discretion, and separate tax tests. That is why {appName} counts and never judges.",
+  "@referenceMythBody": {
+    "description": "Reference item: why the app never renders a verdict.",
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
 
   "sptDisclaimer": "A neutral figure, not advice — tap for context.",
   "@sptDisclaimer": { "description": "Required not-advice note shown next to the on-screen SPT figure (FR-7/FR-14)." },
@@ -493,5 +495,201 @@
       "date": { "type": "String" },
       "threshold": { "type": "int" }
     }
-  }
+  },
+
+  "tripStillInUs": "I am still in the US",
+
+  "tripStillInUsHelper": "Leave on until you know your departure date. Days count through today.",
+
+  "tripOngoing": "ongoing",
+
+  "tripDaysSoFar": "{days} so far",
+  "@tripDaysSoFar": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "tripStatusCurrent": "Current",
+
+  "errorTripOverlap": "These dates overlap another actual trip. Leaving and returning on the same day is fine.",
+
+  "errorFutureArrival": "An actual trip cannot start in the future. Choose Planned instead.",
+
+  "errorSaveFailed": "Your change could not be saved on this device.",
+
+  "storageProblemTitle": "Some saved data could not be read",
+
+  "storageProblemBody": "Part of your saved data could not be read, so it is not shown or counted. Nothing has been erased: the original is kept on this device, even after you make changes.",
+
+  "storageNewerBody": "Your data was saved by a newer version of {appName}. Please update the app. Until then, changes to that data cannot be saved, so nothing is overwritten.",
+  "@storageNewerBody": {
+    "placeholders": {
+      "appName": { "type": "String" }
+    }
+  },
+
+  "alertInUsNow": "Will be measured once you record a departure from your current trip",
+
+  "recordEntryLabel": "Entry: {details}",
+  "@recordEntryLabel": {
+    "placeholders": {
+      "details": { "type": "String" }
+    }
+  },
+
+  "recordExitLabel": "Exit: {details}",
+  "@recordExitLabel": {
+    "placeholders": {
+      "details": { "type": "String" }
+    }
+  },
+
+  "clearTime": "Clear time",
+
+  "errorTimeRequired": "Choose a delivery time.",
+
+  "alertReached": "Reached as of today",
+
+  "exploreTitle": "Explore days and plans",
+
+  "exploreRangeHeading": "Days in a period",
+
+  "rangeFrom": "From",
+
+  "rangeTo": "To",
+
+  "rangeActual": "Actual days so far: {days}",
+  "@rangeActual": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "rangeWithPlanned": "Including planned trips: {days}",
+  "@rangeWithPlanned": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "whatIfHeading": "What if I take this trip?",
+
+  "whatIfIntro": "Choose possible dates to see your counts. Nothing is saved unless you choose to.",
+
+  "whatIfArrival": "Possible arrival",
+
+  "whatIfDeparture": "Possible departure",
+
+  "whatIfWithout": "Without this trip: {value}",
+  "@whatIfWithout": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfWith": "With this trip: {value}",
+  "@whatIfWith": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfYear": "Calendar year {year}, through {date}",
+  "@whatIfYear": {
+    "placeholders": {
+      "year": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfLast365": "365 days ending {date}",
+  "@whatIfLast365": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSpt": "Substantial Presence figure, projected to {date}",
+  "@whatIfSpt": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSave": "Save as a planned trip",
+
+  "whatIfSaved": "Planned trip saved.",
+
+  "whatIfClear": "Clear",
+
+  "assumeOpenTrip": "Counts that include planned trips assume your current trip continues until you record a departure.",
+
+  "assumeStalePlanned": "{count, plural, =1{Includes 1 planned trip whose dates have passed. Mark it as actual or delete it.} other{Includes {count} planned trips whose dates have passed. Mark them as actual or delete them.}}",
+  "@assumeStalePlanned": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "errorTooManyTrips": "The limit of {count} trips is reached. Delete a trip to add another.",
+  "@errorTooManyTrips": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "alertToggleLabel": "Alert active: {name}",
+  "@alertToggleLabel": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "exportAsText": "Plain text (for screen readers)",
+
+  "recordLine": "{label}: {value}",
+  "@recordLine": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "value": { "type": "String" }
+    }
+  },
+
+  "recordTripNumber": "Trip {number} of {total}",
+  "@recordTripNumber": {
+    "placeholders": {
+      "number": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "recordTripName": "Trip name",
+
+  "recordNotes": "Notes",
+
+  "settingsHighContrast": "High contrast and bold text",
+
+  "settingsHighContrastHelper": "When off, follows your phone's contrast and bold text settings where available.",
+
+  "aboutHelpTitle": "Help and planning",
+
+  "aboutReport": "Report a problem",
+
+  "aboutRequest": "Request a feature",
+
+  "aboutStatus": "Track reports and requests",
+
+  "aboutRoadmap": "What is planned",
+
+  "aboutContribute": "Make a voluntary contribution",
+
+  "aboutContributeNote": "Contributions are optional and unlock nothing: every feature is free. These buttons open {maker}, or GitHub for the source code, in your browser.",
+  "@aboutContributeNote": {
+    "placeholders": {
+      "maker": { "type": "String" }
+    }
+  },
+
+  "aboutPrivacyPolicy": "Privacy policy"
 }

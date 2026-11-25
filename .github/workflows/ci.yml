@@ -1,0 +1,68 @@
+# EN: Every pull request, and every push to main: format, analysis, tests, a release build, and proof
+#     that the APK cannot reach the network. No third-party action is used, versions
+#     are pinned by commit, and the token is read-only.
+# FR: À chaque demande de tirage et push sur main : format, analyse, tests, build de release et
+#     preuve que l'APK ne peut joindre le réseau. Aucune action tierce, versions figées
+#     par commit, jeton en lecture seule.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  # Flutter 3.47.2
+  FLUTTER_COMMIT: d3b14c876900e553bc736ca19295fc09e3853e8e
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      # actions/checkout v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - name: Install Flutter
+        run: |
+          git init -q "$RUNNER_TEMP/flutter"
+          cd "$RUNNER_TEMP/flutter"
+          git remote add origin https://github.com/flutter/flutter.git
+          git fetch -q --depth 1 origin "$FLUTTER_COMMIT"
+          git checkout -q FETCH_HEAD
+          git tag 3.47.2
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Use Java 17
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+      - run: flutter config --no-analytics
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - name: Generated strings match the ARB files
+        run: |
+          flutter gen-l10n
+          dart format lib/l10n
+          git diff --exit-code -- lib/l10n
+      - run: flutter analyze
+      - run: flutter test
+      # EN: Reuse downloaded Gradle dependencies, so a busy Maven server cannot fail the
+      #     build. Downloads only, never build output: what is tested is always built
+      #     from source.
+      # FR: Réutiliser les dépendances Gradle téléchargées, pour qu'un serveur Maven
+      #     occupé ne fasse pas échouer le build. Téléchargements seulement, jamais de
+      #     résultats de build : ce qui est testé est toujours construit des sources.
+      # actions/cache v5.1.0
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - run: flutter build apk --release
+      - name: The app has no network permission
+        run: tools/check_apk_permissions.sh build/app/outputs/flutter-apk/app-release.apk

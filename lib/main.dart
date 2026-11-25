@@ -32,6 +32,8 @@
 //     ou initialisation réseau ne se passe ici. L'appli n'effectue aucune
 //     connexion sortante.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -57,6 +59,15 @@ void main() async {
   final storage = StorageService(prefs);
   final tripRepository = TripRepository(storage);
 
+  // EN: User preferences (language / theme / text size). Loaded synchronously from
+  //     the already-resolved SharedPreferences so the first frame renders in the
+  //     user's chosen locale and theme with no flash of the wrong one.
+  // FR: Préférences utilisateur (langue / thème / taille du texte). Chargées de
+  //     manière synchrone depuis les SharedPreferences déjà résolues pour que la
+  //     première image s'affiche dans la locale et le thème choisis, sans
+  //     clignotement du mauvais réglage.
+  final settingsController = SettingsController(storage);
+
   // EN: Local notification stack. init() loads the timezone database and the
   //     plugin but requests NO permission — that happens only when the user
   //     creates their first alert. If init fails (e.g. an unsupported
@@ -67,7 +78,8 @@ void main() async {
   //     l'utilisateur crée sa première alerte. Si init échoue (p. ex. une
   //     plateforme non prise en charge), le service se dégrade en no-op et le
   //     reste de l'appli n'est pas affecté.
-  final notificationService = NotificationService();
+  final notificationService =
+      NotificationService(locale: () => settingsController.locale);
   await notificationService.init();
 
   final alertRepository = AlertRepository(
@@ -76,14 +88,20 @@ void main() async {
     scheduler: notificationService,
   );
 
-  // EN: User preferences (language / theme / text size). Loaded synchronously from
-  //     the already-resolved SharedPreferences so the first frame renders in the
-  //     user's chosen locale and theme with no flash of the wrong one.
-  // FR: Préférences utilisateur (langue / thème / taille du texte). Chargées de
-  //     manière synchrone depuis les SharedPreferences déjà résolues pour que la
-  //     première image s'affiche dans la locale et le thème choisis, sans
-  //     clignotement du mauvais réglage.
-  final settingsController = SettingsController(storage);
+  // EN: Bring the OS schedule up to date now, whenever the app returns to the front,
+  //     and when the language changes (see AlertRepository.refresh). Not awaited: the
+  //     first screen must not wait for the notification stack.
+  // FR: Mettre à jour l'horaire de l'OS maintenant, à chaque retour à l'avant-plan et
+  //     au changement de langue (voir AlertRepository.refresh). Sans attente : le
+  //     premier écran ne doit pas dépendre de la pile de notifications.
+  unawaited(alertRepository.refresh());
+  AppLifecycleListener(onResume: alertRepository.refresh);
+  var language = settingsController.locale;
+  settingsController.addListener(() {
+    if (settingsController.locale == language) return;
+    language = settingsController.locale;
+    unawaited(alertRepository.refresh());
+  });
 
   runApp(
     // EN: .value constructors because the instances are already built above —

@@ -99,6 +99,13 @@ abstract final class InputLimits {
   //     atteindra un jour.
   static const int maxTrips = 2000;
 
+  // EN: Years offered by the date pickers: any living memory of a trip, and plans a
+  //     decade ahead.
+  // FR: Années offertes par les sélecteurs : tout souvenir de séjour, et des projets
+  //     jusqu'à dix ans.
+  static const int minTripYear = 1950;
+  static const int maxYearsAhead = 10;
+
   // EN: A time of day expressed as minutes since local midnight, 0 (00:00) to
   //     1439 (23:59). Optional per-crossing field: null means "time not
   //     recorded", which is the common case for a land crossing the user only

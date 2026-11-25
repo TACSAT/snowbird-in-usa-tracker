@@ -45,6 +45,7 @@ import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -54,6 +55,15 @@ import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 
 class NotificationService implements AlertScheduler {
+  // EN: Language to write notifications in, read at each scheduling. Injected so the
+  //     in-app choice (FR-20) wins over the phone's; null means follow the phone.
+  // FR: Langue des notifications, lue à chaque planification. Injectée pour que le
+  //     choix dans l'appli (FR-20) prime sur celui du téléphone ; null = suivre le
+  //     téléphone.
+  final Locale? Function()? _locale;
+
+  NotificationService({Locale? Function()? locale}) : _locale = locale;
+
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
@@ -76,13 +86,11 @@ class NotificationService implements AlertScheduler {
     if (_initialized) return;
     try {
       tzdata.initializeTimeZones();
-      // EN: getLocalTimezone() returns the device's IANA zone name (e.g.
-      //     "America/Toronto") as a plain String in flutter_timezone 4.x.
-      // FR: getLocalTimezone() retourne le nom de fuseau IANA de l'appareil
-      //     (p. ex. « America/Toronto ») comme simple String dans
-      //     flutter_timezone 4.x.
-      final zone = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(zone));
+      // EN: Date names must be loaded here: scheduling happens at launch, before any
+      //     screen has loaded them.
+      // FR: Les noms de dates doivent être chargés ici : la planification a lieu au
+      //     lancement, avant qu'un écran ne les ait chargés.
+      await initializeDateFormatting();
 
       const initSettings = InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -92,7 +100,7 @@ class NotificationService implements AlertScheduler {
           requestSoundPermission: false,
         ),
       );
-      await _plugin.initialize(initSettings);
+      await _plugin.initialize(settings: initSettings);
       _initialized = true;
     } catch (_) {
       _initialized = false;
@@ -101,6 +109,7 @@ class NotificationService implements AlertScheduler {
 
   @override
   Future<bool> ensurePermissions() async {
+    if (!_initialized) await init();
     if (!_initialized) return false;
 
     // EN: Ask the platform-specific implementation. On Android 13+ this shows
@@ -126,24 +135,65 @@ class NotificationService implements AlertScheduler {
 
   @override
   Future<void> reschedule(List<ScheduledAlert> schedule) async {
+    // EN: A failed start is retried here, so a passing fault at launch does not
+    //     silence alerts until the app is restarted.
+    // FR: Un démarrage échoué est retenté ici, pour qu'une panne passagère au
+    //     lancement ne rende pas les alertes muettes jusqu'au redémarrage.
+    if (!_initialized) await init();
     if (!_initialized) return;
+    await _useDeviceZone();
 
-    // EN: Wipe and rebuild — keeps OS state exactly equal to user data.
-    // FR: Effacer et reconstruire — garde l'état OS exactement égal aux
-    //     données de l'utilisateur.
-    await _plugin.cancelAll();
+    // EN: Wipe and rebuild the PENDING set — keeps OS state equal to user data.
+    //     Notifications already delivered stay on screen: opening the app must not
+    //     erase one the user has not read.
+    // FR: Effacer et reconstruire les notifications EN ATTENTE — garde l'état OS égal
+    //     aux données. Celles déjà livrées restent à l'écran : ouvrir l'appli ne doit
+    //     pas en effacer une non lue.
+    await _plugin.cancelAllPendingNotifications();
 
-    final strings = _localizations();
-    for (final entry in schedule) {
-      await _scheduleOne(entry, strings);
+    for (final entry in withinPlatformLimit(schedule)) {
+      // EN: One refused notification must not prevent the others.
+      // FR: Une notification refusée ne doit pas empêcher les autres.
+      try {
+        await _scheduleOne(entry);
+      } catch (_) {}
     }
   }
 
-  Future<void> _scheduleOne(
-    ScheduledAlert entry,
-    AppLocalizations strings,
-  ) async {
+  // EN: iOS silently drops pending notifications beyond 64, in an order we do not
+  //     control. Keeping the soonest ourselves makes the choice deliberate; later
+  //     ones enter at a future refresh.
+  // FR: iOS abandonne en silence les notifications en attente au-delà de 64, dans un
+  //     ordre que nous ne maîtrisons pas. Garder les plus proches rend le choix
+  //     délibéré ; les suivantes entreront lors d'un prochain rafraîchissement.
+  static List<ScheduledAlert> withinPlatformLimit(List<ScheduledAlert> all) =>
+      ([...all]..sort((a, b) => a.fireMoment.compareTo(b.fireMoment)))
+          .take(60)
+          .toList();
+
+  // EN: Re-read the zone on every scheduling, as the user travels. An unknown zone
+  //     name falls back to UTC: fire moments are absolute instants, so delivery time
+  //     is still right, whereas failing would disable every alert.
+  // FR: Relire le fuseau à chaque planification, car l'utilisateur voyage. Un nom
+  //     inconnu se rabat sur UTC : les instants sont absolus, donc l'heure reste
+  //     juste, alors qu'un échec désactiverait toutes les alertes.
+  Future<void> _useDeviceZone() async {
+    try {
+      tz.setLocalLocation(
+        tz.getLocation(
+          (await FlutterTimezone.getLocalTimezone()).identifier,
+        ),
+      );
+    } catch (_) {
+      tz.setLocalLocation(tz.UTC);
+    }
+  }
+
+  // EN: Title and body, separate from delivery so the wording is testable.
+  // FR: Titre et corps, séparés de la livraison pour que le libellé soit testable.
+  (String, String) textFor(ScheduledAlert entry) {
     final alert = entry.alert;
+    final strings = _localizations();
 
     // EN: Neutral copy, always framed as the user's own target. When the user
     //     asked for advance notice, the body names the projected date instead
@@ -178,6 +228,12 @@ class NotificationService implements AlertScheduler {
       );
     }
 
+    return (title, body);
+  }
+
+  Future<void> _scheduleOne(ScheduledAlert entry) async {
+    final (title, body) = textFor(entry);
+    final strings = _localizations();
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
         'snowbird_user_alerts',
@@ -195,11 +251,11 @@ class NotificationService implements AlertScheduler {
       // FR: Identifiant 32 bits stable et non négatif dérivé de l'UUID de
       //     l'alerte pour que la même alerte occupe toujours le même
       //     emplacement de notification OS.
-      alert.id.hashCode & 0x7fffffff,
-      title,
-      body,
-      tz.TZDateTime.from(entry.fireMoment, tz.local),
-      details,
+      id: entry.alert.id.hashCode & 0x7fffffff,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(entry.fireMoment, tz.local),
+      notificationDetails: details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
   }
@@ -212,7 +268,9 @@ class NotificationService implements AlertScheduler {
   //     sur l'anglais si la locale de l'appareil n'est pas prise en charge.
   AppLocalizations _localizations() {
     try {
-      return lookupAppLocalizations(PlatformDispatcher.instance.locale);
+      return lookupAppLocalizations(
+        _locale?.call() ?? PlatformDispatcher.instance.locale,
+      );
     } catch (_) {
       return lookupAppLocalizations(const Locale('en'));
     }

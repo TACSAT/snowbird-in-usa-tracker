@@ -35,6 +35,7 @@
 //     traduction. La fiche PDF/image destinée à l'humain, elle, est localisée par
 //     RecordExporter.
 
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
@@ -95,6 +96,7 @@ class PresenceRecord {
       thisCalendarYear: DayCounter.countDaysInCalendarYear(
         trips: trips,
         year: asOfDate.year,
+        asOf: asOfDate,
       ),
       rollingLast365: DayCounter.countDaysInLastDays(
         trips: trips,
@@ -104,6 +106,7 @@ class PresenceRecord {
       priorCalendarYear: DayCounter.countDaysInCalendarYear(
         trips: trips,
         year: asOfDate.year - 1,
+        asOf: asOfDate,
       ),
       spt: DayCounter.substantialPresence(trips: trips, asOf: asOfDate),
     );
@@ -120,7 +123,7 @@ class PresenceRecord {
   //     puis les lignes de résumé neutres.
   String toCsv() {
     final rows = <List<String>>[
-      ['SnowBird — US Presence Record'],
+      ['${AppIdentity.name} — US Presence Record'],
       [
         'This is a personal record, not advice. '
             'Verify your situation with a qualified professional.',
@@ -151,22 +154,26 @@ class PresenceRecord {
       final entry = t.arrivalInfo;
       final exit = t.departureInfo;
       rows.add([
-        t.status == TripStatus.planned ? 'Planned' : 'Actual',
-        t.name ?? '',
+        t.status == TripStatus.planned
+            ? 'Planned'
+            : t.isInProgress(asOf)
+                ? 'Actual (in progress)'
+                : 'Actual',
+        _safeText(t.name ?? ''),
         _iso(t.arrivalDate),
-        _iso(t.departureDate),
-        '${t.daysInUS}',
+        t.departureDate == null ? '' : _iso(t.departureDate!),
+        '${t.daysPresent(asOf)}',
         _time(entry),
-        entry?.timeZone ?? '',
-        entry?.location ?? '',
-        entry?.meansOfTravel ?? '',
-        entry?.carrier ?? '',
+        _safeText(entry?.timeZone ?? ''),
+        _safeText(entry?.location ?? ''),
+        _safeText(entry?.meansOfTravel ?? ''),
+        _safeText(entry?.carrier ?? ''),
         _time(exit),
-        exit?.timeZone ?? '',
-        exit?.location ?? '',
-        exit?.meansOfTravel ?? '',
-        exit?.carrier ?? '',
-        t.notes ?? '',
+        _safeText(exit?.timeZone ?? ''),
+        _safeText(exit?.location ?? ''),
+        _safeText(exit?.meansOfTravel ?? ''),
+        _safeText(exit?.carrier ?? ''),
+        _safeText(t.notes ?? ''),
       ]);
     }
 
@@ -209,11 +216,7 @@ class PresenceRecord {
   //     otherwise two decimals. NEVER compared to any threshold.
   // FR: La valeur SPT en chaîne décimale neutre — un entier si exact, sinon deux
   //     décimales. JAMAIS comparée à un quelconque seuil.
-  String get formattedSpt {
-    final sixths = totals.spt.totalSixths;
-    if (sixths % 6 == 0) return '${sixths ~/ 6}';
-    return (sixths / 6).toStringAsFixed(2);
-  }
+  String get formattedSpt => totals.spt.formatted;
 
   // ---------------------------------------------------------------------------
   // Private helpers
@@ -233,6 +236,16 @@ class PresenceRecord {
   // FR: Mettre un champ CSV entre guillemets seulement s'il contient une virgule,
   //     un guillemet ou un saut de ligne ; les guillemets internes sont doublés.
   //     Garde les champs simples sans guillemets et lisibles.
+  // EN: Text the user typed must never run as a spreadsheet formula when the file is
+  //     opened by someone else. A leading apostrophe is the standard way to mark a
+  //     cell as plain text; full-width forms are covered as some locales accept them.
+  // FR: Le texte saisi ne doit jamais s'exécuter comme formule quand une autre
+  //     personne ouvre le fichier. Une apostrophe en tête est la façon usuelle de
+  //     marquer une cellule comme texte ; les formes pleine chasse sont couvertes
+  //     car certaines locales les acceptent.
+  static String _safeText(String text) =>
+      RegExp(r'^[=+\-@\t\r＝＋－＠]').hasMatch(text) ? "'$text" : text;
+
   static String _escapeCsv(String field) {
     final needsQuoting = field.contains(',') ||
         field.contains('"') ||

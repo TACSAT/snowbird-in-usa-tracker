@@ -41,11 +41,13 @@ class SettingsController extends ChangeNotifier {
   Locale? _locale;
   ThemeMode _themeMode = ThemeMode.system;
   double _textScale = 1.0;
+  bool _highContrast = false;
 
   SettingsController(this._storage) {
     _themeMode = _parseThemeMode(_storage.themeModeName);
     _textScale =
         _storage.textScale.clamp(kMinTextScale, kMaxTextScale).toDouble();
+    _highContrast = _storage.highContrast;
     final code = _storage.localeCode;
     _locale = code == null ? null : Locale(code);
   }
@@ -55,6 +57,18 @@ class SettingsController extends ChangeNotifier {
   Locale? get locale => _locale;
   ThemeMode get themeMode => _themeMode;
   double get textScale => _textScale;
+
+  // EN: High contrast with bold text (FR-21), in addition to the phone's own settings:
+  //     off means "follow the phone", never "less than the phone asks for".
+  // FR: Contraste élevé et texte gras (FR-21), en plus des réglages du téléphone :
+  //     désactivé signifie « suivre le téléphone », jamais « moins que demandé ».
+  bool get highContrast => _highContrast;
+
+  Future<void> setHighContrast(bool value) async {
+    _highContrast = value;
+    await _storage.setHighContrast(value);
+    notifyListeners();
+  }
 
   Future<void> setLocale(Locale? locale) async {
     _locale = locale;
