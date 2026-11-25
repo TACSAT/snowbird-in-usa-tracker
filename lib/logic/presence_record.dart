@@ -158,21 +158,21 @@ class PresenceRecord {
             : t.isInProgress(asOf)
                 ? 'Actual (in progress)'
                 : 'Actual',
-        t.name ?? '',
+        _safeText(t.name ?? ''),
         _iso(t.arrivalDate),
         t.departureDate == null ? '' : _iso(t.departureDate!),
         '${t.daysPresent(asOf)}',
         _time(entry),
-        entry?.timeZone ?? '',
-        entry?.location ?? '',
-        entry?.meansOfTravel ?? '',
-        entry?.carrier ?? '',
+        _safeText(entry?.timeZone ?? ''),
+        _safeText(entry?.location ?? ''),
+        _safeText(entry?.meansOfTravel ?? ''),
+        _safeText(entry?.carrier ?? ''),
         _time(exit),
-        exit?.timeZone ?? '',
-        exit?.location ?? '',
-        exit?.meansOfTravel ?? '',
-        exit?.carrier ?? '',
-        t.notes ?? '',
+        _safeText(exit?.timeZone ?? ''),
+        _safeText(exit?.location ?? ''),
+        _safeText(exit?.meansOfTravel ?? ''),
+        _safeText(exit?.carrier ?? ''),
+        _safeText(t.notes ?? ''),
       ]);
     }
 
@@ -239,6 +239,16 @@ class PresenceRecord {
   // FR: Mettre un champ CSV entre guillemets seulement s'il contient une virgule,
   //     un guillemet ou un saut de ligne ; les guillemets internes sont doublés.
   //     Garde les champs simples sans guillemets et lisibles.
+  // EN: Text the user typed must never run as a spreadsheet formula when the file is
+  //     opened by someone else. A leading apostrophe is the standard way to mark a
+  //     cell as plain text; full-width forms are covered as some locales accept them.
+  // FR: Le texte saisi ne doit jamais s'exécuter comme formule quand une autre
+  //     personne ouvre le fichier. Une apostrophe en tête est la façon usuelle de
+  //     marquer une cellule comme texte ; les formes pleine chasse sont couvertes
+  //     car certaines locales les acceptent.
+  static String _safeText(String text) =>
+      RegExp(r'^[=+\-@\t\r＝＋－＠]').hasMatch(text) ? "'$text" : text;
+
   static String _escapeCsv(String field) {
     final needsQuoting = field.contains(',') ||
         field.contains('"') ||

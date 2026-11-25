@@ -46,6 +46,18 @@ class TripListScreen extends StatefulWidget {
 }
 
 class _TripListScreenState extends State<TripListScreen> {
+  // EN: Locates the export button on screen, where an iPad anchors its share popover.
+  // FR: Situe le bouton d'export à l'écran, où l'iPad ancre sa bulle de partage.
+  final _exportButtonKey = GlobalKey();
+
+  Rect _shareOrigin() {
+    final box = _exportButtonKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) {
+      return const Rect.fromLTWH(0, 0, 1, 1);
+    }
+    return box.localToGlobal(Offset.zero) & box.size;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -169,15 +181,17 @@ class _TripListScreenState extends State<TripListScreen> {
             record,
             strings: strings,
             localeName: localeName,
+            origin: _shareOrigin(),
           );
         case _ExportChoice.image:
           await RecordExporter.shareImage(
             record,
             strings: strings,
             localeName: localeName,
+            origin: _shareOrigin(),
           );
         case _ExportChoice.csv:
-          await RecordExporter.shareCsv(record);
+          await RecordExporter.shareCsv(record, origin: _shareOrigin());
         case _ExportChoice.print:
           await RecordExporter.printRecord(
             record,
@@ -237,6 +251,7 @@ class _TripListScreenState extends State<TripListScreen> {
         centerTitle: false,
         actions: [
           IconButton(
+            key: _exportButtonKey,
             icon: const Icon(Icons.ios_share_rounded),
             tooltip: strings.exportRecord,
             onPressed: _openExportSheet,

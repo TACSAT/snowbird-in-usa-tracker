@@ -159,10 +159,8 @@ class CrossingInfo {
   factory CrossingInfo.fromJson(Map<String, dynamic> json) {
     return CrossingInfo(
       timeMinutes: _parseTime(json['time']),
-      timeZone:
-          _cap(_text(json, 'timeZone'), InputLimits.maxTimeZoneLength),
-      location:
-          _cap(_text(json, 'location'), InputLimits.maxLocationLength),
+      timeZone: _cap(_text(json, 'timeZone'), InputLimits.maxTimeZoneLength),
+      location: _cap(_text(json, 'location'), InputLimits.maxLocationLength),
       meansOfTravel: _cap(
         _text(json, 'meansOfTravel'),
         InputLimits.maxMeansOfTravelLength,

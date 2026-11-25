@@ -1,31 +1,32 @@
 // EN: Headless verification of the PDF builder (FR-8). buildPdf is pure Dart
 //     (the pdf package), so it runs without a device — which lets us prove the
-//     risky part: that the Latin-1 normalisation in RecordExporter._pdf survives
-//     real French + typographic input (accents, guillemets, em dash, the ⅓/⅙
-//     fractions, the ð in the author credit) and emits a well-formed PDF instead of
-//     throwing on an unsupported glyph. The PNG raster, the print dialog, and the
-//     OS share sheet all need platform channels, so those are verified on a device
-//     during physical testing, not here.
+//     risky part: that real French + typographic input yields a well-formed PDF
+//     with the bundled font. The PNG raster, print dialog and share sheet need
+//     platform channels, so their real behaviour is verified on a device.
 //
 // FR: Vérification hors-appareil du constructeur de PDF (FR-8). buildPdf est du Dart
 //     pur (le paquet pdf), donc il s'exécute sans appareil — ce qui permet de
-//     prouver la partie risquée : que la normalisation Latin-1 de
-//     RecordExporter._pdf survit à une vraie entrée française + typographique
-//     (accents, guillemets, tiret cadratin, fractions ⅓/⅙, le ð du crédit d'auteur)
-//     et produit un PDF bien formé au lieu de lever une exception sur un glyphe non
-//     pris en charge. Le rendu PNG, la boîte d'impression et la feuille de partage
-//     de l'OS nécessitent des canaux de plateforme, donc ils sont vérifiés sur un
-//     appareil lors du test physique, pas ici.
+//     prouver la partie risquée : qu'une vraie entrée française + typographique
+//     donne un PDF bien formé avec la police intégrée. Le rendu PNG, la boîte
+//     d'impression et la feuille de partage exigent des canaux de plateforme ; leur
+//     comportement réel se vérifie sur un appareil.
 
-import 'package:flutter/widgets.dart' show Locale;
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/widgets.dart' show Locale, Rect;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:share_plus_platform_interface/share_plus_platform_interface.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/record_exporter.dart';
+import 'package:snowbird_in_usa_tracker/services/record_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -138,4 +139,81 @@ void main() {
     );
     expect(looksLikePdf(bytes), isTrue);
   });
+
+  test('the PDF is US Letter and embeds the bundled font', () async {
+    final en = await AppLocalizations.delegate.load(const Locale('en'));
+    final bytes = await RecordExporter.buildPdf(
+      PresenceRecord.build(trips: trips, asOf: DateTime(2025, 6, 1)),
+      strings: en,
+      localeName: 'en',
+    );
+    final text = latin1.decode(bytes);
+    expect(text, matches(RegExp(r'/MediaBox\s*\[\s*0 0 612 792')));
+    expect(text, contains('Roboto'));
+    expect(text, isNot(contains('Helvetica')));
+  });
+
+  test('printable text keeps œ, Ÿ, ł and dashes, marks only what is missing',
+      () async {
+    final fonts = await RecordFonts.load();
+    expect(fonts.printable('Sœur Œuvre Ÿ ł – — ’ я'), 'Sœur Œuvre Ÿ ł – — ’ я');
+    expect(fonts.printable('⅓ ⅙ a→b'), '1/3 1/6 a>b');
+    expect(fonts.printable('a\u202fb\nc'), 'a b\nc');
+    expect(fonts.printable('golf 🏌'), 'golf ?');
+  });
+
+  test('every page becomes its own image and old exports are cleared',
+      () async {
+    final temp = await Directory.systemTemp.createTemp('snowbird');
+    addTearDown(() => temp.delete(recursive: true));
+    Stream<Uint8List> pages(int n) => Stream.fromIterable([
+          for (var i = 0; i < n; i++) Uint8List.fromList([i]),
+        ]);
+    List<String> names(List<File> f) =>
+        [for (final x in f) x.uri.pathSegments.last];
+
+    final three = await RecordExporter.writeImages(
+      pages(3),
+      await RecordExporter.freshExportDir(temp),
+    );
+    expect(names(three), [
+      'us-presence-record-1.png',
+      'us-presence-record-2.png',
+      'us-presence-record-3.png',
+    ]);
+    expect(await three[2].readAsBytes(), [2]);
+
+    final one = await RecordExporter.writeImages(
+      pages(1),
+      await RecordExporter.freshExportDir(temp),
+    );
+    expect(names(one), ['us-presence-record-1.png']);
+    expect(three[2].existsSync(), isFalse);
+
+    expect(
+      RecordExporter.writeImages(
+        pages(0),
+        await RecordExporter.freshExportDir(temp),
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('sharing passes a usable popover origin (required on iPad)', () async {
+    final fake = _FakeShare();
+    SharePlatform.instance = fake;
+    const origin = Rect.fromLTWH(10, 20, 48, 48);
+    await RecordExporter.shareFiles([File('x.png')], 'image/png', origin);
+    expect(fake.params!.sharePositionOrigin, origin);
+    expect(fake.params!.files!.single.path, 'x.png');
+  });
+}
+
+class _FakeShare extends SharePlatform with MockPlatformInterfaceMixin {
+  ShareParams? params;
+  @override
+  Future<ShareResult> share(ShareParams p) async {
+    params = p;
+    return const ShareResult('', ShareResultStatus.success);
+  }
 }

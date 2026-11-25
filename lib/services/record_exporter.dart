@@ -4,17 +4,8 @@
 //     PNG image, opens the system print dialog, and hands any of the three files to
 //     the OS share sheet. Nothing here computes a day count — it only formats.
 //
-//     OFFLINE INVARIANT (NFR-1): the PDF is built with the pdf package's BUILT-IN
-//     Helvetica (one of the 14 standard PDF fonts) — no font is downloaded, so no
-//     network call ever happens. We deliberately never call PdfGoogleFonts. The
-//     price of a no-bundled-font design is that standard Helvetica only covers the
-//     Latin-1 character set, so [_pdf] normalises the typographic punctuation and
-//     fractions we use (– — ⅓ ⅙ " " …) down to Latin-1 equivalents and replaces any
-//     remaining non-Latin-1 rune with '?' so a stray glyph can never crash the
-//     build. French accents, the guillemets « », the middle dot ·, and the ð in
-//     "Veiðimaður" are all inside Latin-1 and render correctly. (The CSV, being
-//     UTF-8, has no such limit — full Unicode there.) If arbitrary-Unicode PDF
-//     output is ever needed, bundle a TTF font asset and load it here.
+//     OFFLINE INVARIANT (NFR-1): the fonts are bundled assets (see RecordFonts), so
+//     no font is downloaded and no network call happens. Never call PdfGoogleFonts.
 //
 // FR: Couche de rendu + livraison pour la fiche de présence vedette (FR-8). C'est
 //     une FINE surface au-dessus de PresenceRecord (qui détient les données
@@ -23,23 +14,15 @@
 //     trois fichiers à la feuille de partage de l'OS. Rien ici ne calcule un compte
 //     de jours — il ne fait que mettre en forme.
 //
-//     INVARIANT HORS-LIGNE (NFR-1) : le PDF est construit avec la police Helvetica
-//     INTÉGRÉE au paquet pdf (l'une des 14 polices PDF standard) — aucune police
-//     n'est téléchargée, donc aucun appel réseau. Nous n'appelons jamais
-//     PdfGoogleFonts. Le prix d'une conception sans police intégrée : Helvetica
-//     standard ne couvre que le jeu Latin-1, donc [_pdf] normalise la ponctuation
-//     typographique et les fractions que nous employons (– — ⅓ ⅙ " » …) vers des
-//     équivalents Latin-1 et remplace tout caractère hors Latin-1 restant par « ? »
-//     pour qu'un glyphe égaré ne fasse jamais planter la construction. Les accents
-//     français, les guillemets « », le point médian · et le ð de « Veiðimaður »
-//     sont tous dans Latin-1 et s'affichent correctement. (Le CSV, en UTF-8, n'a
-//     pas cette limite — Unicode complet.) Si un jour un PDF Unicode arbitraire est
-//     nécessaire, intégrer une police TTF et la charger ici.
+//     INVARIANT HORS-LIGNE (NFR-1) : les polices sont des ressources intégrées (voir
+//     RecordFonts), donc aucune n'est téléchargée et aucun appel réseau n'a lieu. Ne
+//     jamais appeler PdfGoogleFonts.
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart' show Rect;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -51,6 +34,7 @@ import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
+import 'package:snowbird_in_usa_tracker/services/record_fonts.dart';
 
 abstract final class RecordExporter {
   // EN: Base filename (no extension) used for every exported artifact.
@@ -66,15 +50,20 @@ abstract final class RecordExporter {
     required AppLocalizations strings,
     required String localeName,
   }) async {
+    final fonts = await RecordFonts.load();
     final dateFmt = DateFormat.yMMMd(localeName);
     final doc = pw.Document(
+      theme: fonts.theme,
       title: strings.recordHeading,
       author: 'Veidimadur - veidimadur.ca',
     );
 
     doc.addPage(
       pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
+        // EN: US Letter — the paper of both the users (Canada) and the readers (US).
+        // FR: Format Lettre US — le papier des utilisateurs (Canada) comme des
+        //     lecteurs (É.-U.).
+        pageFormat: PdfPageFormat.letter,
         // EN: The library stops at 20 pages by default, which would refuse a long
         //     history. Rows always fit a page (see _chunks), so layout terminates.
         // FR: La bibliothèque s'arrête à 20 pages par défaut, ce qui refuserait un
@@ -87,7 +76,7 @@ abstract final class RecordExporter {
             : pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 8),
                 child: pw.Text(
-                  _pdf(strings.recordHeading),
+                  fonts.printable(strings.recordHeading),
                   style: const pw.TextStyle(
                     fontSize: 9,
                     color: PdfColors.grey600,
@@ -100,7 +89,7 @@ abstract final class RecordExporter {
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
               pw.Text(
-                _pdf(strings.recordAuthor),
+                fonts.printable(strings.recordAuthor),
                 style:
                     const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
               ),
@@ -113,33 +102,16 @@ abstract final class RecordExporter {
           ),
         ),
         build: (context) => [
-          _pdfHeader(record, strings, dateFmt),
+          _pdfHeader(record, fonts, strings, dateFmt),
           pw.SizedBox(height: 12),
-          _pdfSummary(record, strings),
+          _pdfSummary(record, fonts, strings),
           pw.SizedBox(height: 16),
-          _pdfTable(record, strings, dateFmt),
+          _pdfTable(record, fonts, strings, dateFmt),
         ],
       ),
     );
 
     return doc.save();
-  }
-
-  // EN: Rasterise page 1 of the PDF to a PNG image (200 dpi — crisp on screen and
-  //     when re-shared). Reuses buildPdf so the image and the PDF are identical.
-  // FR: Pixelliser la page 1 du PDF en image PNG (200 ppp — net à l'écran et au
-  //     repartage). Réutilise buildPdf pour que l'image et le PDF soient identiques.
-  static Future<Uint8List> buildImage(
-    PresenceRecord record, {
-    required AppLocalizations strings,
-    required String localeName,
-  }) async {
-    final pdfBytes =
-        await buildPdf(record, strings: strings, localeName: localeName);
-    await for (final page in Printing.raster(pdfBytes, pages: [0], dpi: 200)) {
-      return page.toPng();
-    }
-    throw StateError('The PDF produced no page to rasterise.');
   }
 
   // EN: Open the system print dialog with the record.
@@ -151,33 +123,49 @@ abstract final class RecordExporter {
   }) async {
     final bytes =
         await buildPdf(record, strings: strings, localeName: localeName);
-    await Printing.layoutPdf(onLayout: (_) async => bytes);
+    await Printing.layoutPdf(
+      onLayout: (_) async => bytes,
+      format: PdfPageFormat.letter,
+    );
   }
 
-  // EN: Share the PDF via the OS share sheet (printing handles the temp file and
-  //     filename). No network — the share sheet is an OS handoff.
-  // FR: Partager le PDF via la feuille de partage de l'OS (printing gère le fichier
-  //     temporaire et le nom). Aucun réseau — le partage est une remise à l'OS.
+  // EN: Share the PDF via the OS share sheet. No network — an OS handoff. [origin]
+  //     is where the iPad anchors its popover; without it iPadOS refuses to share.
+  // FR: Partager le PDF via la feuille de partage de l'OS. Aucun réseau — une remise
+  //     à l'OS. [origin] est le point d'ancrage de la bulle sur iPad ; sans lui,
+  //     iPadOS refuse le partage.
   static Future<void> sharePdf(
     PresenceRecord record, {
     required AppLocalizations strings,
     required String localeName,
+    required Rect origin,
   }) async {
     final bytes =
         await buildPdf(record, strings: strings, localeName: localeName);
-    await Printing.sharePdf(bytes: bytes, filename: '$_fileBase.pdf');
+    final dir = await freshExportDir(await getTemporaryDirectory());
+    final file = File('${dir.path}/$_fileBase.pdf');
+    await file.writeAsBytes(bytes, flush: true);
+    await shareFiles([file], 'application/pdf', origin);
   }
 
-  // EN: Share the PNG image via the OS share sheet.
-  // FR: Partager l'image PNG via la feuille de partage de l'OS.
+  // EN: Share the record as images, one PNG per PDF page (200 dpi), so a long
+  //     history is never cut off. Rasterising the PDF keeps both identical.
+  // FR: Partager la fiche en images, un PNG par page du PDF (200 ppp), pour qu'un
+  //     long historique ne soit jamais tronqué. Pixelliser le PDF garde les deux
+  //     identiques.
   static Future<void> shareImage(
     PresenceRecord record, {
     required AppLocalizations strings,
     required String localeName,
+    required Rect origin,
   }) async {
     final bytes =
-        await buildImage(record, strings: strings, localeName: localeName);
-    await _shareBytes(bytes, '$_fileBase.png', 'image/png');
+        await buildPdf(record, strings: strings, localeName: localeName);
+    final files = await writeImages(
+      Printing.raster(bytes, dpi: 200).asyncMap((page) => page.toPng()),
+      await freshExportDir(await getTemporaryDirectory()),
+    );
+    await shareFiles(files, 'image/png', origin);
   }
 
   // EN: Share the CSV via the OS share sheet. A UTF-8 BOM is prepended so desktop
@@ -186,35 +174,70 @@ abstract final class RecordExporter {
   // FR: Partager le CSV via la feuille de partage de l'OS. Un BOM UTF-8 est ajouté
   //     en tête pour que les tableurs de bureau (notamment Excel sous Windows)
   //     lisent correctement le texte français accentué au lieu de mojibake.
-  static Future<void> shareCsv(PresenceRecord record) async {
+  static Future<void> shareCsv(
+    PresenceRecord record, {
+    required Rect origin,
+  }) async {
     final bom = [0xEF, 0xBB, 0xBF];
-    final bytes = Uint8List.fromList([...bom, ...utf8.encode(record.toCsv())]);
-    await _shareBytes(bytes, '$_fileBase.csv', 'text/csv');
+    final dir = await freshExportDir(await getTemporaryDirectory());
+    final file = File('${dir.path}/$_fileBase.csv');
+    await file.writeAsBytes(
+      [...bom, ...utf8.encode(record.toCsv())],
+      flush: true,
+    );
+    await shareFiles([file], 'text/csv', origin);
   }
 
   // ---------------------------------------------------------------------------
-  // Private helpers
+  // EN: Building blocks, public so they can be tested without platform channels.
+  // FR: Briques publiques, pour être testées sans canaux de plateforme.
   // ---------------------------------------------------------------------------
 
-  // EN: Write bytes to a temp file with a correct name/extension (so the receiving
-  //     app recognises the type), then hand it to the share sheet.
-  // FR: Écrire les octets dans un fichier temporaire au nom/extension correct (pour
-  //     que l'appli réceptrice reconnaisse le type), puis le remettre au partage.
-  static Future<void> _shareBytes(
-    Uint8List bytes,
-    String name,
-    String mime,
+  // EN: An empty export folder. The previous export is removed here rather than
+  //     right after sharing, because the receiving app may still be reading it; this
+  //     also keeps old copies of travel history from piling up in temporary storage.
+  // FR: Un dossier d'export vide. L'export précédent est supprimé ici plutôt
+  //     qu'aussitôt partagé, car l'appli réceptrice peut encore le lire ; cela évite
+  //     aussi d'accumuler d'anciennes copies de l'historique en stockage temporaire.
+  static Future<Directory> freshExportDir(Directory temp) async {
+    final dir = Directory('${temp.path}/snowbird-export');
+    if (await dir.exists()) await dir.delete(recursive: true);
+    return dir.create(recursive: true);
+  }
+
+  // EN: Write each page as it arrives, so only one page is held in memory.
+  // FR: Écrire chaque page dès son arrivée, pour n'en garder qu'une en mémoire.
+  static Future<List<File>> writeImages(
+    Stream<Uint8List> pages,
+    Directory dir,
   ) async {
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/$name');
-    await file.writeAsBytes(bytes, flush: true);
+    final files = <File>[];
+    await for (final png in pages) {
+      final file = File('${dir.path}/$_fileBase-${files.length + 1}.png');
+      files.add(await file.writeAsBytes(png, flush: true));
+    }
+    if (files.isEmpty) {
+      throw StateError('The PDF produced no page to rasterise.');
+    }
+    return files;
+  }
+
+  static Future<void> shareFiles(
+    List<File> files,
+    String mime,
+    Rect origin,
+  ) async {
     await SharePlus.instance.share(
-      ShareParams(files: [XFile(file.path, mimeType: mime)]),
+      ShareParams(
+        files: [for (final f in files) XFile(f.path, mimeType: mime)],
+        sharePositionOrigin: origin,
+      ),
     );
   }
 
   static pw.Widget _pdfHeader(
     PresenceRecord record,
+    RecordFonts fonts,
     AppLocalizations strings,
     DateFormat dateFmt,
   ) {
@@ -222,17 +245,17 @@ abstract final class RecordExporter {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
-          _pdf(strings.recordHeading),
+          fonts.printable(strings.recordHeading),
           style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
         ),
         pw.SizedBox(height: 2),
         pw.Text(
-          _pdf(strings.recordAsOf(dateFmt.format(record.asOf))),
+          fonts.printable(strings.recordAsOf(dateFmt.format(record.asOf))),
           style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey700),
         ),
         pw.SizedBox(height: 6),
         pw.Text(
-          _pdf(strings.recordDisclaimer),
+          fonts.printable(strings.recordDisclaimer),
           style: pw.TextStyle(
             fontSize: 9,
             fontStyle: pw.FontStyle.italic,
@@ -246,6 +269,7 @@ abstract final class RecordExporter {
 
   static pw.Widget _pdfSummary(
     PresenceRecord record,
+    RecordFonts fonts,
     AppLocalizations strings,
   ) {
     final t = record.totals;
@@ -254,9 +278,12 @@ abstract final class RecordExporter {
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text(_pdf(label), style: const pw.TextStyle(fontSize: 10)),
               pw.Text(
-                _pdf(value),
+                fonts.printable(label),
+                style: const pw.TextStyle(fontSize: 10),
+              ),
+              pw.Text(
+                fonts.printable(value),
                 style: pw.TextStyle(
                   fontSize: 10,
                   fontWeight: pw.FontWeight.bold,
@@ -276,7 +303,7 @@ abstract final class RecordExporter {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            _pdf(strings.recordSummaryTitle),
+            fonts.printable(strings.recordSummaryTitle),
             style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 4),
@@ -286,7 +313,7 @@ abstract final class RecordExporter {
           pw.Divider(color: PdfColors.grey300),
           line(strings.recordSptLabel, record.formattedSpt),
           pw.Text(
-            _pdf(strings.recordSptFormula),
+            fonts.printable(strings.recordSptFormula),
             style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
           ),
         ],
@@ -296,6 +323,7 @@ abstract final class RecordExporter {
 
   static pw.Widget _pdfTable(
     PresenceRecord record,
+    RecordFonts fonts,
     AppLocalizations strings,
     DateFormat dateFmt,
   ) {
@@ -304,7 +332,7 @@ abstract final class RecordExporter {
       strings.recordColDays,
       strings.recordColStatus,
       strings.recordColDetails,
-    ].map(_pdf).toList();
+    ].map(fonts.printable).toList();
 
     final data = <List<String>>[];
     for (final trip in record.trips) {
@@ -321,11 +349,11 @@ abstract final class RecordExporter {
       // FR: Une rangée de tableau PDF ne peut s'étendre sur deux pages, donc de
       //     longs détails se poursuivent sur des rangées aux autres cellules vides.
       //     Rien n'est omis.
-      final chunks = _chunks(_pdf(_details(trip, strings)));
+      final chunks = _chunks(fonts.printable(_details(trip, strings)));
       data.add([
-        _pdf(dates),
+        fonts.printable(dates),
         '${trip.daysPresent(record.asOf)}',
-        _pdf(status),
+        fonts.printable(status),
         chunks.first,
       ]);
       for (final more in chunks.skip(1)) {
@@ -418,37 +446,12 @@ abstract final class RecordExporter {
     return [
       for (var i = 0; i < lines.length; i += maxLines)
         lines
-            .sublist(i, i + maxLines < lines.length ? i + maxLines : lines.length)
+            .sublist(
+              i,
+              i + maxLines < lines.length ? i + maxLines : lines.length,
+            )
             .join()
             .trimRight(),
     ];
-  }
-
-  // EN: Normalise a string to what standard-font Helvetica can render (Latin-1):
-  //     map the typographic punctuation and fractions this app uses to Latin-1
-  //     equivalents, then replace any remaining rune above U+00FF with '?'. Without
-  //     this, an unsupported glyph would throw during PDF layout (see file header).
-  // FR: Normaliser une chaîne vers ce que l'Helvetica standard peut rendre
-  //     (Latin-1) : convertir la ponctuation typographique et les fractions
-  //     utilisées ici en équivalents Latin-1, puis remplacer tout caractère
-  //     au-dessus de U+00FF restant par « ? ». Sans cela, un glyphe non pris en
-  //     charge lèverait une exception au rendu du PDF (voir l'en-tête du fichier).
-  static String _pdf(String input) {
-    final mapped = input
-        .replaceAll('—', '-')
-        .replaceAll('–', '-')
-        .replaceAll('⅓', '1/3')
-        .replaceAll('⅙', '1/6')
-        .replaceAll('’', "'")
-        .replaceAll('‘', "'")
-        .replaceAll('“', '"')
-        .replaceAll('”', '"')
-        .replaceAll('…', '...')
-        .replaceAll('→', '>');
-    final buffer = StringBuffer();
-    for (final rune in mapped.runes) {
-      buffer.writeCharCode(rune <= 0xFF ? rune : 0x3F /* '?' */);
-    }
-    return buffer.toString();
   }
 }

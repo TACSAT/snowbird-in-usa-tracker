@@ -219,7 +219,8 @@ class StorageService {
       _toQuarantine.remove(key);
     }
 
-    final encoded = jsonEncode({'schemaVersion': schemaVersion, field: records});
+    final encoded =
+        jsonEncode({'schemaVersion': schemaVersion, field: records});
     await _write(() => _prefs.setString(key, encoded));
   }
 
