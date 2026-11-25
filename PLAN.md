@@ -463,7 +463,8 @@ Where this differs from a tick above, this section governs.
 - **FR-5:** actual trips may share a border day but not otherwise overlap, and may not start
   in the future; planned trips may overlap. The 2,000-trip cap is enforced.
 - **FR-8:** PDF (US Letter, bundled font) shows every crossing detail; PNG is one image per
-  page; CSV headers stay in English by decision.
+  page; a localised plain-text export serves screen readers; CSV headers stay in English by
+  decision.
 - **FR-9 / FR-10 / FR-19:** alerts fire on the crossing day only; permission is asked first.
 - **FR-12 / FR-13:** stored data is versioned; unreadable data is quarantined and announced.
 - **FR-20 / FR-21:** every screen is tested at large text in both languages. The optional

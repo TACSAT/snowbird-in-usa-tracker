@@ -461,5 +461,27 @@
     "placeholders": {
       "name": { "type": "String" }
     }
-  }
+  },
+
+  "exportAsText": "Texte brut (pour lecteurs d'écran)",
+
+  "recordLine": "{label} : {value}",
+  "@recordLine": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "value": { "type": "String" }
+    }
+  },
+
+  "recordTripNumber": "Séjour {number} sur {total}",
+  "@recordTripNumber": {
+    "placeholders": {
+      "number": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "recordTripName": "Nom du séjour",
+
+  "recordNotes": "Notes"
 }

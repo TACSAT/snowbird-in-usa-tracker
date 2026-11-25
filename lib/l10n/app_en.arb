@@ -609,5 +609,27 @@
     "placeholders": {
       "name": { "type": "String" }
     }
-  }
+  },
+
+  "exportAsText": "Plain text (for screen readers)",
+
+  "recordLine": "{label}: {value}",
+  "@recordLine": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "value": { "type": "String" }
+    }
+  },
+
+  "recordTripNumber": "Trip {number} of {total}",
+  "@recordTripNumber": {
+    "placeholders": {
+      "number": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "recordTripName": "Trip name",
+
+  "recordNotes": "Notes"
 }

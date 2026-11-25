@@ -595,4 +595,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String alertToggleLabel(String name) {
     return 'Alert active: $name';
   }
+
+  @override
+  String get exportAsText => 'Plain text (for screen readers)';
+
+  @override
+  String recordLine(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String recordTripNumber(int number, int total) {
+    return 'Trip $number of $total';
+  }
+
+  @override
+  String get recordTripName => 'Trip name';
+
+  @override
+  String get recordNotes => 'Notes';
 }

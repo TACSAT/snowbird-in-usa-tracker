@@ -163,7 +163,7 @@ void main() {
     expect(trips.tripCount, 0);
   });
 
-  testWidgets('export sheet offers all four formats when trips exist',
+  testWidgets('export sheet offers every format when trips exist',
       (tester) async {
     SharedPreferences.setMockInitialValues({
       'snowbird.flags.disclaimerAck.v1': true,
@@ -193,6 +193,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('PDF document'), findsOneWidget);
+    expect(find.text('Plain text (for screen readers)'), findsOneWidget);
     expect(find.text('Image (PNG)'), findsOneWidget);
     expect(find.text('Spreadsheet (CSV)'), findsOneWidget);
     expect(find.text('Print'), findsOneWidget);

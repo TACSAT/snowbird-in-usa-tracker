@@ -1087,6 +1087,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alert active: {name}'**
   String alertToggleLabel(String name);
+
+  /// No description provided for @exportAsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain text (for screen readers)'**
+  String get exportAsText;
+
+  /// No description provided for @recordLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String recordLine(String label, String value);
+
+  /// No description provided for @recordTripNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip {number} of {total}'**
+  String recordTripNumber(int number, int total);
+
+  /// No description provided for @recordTripName.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip name'**
+  String get recordTripName;
+
+  /// No description provided for @recordNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get recordNotes;
 }
 
 class _AppLocalizationsDelegate

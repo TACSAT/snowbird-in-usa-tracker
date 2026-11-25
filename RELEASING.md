@@ -52,7 +52,8 @@ do not want that, keep the real file elsewhere and symlink it.
 1. First alert: permission prompt appears; the alert arrives with the app closed and open.
 2. Deny permission, then switch the alert off and on.
 3. Change the time zone and reopen; a delivered alert stays in the tray.
-4. Share the PDF, a multi-page PNG and the CSV, and print. iPad especially.
+4. Share the PDF, plain text, a multi-page PNG and the CSV, and print. Listen to the text
+   file with VoiceOver and TalkBack. iPad especially.
 5. Largest text with VoiceOver and TalkBack, in English and French; open a date picker.
 6. Run a what-if, then save it as a planned trip.
 7. Upgrade over the previous version and confirm the old trips load.

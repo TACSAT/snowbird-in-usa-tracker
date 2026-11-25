@@ -603,4 +603,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String alertToggleLabel(String name) {
     return 'Alerte active : $name';
   }
+
+  @override
+  String get exportAsText => 'Texte brut (pour lecteurs d\'écran)';
+
+  @override
+  String recordLine(String label, String value) {
+    return '$label : $value';
+  }
+
+  @override
+  String recordTripNumber(int number, int total) {
+    return 'Séjour $number sur $total';
+  }
+
+  @override
+  String get recordTripName => 'Nom du séjour';
+
+  @override
+  String get recordNotes => 'Notes';
 }

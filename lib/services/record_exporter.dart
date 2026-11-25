@@ -32,9 +32,9 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
-import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/record_fonts.dart';
+import 'package:snowbird_in_usa_tracker/services/record_text.dart';
 
 abstract final class RecordExporter {
   // EN: Base filename (no extension) used for every exported artifact.
@@ -168,6 +168,21 @@ abstract final class RecordExporter {
     await shareFiles(files, 'image/png', origin);
   }
 
+  // EN: Share the plain-text record, the format meant to be listened to.
+  // FR: Partager la fiche en texte brut, le format destiné à l'écoute.
+  static Future<void> shareText(
+    PresenceRecord record, {
+    required AppLocalizations strings,
+    required String localeName,
+    required Rect origin,
+  }) async {
+    final file = await writeText(
+      buildRecordText(record, strings: strings, localeName: localeName),
+      await freshExportDir(await getTemporaryDirectory()),
+    );
+    await shareFiles([file], 'text/plain', origin);
+  }
+
   // EN: Share the CSV via the OS share sheet. A UTF-8 BOM is prepended so desktop
   //     spreadsheet apps (notably Excel on Windows) read the accented French text
   //     correctly instead of mojibake.
@@ -221,6 +236,14 @@ abstract final class RecordExporter {
     }
     return files;
   }
+
+  // EN: UTF-8 with a byte-order mark: without it, some viewers (iOS previews, older
+  //     Windows apps) guess another encoding and garble accents.
+  // FR: UTF-8 avec marque d'ordre : sans elle, certains lecteurs (aperçus iOS, anciennes
+  //     applis Windows) devinent un autre encodage et abîment les accents.
+  static Future<File> writeText(String text, Directory dir) =>
+      File('${dir.path}/$_fileBase.txt')
+          .writeAsBytes([0xEF, 0xBB, 0xBF, ...utf8.encode(text)], flush: true);
 
   static Future<void> shareFiles(
     List<File> files,
@@ -388,28 +411,14 @@ abstract final class RecordExporter {
   //     présentes. La fiche est une preuve : ce que l'utilisateur a pris la peine de
   //     consigner est imprimé.
   static String _details(Trip trip, AppLocalizations strings) {
-    final entry = _crossing(trip.arrivalInfo);
-    final exit = _crossing(trip.departureInfo);
+    final entry = crossingText(trip.arrivalInfo);
+    final exit = crossingText(trip.departureInfo);
     return [
       if (trip.name != null) trip.name!,
       if (entry.isNotEmpty) strings.recordEntryLabel(entry),
       if (exit.isNotEmpty) strings.recordExitLabel(exit),
       if (trip.notes != null) trip.notes!,
     ].join('\n');
-  }
-
-  static String _crossing(CrossingInfo? info) {
-    if (info == null) return '';
-    final time = [
-      if (info.timeMinutes != null) info.formattedTime,
-      if (info.timeZone != null) info.timeZone!,
-    ].join(' ');
-    return [
-      if (time.isNotEmpty) time,
-      if (info.location != null) info.location!,
-      if (info.meansOfTravel != null) info.meansOfTravel!,
-      if (info.carrier != null) info.carrier!,
-    ].join(', ');
   }
 
   // EN: Split text into pieces that always fit on one page. The per-line estimate

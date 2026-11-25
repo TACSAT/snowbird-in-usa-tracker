@@ -32,9 +32,9 @@ import 'package:snowbird_in_usa_tracker/services/record_exporter.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
-// EN: The four ways to export the US Presence Record (FR-8).
-// FR: Les quatre façons d'exporter la fiche de présence (FR-8).
-enum _ExportChoice { pdf, image, csv, print }
+// EN: The ways to export the US Presence Record (FR-8).
+// FR: Les façons d'exporter la fiche de présence (FR-8).
+enum _ExportChoice { pdf, text, image, csv, print }
 
 // EN: Overflow-menu destinations (FR-14/15/20).
 // FR: Destinations du menu de débordement (FR-14/15/20).
@@ -163,6 +163,11 @@ class _TripListScreenState extends State<TripListScreen> {
                 onTap: () => Navigator.pop(ctx, _ExportChoice.pdf),
               ),
               ListTile(
+                leading: const Icon(Icons.notes),
+                title: Text(strings.exportAsText),
+                onTap: () => Navigator.pop(ctx, _ExportChoice.text),
+              ),
+              ListTile(
                 leading: const Icon(Icons.image_outlined),
                 title: Text(strings.exportAsImage),
                 onTap: () => Navigator.pop(ctx, _ExportChoice.image),
@@ -188,6 +193,13 @@ class _TripListScreenState extends State<TripListScreen> {
       switch (choice) {
         case _ExportChoice.pdf:
           await RecordExporter.sharePdf(
+            record,
+            strings: strings,
+            localeName: localeName,
+            origin: _shareOrigin(),
+          );
+        case _ExportChoice.text:
+          await RecordExporter.shareText(
             record,
             strings: strings,
             localeName: localeName,
