@@ -49,6 +49,20 @@ jobs:
           git diff --exit-code -- lib/l10n
       - run: flutter analyze
       - run: flutter test
+      # EN: Reuse downloaded Gradle dependencies, so a busy Maven server cannot fail the
+      #     build. Downloads only, never build output: what is tested is always built
+      #     from source.
+      # FR: Réutiliser les dépendances Gradle téléchargées, pour qu'un serveur Maven
+      #     occupé ne fasse pas échouer le build. Téléchargements seulement, jamais de
+      #     résultats de build : ce qui est testé est toujours construit des sources.
+      # actions/cache v5.1.0
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+          restore-keys: gradle-${{ runner.os }}-
       - run: flutter build apk --release
       - name: The app has no network permission
         run: tools/check_apk_permissions.sh build/app/outputs/flutter-apk/app-release.apk
