@@ -521,4 +521,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String recordExitLabel(String details) {
     return 'Sortie : $details';
   }
+
+  @override
+  String get clearTime => 'Effacer l\'heure';
+
+  @override
+  String get errorTimeRequired => 'Choisissez une heure de livraison.';
+
+  @override
+  String get alertReached => 'Atteinte en date d\'aujourd\'hui';
 }

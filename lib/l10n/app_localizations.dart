@@ -979,6 +979,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exit: {details}'**
   String recordExitLabel(String details);
+
+  /// No description provided for @clearTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear time'**
+  String get clearTime;
+
+  /// No description provided for @errorTimeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a delivery time.'**
+  String get errorTimeRequired;
+
+  /// No description provided for @alertReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached as of today'**
+  String get alertReached;
 }
 
 class _AppLocalizationsDelegate

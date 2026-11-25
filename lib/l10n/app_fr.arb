@@ -379,5 +379,11 @@
     "placeholders": {
       "details": { "type": "String" }
     }
-  }
+  },
+
+  "clearTime": "Effacer l'heure",
+
+  "errorTimeRequired": "Choisissez une heure de livraison.",
+
+  "alertReached": "Atteinte en date d'aujourd'hui"
 }

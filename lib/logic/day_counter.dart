@@ -293,6 +293,7 @@ abstract final class DayCounter {
     required int thresholdDays,
     required int windowDays,
     required DateTime from,
+    bool crossingOnly = false,
     Set<TripStatus> includeStatuses = const {
       TripStatus.actual,
       TripStatus.planned,
@@ -353,9 +354,19 @@ abstract final class DayCounter {
     final lastDay = spans.last.$2;
     final scanEnd =
         lastDay < start ? start : (lastDay > ceiling ? ceiling : lastDay);
+    // EN: With [crossingOnly], a day counts only if the day before was still below
+    //     the target. A notification announces the moment of crossing; without this,
+    //     a target already reached would be "reached today" every single day.
+    // FR: Avec [crossingOnly], un jour ne compte que si la veille était encore sous
+    //     la cible. Une notification annonce le moment du franchissement ; sans cela,
+    //     une cible déjà atteinte serait « atteinte aujourd'hui » chaque jour.
+    var wasReached = crossingOnly &&
+        _countInSpans(spans, start - windowDays, start - 1) >= thresholdDays;
     for (var day = start; day <= scanEnd; day++) {
       final count = _countInSpans(spans, day - (windowDays - 1), day);
-      if (count >= thresholdDays) {
+      if (count < thresholdDays) {
+        wasReached = false;
+      } else if (!wasReached) {
         return DateTime(from.year, from.month, from.day + (day - start));
       }
     }

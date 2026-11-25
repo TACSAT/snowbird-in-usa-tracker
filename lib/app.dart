@@ -92,17 +92,21 @@ class SnowBirdApp extends StatelessWidget {
       //     réglage d'accessibilité de l'OS compte toujours.
       builder: (context, child) {
         final media = MediaQuery.of(context);
-        // EN: Effective OS scale factor (1.0 base) × the user's in-app multiplier.
-        //     scale(1.0) reads the current factor from whatever scaler the OS
-        //     supplied, so the OS accessibility size still contributes.
-        // FR: Facteur d'échelle effectif de l'OS (base 1,0) × le multiplicateur de
-        //     l'utilisateur dans l'appli. scale(1.0) lit le facteur courant de
-        //     l'échelle fournie par l'OS, pour que la taille d'accessibilité de
-        //     l'OS compte toujours.
-        final osFactor = media.textScaler.scale(1);
+        // EN: The in-app choice may enlarge text up to 2x overall, beyond which
+        //     screens hold too few words to be readable; it never reduces what the
+        //     OS accessibility setting alone asked for. Sampled at 14 points because
+        //     Android scales small and large text differently.
+        // FR: Le choix dans l'appli peut agrandir jusqu'à 2x au total, au-delà de quoi
+        //     un écran contient trop peu de mots ; il ne réduit jamais ce que le
+        //     réglage d'accessibilité de l'OS demande à lui seul. Échantillonné à 14
+        //     points car Android agrandit différemment petits et grands textes.
+        const sample = 14.0;
+        final osFactor = media.textScaler.scale(sample) / sample;
+        final ceiling = osFactor > 2.0 ? osFactor : 2.0;
+        final wanted = osFactor * settings.textScale;
         return MediaQuery(
           data: media.copyWith(
-            textScaler: TextScaler.linear(osFactor * settings.textScale),
+            textScaler: TextScaler.linear(wanted > ceiling ? ceiling : wanted),
           ),
           child: child ?? const SizedBox.shrink(),
         );
@@ -127,6 +131,13 @@ class SnowBirdApp extends StatelessWidget {
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
+      // EN: Help and error text wraps instead of being cut off at large sizes.
+      // FR: Les textes d'aide et d'erreur passent à la ligne au lieu d'être coupés
+      //     en grande taille.
+      inputDecorationTheme: const InputDecorationThemeData(
+        helperMaxLines: 4,
+        errorMaxLines: 4,
+      ),
       colorScheme: ColorScheme.fromSeed(
         // EN: Deep blue — calm, professional, universally readable.
         // FR: Bleu foncé — calme, professionnel, universellement lisible.

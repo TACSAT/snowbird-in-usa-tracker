@@ -293,18 +293,22 @@ class _TripListScreenState extends State<TripListScreen> {
                 ),
               ),
             )
-          : Column(
-              children: [
-                _SummaryCard(trips: trips),
-                const Divider(height: 1),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: trips.length,
-                    itemBuilder: (context, index) =>
-                        _TripTile(trip: trips[index]),
-                  ),
-                ),
-              ],
+          // EN: The summary scrolls WITH the list: pinned above it, large text left
+          //     no room for the trips themselves (NFR-5).
+          // FR: Le résumé défile AVEC la liste : épinglé au-dessus, le grand texte ne
+          //     laissait aucune place aux séjours (NFR-5).
+          : ListView.builder(
+              padding: const EdgeInsets.only(bottom: 88),
+              itemCount: trips.length + 1,
+              itemBuilder: (context, index) => index == 0
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _SummaryCard(trips: trips),
+                        const Divider(height: 1),
+                      ],
+                    )
+                  : _TripTile(trip: trips[index - 1]),
             ),
       floatingActionButton: FloatingActionButton(
         tooltip: strings.addTrip,
@@ -367,6 +371,7 @@ class _SummaryCard extends StatelessWidget {
                   days: strings.daysCount(thisYear),
                 ),
               ),
+              const SizedBox(width: 16),
               Expanded(
                 child: _StatBlock(
                   value: '$last365',
@@ -483,6 +488,27 @@ class _TripTile extends StatelessWidget {
     final days = strings.daysCount(trip.daysPresent(now));
     final isPlanned = trip.status == TripStatus.planned;
 
+    // EN: At large text a trailing chip leaves no width for the dates, so it moves
+    //     below them.
+    // FR: En grand texte, une puce à droite ne laisse aucune largeur aux dates ; elle
+    //     passe donc dessous.
+    final largeText = MediaQuery.textScalerOf(context).scale(14) / 14 > 1.3;
+    final subtitle = strings.tripSubtitle(
+      arrival,
+      departure,
+      isCurrent ? strings.tripDaysSoFar(days) : days,
+    );
+    final chip = Chip(
+      label: Text(
+        isPlanned
+            ? strings.tripStatusPlanned
+            : isCurrent
+                ? strings.tripStatusCurrent
+                : strings.tripStatusActual,
+      ),
+      visualDensity: VisualDensity.compact,
+    );
+
     return ListTile(
       leading: Icon(
         isPlanned ? Icons.event_outlined : Icons.flight_land_rounded,
@@ -491,23 +517,13 @@ class _TripTile extends StatelessWidget {
       title: Text(
         trip.name?.isNotEmpty == true ? trip.name! : '$arrival – $departure',
       ),
-      subtitle: Text(
-        strings.tripSubtitle(
-          arrival,
-          departure,
-          isCurrent ? strings.tripDaysSoFar(days) : days,
-        ),
-      ),
-      trailing: Chip(
-        label: Text(
-          isPlanned
-              ? strings.tripStatusPlanned
-              : isCurrent
-                  ? strings.tripStatusCurrent
-                  : strings.tripStatusActual,
-        ),
-        visualDensity: VisualDensity.compact,
-      ),
+      subtitle: largeText
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(subtitle), chip],
+            )
+          : Text(subtitle),
+      trailing: largeText ? null : chip,
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => TripEditScreen(existing: trip),

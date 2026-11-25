@@ -536,5 +536,11 @@
     "placeholders": {
       "details": { "type": "String" }
     }
-  }
+  },
+
+  "clearTime": "Clear time",
+
+  "errorTimeRequired": "Choose a delivery time.",
+
+  "alertReached": "Reached as of today"
 }

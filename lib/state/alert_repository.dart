@@ -108,7 +108,7 @@ class AlertRepository extends ChangeNotifier {
       notifyListeners();
       rethrow;
     }
-    await _pushScheduleToOS();
+    await refresh();
     notifyListeners();
   }
 
@@ -168,6 +168,30 @@ class AlertRepository extends ChangeNotifier {
     );
   }
 
+  // EN: Whether the target is met as of today — arithmetic for display, so a past
+  //     crossing is not shown as "not reached". No judgment is attached to it.
+  // FR: Si la cible est atteinte en date d'aujourd'hui — arithmétique pour
+  //     l'affichage, pour qu'un franchissement passé ne soit pas montré comme « non
+  //     atteint ». Aucun jugement n'y est rattaché.
+  bool isReached(DayAlert alert) {
+    final now = _now();
+    final today = DateTime(now.year, now.month, now.day);
+    final trips = _tripRepository.trips;
+    switch (alert.kind) {
+      case AlertKind.dayCountThreshold:
+        return DayCounter.countDaysInLastDays(
+              trips: trips,
+              days: alert.windowDays,
+              today: today,
+              includeStatuses: const {TripStatus.actual, TripStatus.planned},
+            ) >=
+            alert.thresholdDays;
+      case AlertKind.sinceLastVisit:
+        final reach = _reachDate(alert, trips, today);
+        return reach != null && !reach.isAfter(today);
+    }
+  }
+
   // EN: Project an alert's reach date according to its kind (FR-9 / FR-10). This is
   //     the ONLY place the two alert kinds diverge — everything downstream (delivery
   //     time, lead, scheduling) is shared:
@@ -196,6 +220,7 @@ class AlertRepository extends ChangeNotifier {
           thresholdDays: alert.thresholdDays,
           windowDays: alert.windowDays,
           from: today,
+          crossingOnly: true,
         );
       case AlertKind.sinceLastVisit:
         final last = DayCounter.lastDeparture(trips: trips);
@@ -210,13 +235,45 @@ class AlertRepository extends ChangeNotifier {
     // FR: Les données de séjour ont changé — les dates d'atteinte ont pu
     //     bouger. Pas de persistance nécessaire (les alertes elles-mêmes sont
     //     inchangées), seulement une replanification.
-    await _pushScheduleToOS();
+    await refresh();
   }
 
-  Future<void> _pushScheduleToOS() async {
-    final scheduler = _scheduler;
-    if (scheduler == null) return;
-    await scheduler.reschedule(computeSchedule());
+  // EN: Send the current schedule to the OS. Also called at launch, on resume and on
+  //     a language change, since a phone restore, a new time zone or a new language
+  //     all make the OS copy stale without any data change here.
+  //
+  //     Runs never overlap (a cancel from one could erase the other's work); a call
+  //     made during a run triggers one more with the newest data. A failure is
+  //     contained: the alert is already saved, and the next refresh retries.
+  // FR: Envoyer l'horaire courant à l'OS. Aussi appelé au lancement, au retour à
+  //     l'avant-plan et au changement de langue, car une restauration du téléphone,
+  //     un nouveau fuseau ou une nouvelle langue périment la copie de l'OS sans
+  //     aucun changement de données ici.
+  //
+  //     Les passes ne se chevauchent jamais (l'annulation de l'une effacerait le
+  //     travail de l'autre) ; un appel pendant une passe en déclenche une de plus
+  //     avec les données les plus récentes. Un échec est contenu : l'alerte est déjà
+  //     enregistrée et le prochain rafraîchissement réessaie.
+  Future<void> refresh() {
+    if (_scheduler == null) return Future<void>.value();
+    _stale = true;
+    return _running ??= _drain();
+  }
+
+  bool _stale = false;
+  Future<void>? _running;
+
+  Future<void> _drain() async {
+    while (_stale) {
+      _stale = false;
+      try {
+        await _scheduler?.reschedule(computeSchedule());
+      } catch (e) {
+        debugPrint('[AlertRepository] Scheduling failed: ${e.runtimeType}');
+        await null;
+      }
+    }
+    _running = null;
   }
 
   @override

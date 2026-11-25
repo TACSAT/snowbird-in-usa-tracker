@@ -33,6 +33,7 @@ import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
+import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
@@ -63,6 +64,38 @@ class _TripEditScreenState extends State<TripEditScreen> {
   // FR: « Encore aux É.-U. » (FR-2). N'a de sens que pour un séjour réel ; c'est un
   //     choix explicite pour qu'un départ oublié ne soit jamais lu comme ouvert.
   bool _stillInUs = false;
+  // EN: Problem with the dates, shown under the row concerned until it changes.
+  // FR: Problème de dates, affiché sous la rangée concernée jusqu'à modification.
+  String? _arrivalError;
+  String? _departureError;
+  final _arrivalKey = GlobalKey();
+  final _departureKey = GlobalKey();
+
+  void _clearErrors() {
+    _arrivalError = null;
+    _departureError = null;
+  }
+
+  // EN: Show an error and bring it into view: Save is at the bottom of a long form.
+  // FR: Afficher une erreur et l'amener à l'écran : Enregistrer est au bas d'un long
+  //     formulaire.
+  void _showDateError({String? arrival, String? departure}) {
+    setState(() {
+      _arrivalError = arrival;
+      _departureError = departure;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target =
+          (arrival != null ? _arrivalKey : _departureKey).currentContext;
+      if (target != null) {
+        Scrollable.ensureVisible(
+          target,
+          duration: const Duration(milliseconds: 200),
+        );
+      }
+    });
+  }
+
   bool get _isOpen => _status == TripStatus.actual && _stillInUs;
 
   // EN: Per-crossing optional fields — entry then exit. Times are TimeOfDay?,
@@ -134,6 +167,9 @@ class _TripEditScreenState extends State<TripEditScreen> {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final isNew = widget.existing == null;
+    String dateText(DateTime? d) => d == null
+        ? strings.optionalNotSet
+        : DateFormat.yMMMMd(strings.localeName).format(d);
 
     return Scaffold(
       appBar: AppBar(
@@ -149,120 +185,136 @@ class _TripEditScreenState extends State<TripEditScreen> {
       ),
       body: Form(
         key: _formKey,
-        child: ListView(
+        // EN: Not a lazy list: every field must exist for validation and for
+        //     scrolling to an error, even when off screen.
+        // FR: Pas une liste à la demande : chaque champ doit exister pour la
+        //     validation et pour défiler vers une erreur, même hors écran.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          children: [
-            // EN: Actual vs planned. A segmented control reads clearly at a
-            //     glance and needs no free typing.
-            // FR: Réel ou planifié. Un contrôle segmenté se lit clairement d'un
-            //     coup d'œil et n'exige aucune saisie libre.
-            Text(
-              strings.tripTypeLabel,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            SegmentedButton<TripStatus>(
-              segments: [
-                ButtonSegment(
-                  value: TripStatus.actual,
-                  label: Text(strings.tripStatusActual),
-                  icon: const Icon(Icons.check_circle_outline),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // EN: Actual vs planned. A segmented control reads clearly at a
+              //     glance and needs no free typing.
+              // FR: Réel ou planifié. Un contrôle segmenté se lit clairement d'un
+              //     coup d'œil et n'exige aucune saisie libre.
+              Text(
+                strings.tripTypeLabel,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<TripStatus>(
+                segments: [
+                  ButtonSegment(
+                    value: TripStatus.actual,
+                    label: Text(strings.tripStatusActual),
+                    icon: const Icon(Icons.check_circle_outline),
+                  ),
+                  ButtonSegment(
+                    value: TripStatus.planned,
+                    label: Text(strings.tripStatusPlanned),
+                    icon: const Icon(Icons.event_outlined),
+                  ),
+                ],
+                selected: {_status},
+                onSelectionChanged: (s) => setState(() {
+                  _status = s.first;
+                  _clearErrors();
+                }),
+              ),
+              const SizedBox(height: 16),
+
+              // EN: The two mandatory dates.
+              // FR: Les deux dates obligatoires.
+              ValueRow(
+                key: _arrivalKey,
+                label: strings.fieldArrivalDate,
+                value: dateText(_arrival),
+                error: _arrivalError,
+                onTap: () => _pickDate(isArrival: true),
+              ),
+              if (_status == TripStatus.actual)
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(strings.tripStillInUs),
+                  subtitle:
+                      _stillInUs ? Text(strings.tripStillInUsHelper) : null,
+                  value: _stillInUs,
+                  onChanged: (v) => setState(() {
+                    _stillInUs = v;
+                    _clearErrors();
+                  }),
                 ),
-                ButtonSegment(
-                  value: TripStatus.planned,
-                  label: Text(strings.tripStatusPlanned),
-                  icon: const Icon(Icons.event_outlined),
+              if (!_isOpen)
+                ValueRow(
+                  key: _departureKey,
+                  label: strings.fieldDepartureDate,
+                  value: dateText(_departure),
+                  error: _departureError,
+                  onTap: () => _pickDate(isArrival: false),
                 ),
-              ],
-              selected: {_status},
-              onSelectionChanged: (s) => setState(() => _status = s.first),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
-            // EN: The two mandatory dates.
-            // FR: Les deux dates obligatoires.
-            _DateRow(
-              label: strings.fieldArrivalDate,
-              value: _arrival,
-              localeName: strings.localeName,
-              placeholder: strings.optionalNotSet,
-              onTap: () => _pickDate(isArrival: true),
-            ),
-            if (_status == TripStatus.actual)
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(strings.tripStillInUs),
-                subtitle: _stillInUs ? Text(strings.tripStillInUsHelper) : null,
-                value: _stillInUs,
-                onChanged: (v) => setState(() => _stillInUs = v),
+              TextFormField(
+                controller: _name,
+                maxLength: InputLimits.maxTripNameLength,
+                decoration: InputDecoration(
+                  labelText: strings.fieldTripName,
+                  helperText: strings.fieldTripNameHelper,
+                  counterText: '',
+                ),
               ),
-            if (!_isOpen)
-              _DateRow(
-                label: strings.fieldDepartureDate,
-                value: _departure,
-                localeName: strings.localeName,
-                placeholder: strings.optionalNotSet,
-                onTap: () => _pickDate(isArrival: false),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _notes,
+                maxLength: InputLimits.maxNotesLength,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: strings.fieldNotes,
+                  counterText: '',
+                ),
               ),
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
 
-            TextFormField(
-              controller: _name,
-              maxLength: InputLimits.maxTripNameLength,
-              decoration: InputDecoration(
-                labelText: strings.fieldTripName,
-                helperText: strings.fieldTripNameHelper,
-                counterText: '',
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _notes,
-              maxLength: InputLimits.maxNotesLength,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: strings.fieldNotes,
-                counterText: '',
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // EN: Optional crossing detail sections, collapsed by default so the
-            //     form is short unless the user wants the extra fields.
-            // FR: Sections facultatives de détails de passage, repliées par défaut
-            //     pour que le formulaire reste court sauf si l'utilisateur veut les
-            //     champs supplémentaires.
-            _CrossingSection(
-              title: strings.entryDetailsTitle,
-              time: _entryTime,
-              timeLabel: strings.fieldCrossingTime,
-              placeholder: strings.optionalNotSet,
-              tz: _entryTz,
-              location: _entryLocation,
-              means: _entryMeans,
-              carrier: _entryCarrier,
-              strings: strings,
-              onPickTime: () => _pickTime(isEntry: true),
-            ),
-            if (!_isOpen)
+              // EN: Optional crossing detail sections, collapsed by default so the
+              //     form is short unless the user wants the extra fields.
+              // FR: Sections facultatives de détails de passage, repliées par défaut
+              //     pour que le formulaire reste court sauf si l'utilisateur veut les
+              //     champs supplémentaires.
               _CrossingSection(
-                title: strings.exitDetailsTitle,
-                time: _exitTime,
+                title: strings.entryDetailsTitle,
+                time: _entryTime,
                 timeLabel: strings.fieldCrossingTime,
                 placeholder: strings.optionalNotSet,
-                tz: _exitTz,
-                location: _exitLocation,
-                means: _exitMeans,
-                carrier: _exitCarrier,
+                tz: _entryTz,
+                location: _entryLocation,
+                means: _entryMeans,
+                carrier: _entryCarrier,
                 strings: strings,
-                onPickTime: () => _pickTime(isEntry: false),
+                onPickTime: () => _pickTime(isEntry: true),
+                onClearTime: () => setState(() => _entryTime = null),
               ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _save,
-              child: Text(strings.save),
-            ),
-          ],
+              if (!_isOpen)
+                _CrossingSection(
+                  title: strings.exitDetailsTitle,
+                  time: _exitTime,
+                  timeLabel: strings.fieldCrossingTime,
+                  placeholder: strings.optionalNotSet,
+                  tz: _exitTz,
+                  location: _exitLocation,
+                  means: _exitMeans,
+                  carrier: _exitCarrier,
+                  strings: strings,
+                  onPickTime: () => _pickTime(isEntry: false),
+                  onClearTime: () => setState(() => _exitTime = null),
+                ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _save,
+                child: Text(strings.save),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -285,6 +337,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
     );
     if (picked == null) return;
     setState(() {
+      _clearErrors();
       if (isArrival) {
         _arrival = picked;
         // EN: If departure is now before arrival, clear it so the user re-picks a
@@ -331,16 +384,16 @@ class _TripEditScreenState extends State<TripEditScreen> {
     }
 
     if (_arrival == null) {
-      complain(strings.errorArrivalRequired);
+      _showDateError(arrival: strings.errorArrivalRequired);
       return;
     }
     final departure = _isOpen ? null : _departure;
     if (departure == null && !_isOpen) {
-      complain(strings.errorDepartureRequired);
+      _showDateError(departure: strings.errorDepartureRequired);
       return;
     }
     if (departure != null && departure.isBefore(_arrival!)) {
-      complain(strings.errorDepartureBefore);
+      _showDateError(departure: strings.errorDepartureBefore);
       return;
     }
 
@@ -391,8 +444,9 @@ class _TripEditScreenState extends State<TripEditScreen> {
         );
       }
     } on TripValidationException catch (e) {
-      complain(
-        switch (e.problem) {
+      if (!mounted) return;
+      _showDateError(
+        arrival: switch (e.problem) {
           TripProblem.overlap => strings.errorTripOverlap,
           TripProblem.futureArrival => strings.errorFutureArrival,
         },
@@ -452,38 +506,6 @@ class _TripEditScreenState extends State<TripEditScreen> {
       t == null ? null : t.hour * 60 + t.minute;
 }
 
-// EN: A tappable date row showing the picked date or a placeholder.
-// FR: Une rangée de date cliquable affichant la date choisie ou un texte
-//     substitut.
-class _DateRow extends StatelessWidget {
-  final String label;
-  final DateTime? value;
-  final String localeName;
-  final String placeholder;
-  final VoidCallback onTap;
-
-  const _DateRow({
-    required this.label,
-    required this.value,
-    required this.localeName,
-    required this.placeholder,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final text = value == null
-        ? placeholder
-        : DateFormat.yMMMMd(localeName).format(value!);
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(label),
-      trailing: Text(text, style: Theme.of(context).textTheme.titleMedium),
-      onTap: onTap,
-    );
-  }
-}
-
 // EN: One collapsible block of optional crossing detail fields, reused for entry
 //     and exit. Kept stateless — it reads/writes the parent's controllers and time.
 // FR: Un bloc repliable de champs facultatifs de passage, réutilisé pour l'entrée
@@ -499,6 +521,7 @@ class _CrossingSection extends StatelessWidget {
   final TextEditingController carrier;
   final AppLocalizations strings;
   final VoidCallback onPickTime;
+  final VoidCallback onClearTime;
 
   const _CrossingSection({
     required this.title,
@@ -511,6 +534,7 @@ class _CrossingSection extends StatelessWidget {
     required this.carrier,
     required this.strings,
     required this.onPickTime,
+    required this.onClearTime,
   });
 
   @override
@@ -521,14 +545,12 @@ class _CrossingSection extends StatelessWidget {
         title: Text(title),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(timeLabel),
-            trailing: Text(
-              time == null ? placeholder : time!.format(context),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+          ValueRow(
+            label: timeLabel,
+            value: time == null ? placeholder : time!.format(context),
             onTap: onPickTime,
+            clearTooltip: strings.clearTime,
+            onClear: time == null ? null : onClearTime,
           ),
           TextFormField(
             controller: location,

@@ -515,4 +515,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String recordExitLabel(String details) {
     return 'Exit: $details';
   }
+
+  @override
+  String get clearTime => 'Clear time';
+
+  @override
+  String get errorTimeRequired => 'Choose a delivery time.';
+
+  @override
+  String get alertReached => 'Reached as of today';
 }

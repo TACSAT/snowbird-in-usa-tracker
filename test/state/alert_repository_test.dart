@@ -275,4 +275,157 @@ void main() {
     expect(scheduler.last, isEmpty);
     expect(alertRepo.projectedReachDate(alertRepo.alerts.single), isNull);
   });
+
+  // ---------------------------------------------------------------------------
+  // EN: Delivery rules — once per crossing, refreshed, serialised, failure-proof.
+  // FR: Règles de livraison — une fois par franchissement, rafraîchie, sérialisée,
+  //     à l'épreuve des pannes.
+  // ---------------------------------------------------------------------------
+
+  group('delivery', () {
+    Future<(StorageService, TripRepository)> data() async {
+      SharedPreferences.setMockInitialValues({});
+      final s = StorageService(await SharedPreferences.getInstance());
+      return (s, TripRepository(s, now: () => DateTime(2026, 12, 31)));
+    }
+
+    Trip trip(DateTime a, DateTime? d, [TripStatus s = TripStatus.actual]) =>
+        Trip.create(arrivalDate: a, departureDate: d, status: s);
+
+    DayAlert target(int days, {int window = 365}) => DayAlert.create(
+          thresholdDays: days,
+          windowDays: window,
+          hour: 9,
+          minute: 0,
+        );
+
+    AlertRepository at(StorageService s, TripRepository t, DateTime now) {
+      final r = AlertRepository(s, t, now: () => now);
+      addTearDown(r.dispose);
+      return r;
+    }
+
+    test('a target fires on its crossing day and never again while reached',
+        () async {
+      final (s, t) = await data();
+      await t.addTrip(trip(DateTime(2026, 1, 1), DateTime(2026, 3, 31)));
+      await s.saveAlerts([target(75)]);
+      final crossing = at(s, t, DateTime(2026, 3, 16, 8));
+      expect(
+        crossing.computeSchedule().single.fireMoment,
+        DateTime(2026, 3, 16, 9),
+      );
+      for (final day in [17, 18, 31]) {
+        final later = at(s, t, DateTime(2026, 3, day, 8));
+        expect(later.computeSchedule(), isEmpty);
+        expect(later.isReached(later.alerts.single), isTrue);
+      }
+    });
+
+    test('it fires again after dropping below and crossing anew', () async {
+      final (s, t) = await data();
+      await t.addTrip(trip(DateTime(2026, 1, 1), DateTime(2026, 1, 10)));
+      await t.addTrip(
+        trip(
+          DateTime(2026, 3, 1),
+          DateTime(2026, 3, 20),
+          TripStatus.planned,
+        ),
+      );
+      await s.saveAlerts([target(10, window: 30)]);
+      final r = at(s, t, DateTime(2026, 1, 15, 8));
+      expect(r.isReached(r.alerts.single), isTrue);
+      expect(r.computeSchedule().single.reachDate, DateTime(2026, 3, 10));
+    });
+
+    test('an in-progress stay projects the same date every day', () async {
+      final (s, t) = await data();
+      await t.addTrip(trip(DateTime(2026, 11, 1), null));
+      await s.saveAlerts([target(30)]);
+      for (final day in [5, 20, 29]) {
+        final r = at(s, t, DateTime(2026, 11, day, 8));
+        expect(r.computeSchedule().single.reachDate, DateTime(2026, 11, 30));
+        expect(r.isReached(r.alerts.single), isFalse);
+      }
+    });
+
+    test('since-last-visit reports reached once its date has passed', () async {
+      final (s, t) = await data();
+      await t.addTrip(trip(DateTime(2026, 1, 1), DateTime(2026, 1, 10)));
+      final alert = DayAlert.create(
+        thresholdDays: 30,
+        windowDays: 30,
+        hour: 9,
+        minute: 0,
+        kind: AlertKind.sinceLastVisit,
+      );
+      expect(at(s, t, DateTime(2026, 2, 1)).isReached(alert), isFalse);
+      expect(at(s, t, DateTime(2026, 3, 1)).isReached(alert), isTrue);
+    });
+
+    test('refresh re-sends the schedule without any data change', () async {
+      final (s, t) = await data();
+      await t.addTrip(trip(DateTime(2026, 11, 1), null));
+      await s.saveAlerts([target(30)]);
+      final scheduler = RecordingScheduler();
+      final r = AlertRepository(
+        s,
+        t,
+        scheduler: scheduler,
+        now: () => DateTime(2026, 11, 5),
+      );
+      addTearDown(r.dispose);
+      await r.refresh();
+      expect(scheduler.last, hasLength(1));
+    });
+
+    test('overlapping refreshes never interleave and the last data wins',
+        () async {
+      final (s, t) = await data();
+      final scheduler = _SlowScheduler();
+      final r = AlertRepository(
+        s,
+        t,
+        scheduler: scheduler,
+        now: () => DateTime(2026, 11, 5),
+      );
+      addTearDown(r.dispose);
+      await s.saveAlerts([target(30)]);
+      final first = r.refresh();
+      await t.addTrip(trip(DateTime(2026, 11, 1), null));
+      final add = r.addAlert(target(10));
+      await Future.wait([first, add, r.refresh()]);
+      expect(scheduler.maxConcurrent, 1);
+      expect(scheduler.last, hasLength(1));
+    });
+
+    test('a scheduling failure does not lose or block the alert', () async {
+      final (s, t) = await data();
+      final r = AlertRepository(s, t, scheduler: _BrokenScheduler());
+      addTearDown(r.dispose);
+      await r.addAlert(target(30));
+      expect(r.alertCount, 1);
+      expect(s.loadAlerts(), hasLength(1));
+    });
+  });
+}
+
+class _SlowScheduler extends RecordingScheduler {
+  int _running = 0;
+  int maxConcurrent = 0;
+
+  @override
+  Future<void> reschedule(List<ScheduledAlert> schedule) async {
+    _running++;
+    if (_running > maxConcurrent) maxConcurrent = _running;
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    await super.reschedule(schedule);
+    _running--;
+  }
+}
+
+class _BrokenScheduler extends RecordingScheduler {
+  @override
+  Future<void> reschedule(List<ScheduledAlert> schedule) =>
+      throw StateError('no notification stack');
 }
