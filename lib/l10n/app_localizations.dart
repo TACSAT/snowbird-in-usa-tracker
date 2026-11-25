@@ -236,12 +236,6 @@ abstract class AppLocalizations {
   /// **'About SnowBird'**
   String get aboutTitle;
 
-  /// About screen description.
-  ///
-  /// In en, this message translates to:
-  /// **'SnowBird is a free, open-source, privacy-first trip tracker. Your data never leaves your device.'**
-  String get aboutBody;
-
   /// Author credit line on the About screen.
   ///
   /// In en, this message translates to:
@@ -259,36 +253,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Support the developer'**
   String get donateButton;
-
-  /// Menu item / button to export a backup file.
-  ///
-  /// In en, this message translates to:
-  /// **'Export backup'**
-  String get exportBackup;
-
-  /// Menu item / button to import a backup file.
-  ///
-  /// In en, this message translates to:
-  /// **'Import backup'**
-  String get importBackup;
-
-  /// Confirmation dialog body before overwriting data with a backup.
-  ///
-  /// In en, this message translates to:
-  /// **'Importing will replace all current trip data. Continue?'**
-  String get importBackupConfirm;
-
-  /// Snack bar message after a successful import.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup imported successfully.'**
-  String get importSuccess;
-
-  /// Snack bar message when import fails.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not import backup: {reason}'**
-  String importError(String reason);
 
   /// Day-count window label for rolling 365 days.
   ///
@@ -391,12 +355,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Advance notice'**
   String get alertLeadField;
-
-  /// Lead option: notify on the reach day, no advance.
-  ///
-  /// In en, this message translates to:
-  /// **'On the day itself'**
-  String get alertLeadNone;
 
   /// Numeric field: whole days of advance notice.
   ///

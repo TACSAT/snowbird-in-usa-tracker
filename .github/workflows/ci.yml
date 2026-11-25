@@ -1,0 +1,53 @@
+# EN: Every push and pull request: format, analysis, tests, a release build, and proof
+#     that the APK cannot reach the network. No third-party action is used, versions
+#     are pinned by commit, and the token is read-only.
+# FR: À chaque push et demande de tirage : format, analyse, tests, build de release et
+#     preuve que l'APK ne peut joindre le réseau. Aucune action tierce, versions figées
+#     par commit, jeton en lecture seule.
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  # Flutter 3.47.2
+  FLUTTER_COMMIT: d3b14c876900e553bc736ca19295fc09e3853e8e
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      # actions/checkout v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - name: Install Flutter
+        run: |
+          git init -q "$RUNNER_TEMP/flutter"
+          cd "$RUNNER_TEMP/flutter"
+          git remote add origin https://github.com/flutter/flutter.git
+          git fetch -q --depth 1 origin "$FLUTTER_COMMIT"
+          git checkout -q FETCH_HEAD
+          git tag 3.47.2
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Use Java 17
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_17_X64/bin" >> "$GITHUB_PATH"
+      - run: flutter config --no-analytics
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - name: Generated strings match the ARB files
+        run: |
+          flutter gen-l10n
+          dart format lib/l10n
+          git diff --exit-code -- lib/l10n
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build apk --release
+      - name: The app has no network permission
+        run: tools/check_apk_permissions.sh build/app/outputs/flutter-apk/app-release.apk

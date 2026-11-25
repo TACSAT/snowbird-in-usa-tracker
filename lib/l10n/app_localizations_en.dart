@@ -89,10 +89,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutTitle => 'About SnowBird';
 
   @override
-  String get aboutBody =>
-      'SnowBird is a free, open-source, privacy-first trip tracker. Your data never leaves your device.';
-
-  @override
   String get aboutAuthor => 'Built by Veiðimaður — veidimadur.ca';
 
   @override
@@ -100,24 +96,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get donateButton => 'Support the developer';
-
-  @override
-  String get exportBackup => 'Export backup';
-
-  @override
-  String get importBackup => 'Import backup';
-
-  @override
-  String get importBackupConfirm =>
-      'Importing will replace all current trip data. Continue?';
-
-  @override
-  String get importSuccess => 'Backup imported successfully.';
-
-  @override
-  String importError(String reason) {
-    return 'Could not import backup: $reason';
-  }
 
   @override
   String get windowLast365 => 'Last 365 days';
@@ -171,9 +149,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alertLeadField => 'Advance notice';
-
-  @override
-  String get alertLeadNone => 'On the day itself';
 
   @override
   String get alertLeadDaysField => 'Days before';

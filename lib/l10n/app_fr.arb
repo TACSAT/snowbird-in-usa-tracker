@@ -53,28 +53,11 @@
 
   "aboutTitle": "À propos de SnowBird",
 
-  "aboutBody": "SnowBird est un suivi de séjours gratuit, open source et respectueux de la vie privée. Vos données ne quittent jamais votre appareil.",
-
   "aboutAuthor": "Développé par Veiðimaður — veidimadur.ca",
 
   "feedbackButton": "Envoyer des commentaires",
 
   "donateButton": "Soutenir le développeur",
-
-  "exportBackup": "Exporter la sauvegarde",
-
-  "importBackup": "Importer la sauvegarde",
-
-  "importBackupConfirm": "L'importation remplacera toutes les données de séjour actuelles. Continuer ?",
-
-  "importSuccess": "Sauvegarde importée avec succès.",
-
-  "importError": "Impossible d'importer la sauvegarde : {reason}",
-  "@importError": {
-    "placeholders": {
-      "reason": { "type": "String" }
-    }
-  },
 
   "windowLast365": "365 derniers jours",
 
@@ -109,8 +92,6 @@
   "alertTimeField": "Heure de livraison",
 
   "alertLeadField": "Préavis",
-
-  "alertLeadNone": "Le jour même",
 
   "alertLeadDaysField": "Jours avant",
 

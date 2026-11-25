@@ -126,11 +126,6 @@ class TripRepository extends ChangeNotifier {
         return kept.length == current.length ? null : kept;
       });
 
-  // EN: Replace the entire list. Destructive — the caller must confirm first.
-  // FR: Remplacer toute la liste. Destructeur — l'appelant doit confirmer d'abord.
-  Future<void> replaceAll(List<Trip> imported) =>
-      _mutate((_) => List.of(imported));
-
   // EN: Planned trips are free to overlap: comparing alternatives is their purpose.
   //     An actual trip must have begun and must not conflict with another one. A
   //     future DEPARTURE is allowed (an expected date); counts clip it to today.

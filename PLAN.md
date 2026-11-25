@@ -1,10 +1,8 @@
 # SnowBird-In-USA-Tracker — Project Plan
 
-_Last updated: 2026-07-11 (feature-complete for UAT: trip logbook + full field set,
-image/PDF/CSV export, day-count & time-since-last-visit alerts, on-screen SPT,
-Settings (language/theme/font), About/Reference/feedback/donate, one-time backup
-reminder. 86 tests pass, analyze clean, release APK builds with no INTERNET
-permission. Pre-2026-07-11: formal FR/NFR; OS-backup durability; expanded fields)_
+_Last updated: 2026-11-24. The July build was called feature-complete but was not; a review
+found gaps in counting, persistence, exports, alerts and accessibility, since fixed (see
+"Status after the November review" at the end). Not yet tested on a physical device._
 
 ## Strategic context — why this app exists beyond itself
 
@@ -455,3 +453,21 @@ Presence Record for the border, your accountant, or your insurer."
    placeholder feedback/donate/source URLs in `lib/config/app_links.dart`; add app
    icons + store screenshots; on-device UAT (visual rendering, print/share sheets,
    real notification delivery, iOS build/signing).
+
+## Status after the November review (2026-11-24)
+
+Where this differs from a tick above, this section governs.
+
+- **FR-2:** open trips (no departure) are supported for actual trips.
+- **FR-3 / FR-6:** what-if and custom ranges are on the Explore screen.
+- **FR-5:** actual trips may share a border day but not otherwise overlap, and may not start
+  in the future; planned trips may overlap. The 2,000-trip cap is **not enforced yet**.
+- **FR-8:** PDF (US Letter, bundled font) shows every crossing detail; PNG is one image per
+  page; CSV headers stay in English by decision.
+- **FR-9 / FR-10 / FR-19:** alerts fire on the crossing day only; permission is asked first.
+- **FR-12 / FR-13:** stored data is versioned; unreadable data is quarantined and announced.
+- **FR-20 / FR-21:** every screen is tested at large text in both languages. The optional
+  high-contrast / bold mode is **not built**.
+- **Open:** device testing, French review, feedback and donation links, icon, signing key,
+  privacy policy publication, dates older than ten years in the trip form, and dependency
+  upgrades (`flutter_local_notifications` especially).

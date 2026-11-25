@@ -91,10 +91,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aboutTitle => 'À propos de SnowBird';
 
   @override
-  String get aboutBody =>
-      'SnowBird est un suivi de séjours gratuit, open source et respectueux de la vie privée. Vos données ne quittent jamais votre appareil.';
-
-  @override
   String get aboutAuthor => 'Développé par Veiðimaður — veidimadur.ca';
 
   @override
@@ -102,24 +98,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get donateButton => 'Soutenir le développeur';
-
-  @override
-  String get exportBackup => 'Exporter la sauvegarde';
-
-  @override
-  String get importBackup => 'Importer la sauvegarde';
-
-  @override
-  String get importBackupConfirm =>
-      'L\'importation remplacera toutes les données de séjour actuelles. Continuer ?';
-
-  @override
-  String get importSuccess => 'Sauvegarde importée avec succès.';
-
-  @override
-  String importError(String reason) {
-    return 'Impossible d\'importer la sauvegarde : $reason';
-  }
 
   @override
   String get windowLast365 => '365 derniers jours';
@@ -174,9 +152,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get alertLeadField => 'Préavis';
-
-  @override
-  String get alertLeadNone => 'Le jour même';
 
   @override
   String get alertLeadDaysField => 'Jours avant';

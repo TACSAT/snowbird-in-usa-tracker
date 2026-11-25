@@ -19,7 +19,7 @@ the app never judges, but it computes any published formula the user could do by
    thresholds may carry **opt-in local notifications** (user picks the value, the
    window, and the delivery timing — on the day at a chosen local time, or
    hours/days ahead). Zero defaults, neutral wording, and every numeric input is
-   hard-capped (`AlertLimits`) at entry and at deserialisation.
+   hard-capped (`InputLimits`) at entry and at deserialisation.
 2. **No legal / tax / immigration advice.** Never render a verdict on whether a
    trip is "safe."
 3. **No accounts, no cloud, no data collection, no background location.** All data
@@ -58,9 +58,16 @@ the app never judges, but it computes any published formula the user could do by
 - `lib/models/trip.dart` — Trip model (actual vs planned).
 - `lib/logic/day_counter.dart` — day-count math (the correctness-critical core;
   it has the test suite: `test/logic/day_counter_test.dart`).
-- `lib/state/trip_repository.dart` — ChangeNotifier state layer (via `provider`).
+- `lib/logic/projection.dart` — range counts and the what-if, built on `DayCounter`.
+- `lib/logic/presence_record.dart` — the record's data + CSV (fixed English headers by design).
+- `lib/state/trip_repository.dart` — ChangeNotifier state layer (via `provider`);
+  refuses overlapping or future actual trips; saves before changing memory.
+- `lib/state/alert_repository.dart` + `lib/services/notification_service.dart` — alerts,
+  fired on the crossing day only.
 - `lib/services/storage_service.dart` — on-device persistence
-  (`shared_preferences` / `path_provider`).
+  (`shared_preferences`). Stored data carries `schemaVersion`; unreadable data is copied
+  to a `.quarantine` key before anything overwrites it. Raise the version on any change
+  an older app would misread.
 - `lib/screens/` — UI screens.
 - Localization: `l10n.yaml` + `lib/l10n/*.arb` → generated `AppLocalizations`
   (`flutter: generate: true`).
@@ -72,6 +79,7 @@ flutter pub get
 flutter analyze          # lints per analysis_options.yaml — keep it clean
 flutter test             # day-counter tests are the safety net for count changes
 flutter run              # simulator/device
+tools/check_apk_permissions.sh <apk>   # proves the release APK has no INTERNET
 ```
 
 **`build/` is a symlink to `~/development/builds/snowbird-in-usa-tracker` — do
@@ -91,3 +99,6 @@ ln -s ~/development/builds/snowbird-in-usa-tracker build
 Any change to day-count logic needs a test in `test/logic/day_counter_test.dart`
 first — inclusive-date edge cases (arrival day counts, departure day counts,
 overlapping windows) are exactly where this app can silently lie to its users.
+
+Release steps, signing and the device checklist: `RELEASING.md`. Run before pushing: CI
+(`.github/workflows/ci.yml`) also enforces `dart format`.

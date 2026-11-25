@@ -6,15 +6,18 @@ No accounts, no cloud, no tracking: everything you enter stays on your device. P
 or share your trip list for your own planning or to share with others.
 
 > **This is a personal tracking tool, not legal, tax, or immigration advice.** It does
-> not tell you whether a trip is "allowed" and it sets no limits or alarms. It simply
-> records your trip dates, counts your days, and lets you print the list. You remain
+> not tell you whether a trip is "allowed" and it sets no limits of its own. It records
+> your trip dates, counts your days, lets you set reminders at numbers you choose, and
+> lets you print the list. You remain
 > responsible for your own decisions — verify your situation with the appropriate
 > authority or a qualified professional.
 
 ## Features
 
 - Log the trips you have already taken (actual dates).
-- Plan future trips and see how they affect your day counts.
+- Log a trip in progress, without inventing a departure date.
+- Plan future trips, or try a what-if without saving it, and see how they affect your counts.
+- Set your own reminders. None are built in.
 - View day totals over windows you choose (e.g. a calendar year or a rolling 365 days).
 - Print or export your trip list as an image, PDF, or CSV to share or to plan with.
 - Your data never leaves your device, and nothing is sent to the developer. It rides
@@ -42,6 +45,10 @@ any contribution.
 
 Created and maintained by **Veiðimaður** — [veidimadur.ca](https://veidimadur.ca).
 
+## Privacy
+
+See [`PRIVACY.md`](PRIVACY.md) (draft).
+
 ## License
 
 Released under the MIT License — see [`LICENSE`](LICENSE).
@@ -57,15 +64,18 @@ pour votre planification ou pour la communiquer à d'autres.
 
 > **Ceci est un outil de suivi personnel, et non un avis juridique, fiscal ou en matière
 > d'immigration.** L'application n'indique pas si un voyage est « permis » et ne fixe
-> aucune limite ni alarme. Elle se contente d'enregistrer vos dates de voyage, de
-> compter vos jours et d'imprimer la liste. Vous demeurez responsable de vos propres
+> elle-même aucune limite. Elle enregistre vos dates de voyage, compte vos jours, permet
+> des rappels aux nombres que vous choisissez et imprime la liste. Vous demeurez responsable de vos propres
 > décisions : vérifiez votre situation auprès de l'autorité compétente ou d'un
 > professionnel qualifié.
 
 ## Fonctionnalités
 
 - Enregistrer les voyages déjà effectués (dates réelles).
-- Planifier de futurs voyages et voir leur effet sur le décompte des jours.
+- Consigner un voyage en cours, sans inventer de date de départ.
+- Planifier de futurs voyages, ou essayer une hypothèse sans l'enregistrer, et voir leur
+  effet sur le décompte.
+- Définir vos propres rappels. Aucun n'est intégré.
 - Consulter les totaux de jours sur les périodes de votre choix (année civile ou
   365 jours glissants).
 - Imprimer ou exporter votre liste de voyages en image, PDF ou CSV pour la partager ou planifier.
@@ -90,6 +100,10 @@ fonctionne entièrement sur l'appareil et n'utilise que le stockage local.
 ## Auteur
 
 Créé et maintenu par **Veiðimaður** — [veidimadur.ca](https://veidimadur.ca).
+
+## Confidentialité
+
+Voir [`PRIVACY.md`](PRIVACY.md) (ébauche).
 
 ## Licence
 

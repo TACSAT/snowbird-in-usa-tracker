@@ -50,7 +50,7 @@ class RecordFonts {
         .replaceAll('⅓', '1/3')
         .replaceAll('⅙', '1/6')
         .replaceAll('→', '>')
-        .replaceAll(RegExp('[ -  \t]'), ' ');
+        .replaceAll(RegExp(r'[\u2000-\u200a\u202f\t]'), ' ');
     final buffer = StringBuffer();
     for (final rune in mapped.runes) {
       buffer.writeCharCode(

@@ -98,9 +98,6 @@
   "aboutTitle": "About SnowBird",
   "@aboutTitle": { "description": "About screen title." },
 
-  "aboutBody": "SnowBird is a free, open-source, privacy-first trip tracker. Your data never leaves your device.",
-  "@aboutBody": { "description": "About screen description." },
-
   "aboutAuthor": "Built by Veiðimaður — veidimadur.ca",
   "@aboutAuthor": { "description": "Author credit line on the About screen." },
 
@@ -109,28 +106,6 @@
 
   "donateButton": "Support the developer",
   "@donateButton": { "description": "Button that opens the donation link." },
-
-  "exportBackup": "Export backup",
-  "@exportBackup": { "description": "Menu item / button to export a backup file." },
-
-  "importBackup": "Import backup",
-  "@importBackup": { "description": "Menu item / button to import a backup file." },
-
-  "importBackupConfirm": "Importing will replace all current trip data. Continue?",
-  "@importBackupConfirm": {
-    "description": "Confirmation dialog body before overwriting data with a backup."
-  },
-
-  "importSuccess": "Backup imported successfully.",
-  "@importSuccess": { "description": "Snack bar message after a successful import." },
-
-  "importError": "Could not import backup: {reason}",
-  "@importError": {
-    "description": "Snack bar message when import fails.",
-    "placeholders": {
-      "reason": { "type": "String" }
-    }
-  },
 
   "windowLast365": "Last 365 days",
   "@windowLast365": { "description": "Day-count window label for rolling 365 days." },
@@ -182,9 +157,6 @@
 
   "alertLeadField": "Advance notice",
   "@alertLeadField": { "description": "Section label for how far ahead of the reach date to notify." },
-
-  "alertLeadNone": "On the day itself",
-  "@alertLeadNone": { "description": "Lead option: notify on the reach day, no advance." },
 
   "alertLeadDaysField": "Days before",
   "@alertLeadDaysField": { "description": "Numeric field: whole days of advance notice." },
