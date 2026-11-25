@@ -524,4 +524,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alertReached => 'Reached as of today';
+
+  @override
+  String get exploreTitle => 'Explore days and plans';
+
+  @override
+  String get exploreRangeHeading => 'Days in a period';
+
+  @override
+  String get rangeFrom => 'From';
+
+  @override
+  String get rangeTo => 'To';
+
+  @override
+  String rangeActual(String days) {
+    return 'Actual days so far: $days';
+  }
+
+  @override
+  String rangeWithPlanned(String days) {
+    return 'Including planned trips: $days';
+  }
+
+  @override
+  String get whatIfHeading => 'What if I take this trip?';
+
+  @override
+  String get whatIfIntro =>
+      'Choose possible dates to see your counts. Nothing is saved unless you choose to.';
+
+  @override
+  String get whatIfArrival => 'Possible arrival';
+
+  @override
+  String get whatIfDeparture => 'Possible departure';
+
+  @override
+  String whatIfWithout(String value) {
+    return 'Without this trip: $value';
+  }
+
+  @override
+  String whatIfWith(String value) {
+    return 'With this trip: $value';
+  }
+
+  @override
+  String whatIfYear(String year, String date) {
+    return 'Calendar year $year, through $date';
+  }
+
+  @override
+  String whatIfLast365(String date) {
+    return '365 days ending $date';
+  }
+
+  @override
+  String whatIfSpt(String date) {
+    return 'Substantial Presence figure, projected to $date';
+  }
+
+  @override
+  String get whatIfSave => 'Save as a planned trip';
+
+  @override
+  String get whatIfSaved => 'Planned trip saved.';
+
+  @override
+  String get whatIfClear => 'Clear';
+
+  @override
+  String get assumeOpenTrip =>
+      'Counts that include planned trips assume your current trip continues until you record a departure.';
+
+  @override
+  String assumeStalePlanned(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Includes $count planned trips whose dates have passed. Mark them as actual or delete them.',
+      one:
+          'Includes 1 planned trip whose dates have passed. Mark it as actual or delete it.',
+    );
+    return '$_temp0';
+  }
 }

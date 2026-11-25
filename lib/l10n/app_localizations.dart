@@ -997,6 +997,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reached as of today'**
   String get alertReached;
+
+  /// No description provided for @exploreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore days and plans'**
+  String get exploreTitle;
+
+  /// No description provided for @exploreRangeHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Days in a period'**
+  String get exploreRangeHeading;
+
+  /// No description provided for @rangeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get rangeFrom;
+
+  /// No description provided for @rangeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get rangeTo;
+
+  /// No description provided for @rangeActual.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual days so far: {days}'**
+  String rangeActual(String days);
+
+  /// No description provided for @rangeWithPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Including planned trips: {days}'**
+  String rangeWithPlanned(String days);
+
+  /// No description provided for @whatIfHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'What if I take this trip?'**
+  String get whatIfHeading;
+
+  /// No description provided for @whatIfIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose possible dates to see your counts. Nothing is saved unless you choose to.'**
+  String get whatIfIntro;
+
+  /// No description provided for @whatIfArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible arrival'**
+  String get whatIfArrival;
+
+  /// No description provided for @whatIfDeparture.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible departure'**
+  String get whatIfDeparture;
+
+  /// No description provided for @whatIfWithout.
+  ///
+  /// In en, this message translates to:
+  /// **'Without this trip: {value}'**
+  String whatIfWithout(String value);
+
+  /// No description provided for @whatIfWith.
+  ///
+  /// In en, this message translates to:
+  /// **'With this trip: {value}'**
+  String whatIfWith(String value);
+
+  /// No description provided for @whatIfYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar year {year}, through {date}'**
+  String whatIfYear(String year, String date);
+
+  /// No description provided for @whatIfLast365.
+  ///
+  /// In en, this message translates to:
+  /// **'365 days ending {date}'**
+  String whatIfLast365(String date);
+
+  /// No description provided for @whatIfSpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Substantial Presence figure, projected to {date}'**
+  String whatIfSpt(String date);
+
+  /// No description provided for @whatIfSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as a planned trip'**
+  String get whatIfSave;
+
+  /// No description provided for @whatIfSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned trip saved.'**
+  String get whatIfSaved;
+
+  /// No description provided for @whatIfClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get whatIfClear;
+
+  /// No description provided for @assumeOpenTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts that include planned trips assume your current trip continues until you record a departure.'**
+  String get assumeOpenTrip;
+
+  /// No description provided for @assumeStalePlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Includes 1 planned trip whose dates have passed. Mark it as actual or delete it.} other{Includes {count} planned trips whose dates have passed. Mark them as actual or delete them.}}'**
+  String assumeStalePlanned(int count);
 }
 
 class _AppLocalizationsDelegate

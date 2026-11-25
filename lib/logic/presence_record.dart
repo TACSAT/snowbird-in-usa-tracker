@@ -215,11 +215,7 @@ class PresenceRecord {
   //     otherwise two decimals. NEVER compared to any threshold.
   // FR: La valeur SPT en chaîne décimale neutre — un entier si exact, sinon deux
   //     décimales. JAMAIS comparée à un quelconque seuil.
-  String get formattedSpt {
-    final sixths = totals.spt.totalSixths;
-    if (sixths % 6 == 0) return '${sixths ~/ 6}';
-    return (sixths / 6).toStringAsFixed(2);
-  }
+  String get formattedSpt => totals.spt.formatted;
 
   // ---------------------------------------------------------------------------
   // Private helpers

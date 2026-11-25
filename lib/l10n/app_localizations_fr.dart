@@ -530,4 +530,90 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get alertReached => 'Atteinte en date d\'aujourd\'hui';
+
+  @override
+  String get exploreTitle => 'Explorer les jours et projets';
+
+  @override
+  String get exploreRangeHeading => 'Jours dans une période';
+
+  @override
+  String get rangeFrom => 'Du';
+
+  @override
+  String get rangeTo => 'Au';
+
+  @override
+  String rangeActual(String days) {
+    return 'Jours réels à ce jour : $days';
+  }
+
+  @override
+  String rangeWithPlanned(String days) {
+    return 'Séjours planifiés compris : $days';
+  }
+
+  @override
+  String get whatIfHeading => 'Et si je faisais ce séjour?';
+
+  @override
+  String get whatIfIntro =>
+      'Choisissez des dates possibles pour voir vos comptes. Rien n\'est enregistré sans votre choix.';
+
+  @override
+  String get whatIfArrival => 'Arrivée possible';
+
+  @override
+  String get whatIfDeparture => 'Départ possible';
+
+  @override
+  String whatIfWithout(String value) {
+    return 'Sans ce séjour : $value';
+  }
+
+  @override
+  String whatIfWith(String value) {
+    return 'Avec ce séjour : $value';
+  }
+
+  @override
+  String whatIfYear(String year, String date) {
+    return 'Année civile $year, jusqu\'au $date';
+  }
+
+  @override
+  String whatIfLast365(String date) {
+    return '365 jours se terminant le $date';
+  }
+
+  @override
+  String whatIfSpt(String date) {
+    return 'Valeur de présence substantielle, projetée au $date';
+  }
+
+  @override
+  String get whatIfSave => 'Enregistrer comme séjour planifié';
+
+  @override
+  String get whatIfSaved => 'Séjour planifié enregistré.';
+
+  @override
+  String get whatIfClear => 'Effacer';
+
+  @override
+  String get assumeOpenTrip =>
+      'Les comptes incluant les séjours planifiés supposent que votre séjour en cours se poursuit jusqu\'à ce que vous consigniez un départ.';
+
+  @override
+  String assumeStalePlanned(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Comprend $count séjours planifiés dont les dates sont passées. Marquez-les comme réels ou supprimez-les.',
+      one:
+          'Comprend 1 séjour planifié dont les dates sont passées. Marquez-le comme réel ou supprimez-le.',
+    );
+    return '$_temp0';
+  }
 }

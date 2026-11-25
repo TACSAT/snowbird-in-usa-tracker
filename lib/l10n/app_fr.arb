@@ -385,5 +385,86 @@
 
   "errorTimeRequired": "Choisissez une heure de livraison.",
 
-  "alertReached": "Atteinte en date d'aujourd'hui"
+  "alertReached": "Atteinte en date d'aujourd'hui",
+
+  "exploreTitle": "Explorer les jours et projets",
+
+  "exploreRangeHeading": "Jours dans une période",
+
+  "rangeFrom": "Du",
+
+  "rangeTo": "Au",
+
+  "rangeActual": "Jours réels à ce jour : {days}",
+  "@rangeActual": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "rangeWithPlanned": "Séjours planifiés compris : {days}",
+  "@rangeWithPlanned": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "whatIfHeading": "Et si je faisais ce séjour?",
+
+  "whatIfIntro": "Choisissez des dates possibles pour voir vos comptes. Rien n'est enregistré sans votre choix.",
+
+  "whatIfArrival": "Arrivée possible",
+
+  "whatIfDeparture": "Départ possible",
+
+  "whatIfWithout": "Sans ce séjour : {value}",
+  "@whatIfWithout": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfWith": "Avec ce séjour : {value}",
+  "@whatIfWith": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfYear": "Année civile {year}, jusqu'au {date}",
+  "@whatIfYear": {
+    "placeholders": {
+      "year": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfLast365": "365 jours se terminant le {date}",
+  "@whatIfLast365": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSpt": "Valeur de présence substantielle, projetée au {date}",
+  "@whatIfSpt": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSave": "Enregistrer comme séjour planifié",
+
+  "whatIfSaved": "Séjour planifié enregistré.",
+
+  "whatIfClear": "Effacer",
+
+  "assumeOpenTrip": "Les comptes incluant les séjours planifiés supposent que votre séjour en cours se poursuit jusqu'à ce que vous consigniez un départ.",
+
+  "assumeStalePlanned": "{count, plural, =1{Comprend 1 séjour planifié dont les dates sont passées. Marquez-le comme réel ou supprimez-le.} other{Comprend {count} séjours planifiés dont les dates sont passées. Marquez-les comme réels ou supprimez-les.}}",
+  "@assumeStalePlanned": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

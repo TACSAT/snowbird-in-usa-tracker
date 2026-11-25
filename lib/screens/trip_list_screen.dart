@@ -23,6 +23,7 @@ import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart';
@@ -36,7 +37,7 @@ enum _ExportChoice { pdf, image, csv, print }
 
 // EN: Overflow-menu destinations (FR-14/15/20).
 // FR: Destinations du menu de débordement (FR-14/15/20).
-enum _Menu { reference, settings, about }
+enum _Menu { explore, reference, settings, about }
 
 class TripListScreen extends StatefulWidget {
   const TripListScreen({super.key});
@@ -210,6 +211,7 @@ class _TripListScreenState extends State<TripListScreen> {
   // FR: Diriger une sélection du menu vers son écran.
   void _onMenu(BuildContext context, _Menu item) {
     final Widget screen = switch (item) {
+      _Menu.explore => const ExploreScreen(),
       _Menu.reference => const ReferenceScreen(),
       _Menu.settings => const SettingsScreen(),
       _Menu.about => const AboutScreen(),
@@ -266,6 +268,10 @@ class _TripListScreenState extends State<TripListScreen> {
           PopupMenuButton<_Menu>(
             onSelected: (item) => _onMenu(context, item),
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _Menu.explore,
+                child: Text(strings.exploreTitle),
+              ),
               PopupMenuItem(
                 value: _Menu.reference,
                 child: Text(strings.menuReference),
@@ -380,6 +386,17 @@ class _SummaryCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          // EN: One tap from the counts to the planning question (FR-3).
+          // FR: Un toucher des comptes à la question de planification (FR-3).
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
+              ),
+              child: Text(strings.exploreTitle),
+            ),
           ),
           const Divider(height: 20),
           // EN: SPT figure block — tapping it opens the neutral reference page so

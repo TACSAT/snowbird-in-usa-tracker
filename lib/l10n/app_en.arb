@@ -542,5 +542,86 @@
 
   "errorTimeRequired": "Choose a delivery time.",
 
-  "alertReached": "Reached as of today"
+  "alertReached": "Reached as of today",
+
+  "exploreTitle": "Explore days and plans",
+
+  "exploreRangeHeading": "Days in a period",
+
+  "rangeFrom": "From",
+
+  "rangeTo": "To",
+
+  "rangeActual": "Actual days so far: {days}",
+  "@rangeActual": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "rangeWithPlanned": "Including planned trips: {days}",
+  "@rangeWithPlanned": {
+    "placeholders": {
+      "days": { "type": "String" }
+    }
+  },
+
+  "whatIfHeading": "What if I take this trip?",
+
+  "whatIfIntro": "Choose possible dates to see your counts. Nothing is saved unless you choose to.",
+
+  "whatIfArrival": "Possible arrival",
+
+  "whatIfDeparture": "Possible departure",
+
+  "whatIfWithout": "Without this trip: {value}",
+  "@whatIfWithout": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfWith": "With this trip: {value}",
+  "@whatIfWith": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+
+  "whatIfYear": "Calendar year {year}, through {date}",
+  "@whatIfYear": {
+    "placeholders": {
+      "year": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfLast365": "365 days ending {date}",
+  "@whatIfLast365": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSpt": "Substantial Presence figure, projected to {date}",
+  "@whatIfSpt": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
+  "whatIfSave": "Save as a planned trip",
+
+  "whatIfSaved": "Planned trip saved.",
+
+  "whatIfClear": "Clear",
+
+  "assumeOpenTrip": "Counts that include planned trips assume your current trip continues until you record a departure.",
+
+  "assumeStalePlanned": "{count, plural, =1{Includes 1 planned trip whose dates have passed. Mark it as actual or delete it.} other{Includes {count} planned trips whose dates have passed. Mark them as actual or delete them.}}",
+  "@assumeStalePlanned": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

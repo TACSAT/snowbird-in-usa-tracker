@@ -81,6 +81,11 @@ class SubstantialPresenceResult {
   // FR: Le total pondéré en décimal — pour l'affichage seulement ; les
   //     comparaisons ou tests devraient préférer [totalSixths] pour rester exacts.
   double get total => totalSixths / 6;
+
+  // EN: Neutral text: a whole number when exact, otherwise two decimals.
+  // FR: Texte neutre : un entier si exact, sinon deux décimales.
+  String get formatted =>
+      totalSixths % 6 == 0 ? '${totalSixths ~/ 6}' : total.toStringAsFixed(2);
 }
 
 // EN: Namespace class for pure day-counting functions. Not instantiable — all

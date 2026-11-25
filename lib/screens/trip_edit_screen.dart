@@ -33,6 +33,7 @@ import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
+import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
@@ -323,17 +324,17 @@ class _TripEditScreenState extends State<TripEditScreen> {
   Future<void> _pickDate({required bool isArrival}) async {
     final initial =
         (isArrival ? _arrival : _departure) ?? _arrival ?? DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
+    final picked = await pickDate(
+      context,
+      initial: initial,
       // EN: A generous but bounded range — a decade back covers any real history,
       //     and a few years forward covers planned trips, without an infinite
       //     scroll.
       // FR: Une plage large mais bornée — une décennie en arrière couvre tout
       //     historique réel, et quelques années en avant couvrent les séjours
       //     planifiés, sans défilement infini.
-      firstDate: DateTime(DateTime.now().year - 10),
-      lastDate: DateTime(DateTime.now().year + 10),
+      first: DateTime(DateTime.now().year - 10),
+      last: DateTime(DateTime.now().year + 10),
     );
     if (picked == null) return;
     setState(() {
@@ -356,10 +357,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
 
   Future<void> _pickTime({required bool isEntry}) async {
     final current = isEntry ? _entryTime : _exitTime;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: current ?? TimeOfDay.now(),
-    );
+    final picked = await pickTime(context, current ?? TimeOfDay.now());
     if (picked == null) return;
     setState(() {
       if (isEntry) {

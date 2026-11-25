@@ -17,10 +17,12 @@ import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_list_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/alert_repository.dart';
@@ -142,6 +144,7 @@ void main() {
         for (final screen in [
           const TripEditScreen(),
           TripEditScreen(existing: openTrip),
+          const ExploreScreen(),
           const AlertsScreen(),
           const AlertEditScreen(),
           AlertEditScreen(existing: alert),
@@ -337,4 +340,63 @@ void main() {
     expect(find.text('Choose a delivery time.'), findsOneWidget);
     expect(a.alerts.alertCount, 0);
   });
+
+  for (final locale in ['en', 'fr']) {
+    testWidgets('filled what-if fits at the largest text: $locale',
+        (tester) async {
+      final a = await _start(tester, os: 3.1, locale: locale);
+      await a.trips.addTrip(openTrip);
+      await _open(tester, const ExploreScreen());
+      final list = find.byType(Scrollable).last;
+      for (final label in locale == 'en'
+          ? ['Possible arrival', 'Possible departure']
+          : ['Arrivée possible', 'Départ possible']) {
+        await tester.scrollUntilVisible(
+          find.text(label),
+          200,
+          scrollable: list,
+        );
+        await tester.ensureVisible(find.text(label));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+      }
+      final save = find.byType(FilledButton);
+      await tester.scrollUntilVisible(save, 200, scrollable: list);
+      expect(tester.takeException(), isNull);
+      expect(save, findsOneWidget);
+    });
+  }
+
+  for (final locale in ['en', 'fr']) {
+    for (final os in [1.0, 2.0, 3.1]) {
+      testWidgets('date and time dialogs fit: $locale os=$os', (tester) async {
+        final a = await _start(tester, os: os, locale: locale);
+        await a.trips.addTrip(openTrip);
+        for (final (screen, index) in <(Widget, int)>[
+          (TripEditScreen(existing: openTrip), 0),
+          (const AlertEditScreen(), 0),
+        ]) {
+          await _open(tester, screen);
+          final row = find.byType(ValueRow).at(index);
+          await tester.ensureVisible(row);
+          await tester.pumpAndSettle();
+          await tester.tap(
+            find.descendant(of: row, matching: find.byType(ListTile)),
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(Dialog), findsOneWidget);
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '${screen.runtimeType}',
+          );
+          await tester.tap(find.text('OK'));
+          await tester.pumpAndSettle();
+        }
+      });
+    }
+  }
 }

@@ -34,6 +34,7 @@ import 'package:provider/provider.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
+import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
@@ -454,14 +455,14 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
+    final picked = await pickTime(
+      context,
       // EN: 09:00 as the picker's STARTING position only (PLAN.md example) —
       //     nothing is saved until the user confirms a choice.
       // FR: 9 h comme position de DÉPART du sélecteur seulement (exemple du
       //     PLAN.md) — rien n'est enregistré tant que l'utilisateur ne
       //     confirme pas un choix.
-      initialTime: _time ?? const TimeOfDay(hour: 9, minute: 0),
+      _time ?? const TimeOfDay(hour: 9, minute: 0),
     );
     if (picked == null) return;
     setState(() {
