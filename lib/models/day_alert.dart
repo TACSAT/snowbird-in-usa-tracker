@@ -35,6 +35,8 @@
 import 'package:uuid/uuid.dart';
 
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
 
 // EN: What KIND of target this alert measures (FR-9 vs FR-10):
 //     • dayCountThreshold — "notify me at N days within the last M-day rolling
@@ -53,6 +55,12 @@ import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 //       même machinerie heure/préavis/planification — seule la DATE D'ATTEINTE
 //       projetée est calculée différemment (voir AlertRepository).
 enum AlertKind { dayCountThreshold, sinceLastVisit }
+
+// EN: What a day-count alert counts (WRK-10): days present, or days worked
+//     (offered only when days worked are turned on).
+// FR: Ce que compte une alerte de jours (WRK-10) : les jours de présence, ou
+//     les jours travaillés (proposés seulement si ceux-ci sont activés).
+enum AlertMeasure { present, worked }
 
 // EN: Maximum length of the optional user label — a modest cap so a crafted
 //     backup file cannot smuggle megabytes of text into storage or the
@@ -109,6 +117,16 @@ class DayAlert {
   //     jours écoulés et [windowDays] est ignoré.
   final AlertKind kind;
 
+  // EN: The place the alert watches, and how its days are counted (FEA-1).
+  //     Alerts saved before places existed read as the United States, any part
+  //     of the day: exactly what they measured then.
+  // FR: Le lieu que surveille l'alerte, et la façon d'en compter les jours
+  //     (FEA-1). Les alertes enregistrées avant les lieux se lisent comme les
+  //     États-Unis, toute partie du jour : exactement ce qu'elles mesuraient.
+  final Place place;
+  final CountingConvention convention;
+  final AlertMeasure measure;
+
   // EN: Direct constructor — validates EVERY numeric field against InputLimits
   //     and throws ArgumentError on violation. Prefer DayAlert.create() for new
   //     alerts (generates the UUID); use this one when round-tripping from
@@ -127,6 +145,9 @@ class DayAlert {
     this.leadHours = 0,
     this.enabled = true,
     this.kind = AlertKind.dayCountThreshold,
+    this.place = Place.unitedStates,
+    this.convention = CountingConvention.anyPart,
+    this.measure = AlertMeasure.present,
     String? label,
   }) : label = _normalizeLabel(label) {
     _requireInRange(
@@ -178,6 +199,9 @@ class DayAlert {
     int leadHours = 0,
     bool enabled = true,
     AlertKind kind = AlertKind.dayCountThreshold,
+    Place place = Place.unitedStates,
+    CountingConvention convention = CountingConvention.anyPart,
+    AlertMeasure measure = AlertMeasure.present,
     String? label,
   }) {
     return DayAlert(
@@ -191,6 +215,9 @@ class DayAlert {
       enabled: enabled,
       kind: kind,
       label: label,
+      place: place,
+      convention: convention,
+      measure: measure,
     );
   }
 
@@ -231,6 +258,9 @@ class DayAlert {
     int? leadHours,
     bool? enabled,
     AlertKind? kind,
+    Place? place,
+    CountingConvention? convention,
+    AlertMeasure? measure,
     Object? label = _sentinel,
   }) {
     return DayAlert(
@@ -243,6 +273,9 @@ class DayAlert {
       leadHours: leadHours ?? this.leadHours,
       enabled: enabled ?? this.enabled,
       kind: kind ?? this.kind,
+      place: place ?? this.place,
+      convention: convention ?? this.convention,
+      measure: measure ?? this.measure,
       label: label == _sentinel ? this.label : label as String?,
     );
   }
@@ -261,6 +294,9 @@ class DayAlert {
         'leadHours': leadHours,
         'enabled': enabled,
         'kind': kind.name,
+        'place': place.code,
+        'convention': convention.name,
+        'measure': measure.name,
         if (label != null) 'label': label,
       };
 
@@ -312,6 +348,10 @@ class DayAlert {
     //     Une valeur non reconnue (p. ex. d'une version plus récente) retombe aussi
     //     par défaut plutôt que de lever, pour qu'un enregistrement étrange n'efface
     //     jamais la liste.
+    final placeRaw = json['place'];
+    if (placeRaw != null && placeRaw is! String) {
+      throw const FormatException('DayAlert JSON "place" must be a string.');
+    }
     final kindRaw = json['kind'];
     final kind = AlertKind.values.firstWhere(
       (k) => k.name == kindRaw,
@@ -330,6 +370,15 @@ class DayAlert {
         enabled: enabledRaw,
         kind: kind,
         label: labelRaw as String?,
+        place: placeRaw == null ? Place.unitedStates : Place.parse(placeRaw),
+        convention: CountingConvention.values.firstWhere(
+          (c) => c.name == json['convention'],
+          orElse: () => CountingConvention.anyPart,
+        ),
+        measure: AlertMeasure.values.firstWhere(
+          (m) => m.name == json['measure'],
+          orElse: () => AlertMeasure.present,
+        ),
       );
     } on ArgumentError catch (e) {
       // EN: Surface range violations as FormatException so StorageService's

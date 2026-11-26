@@ -122,6 +122,19 @@ class PlacesSettingsScreen extends StatelessWidget {
           Text(strings.conventionExplain, style: theme.textTheme.bodySmall),
           const Divider(height: 32),
           SectionHeading(
+            strings.workHeading,
+            style: theme.textTheme.titleSmall,
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(strings.workSwitch),
+            value: settings.workEnabled,
+            onChanged: (on) =>
+                _guard(context, () => settings.setWorkEnabled(on)),
+          ),
+          Text(strings.workExplain, style: theme.textTheme.bodySmall),
+          const Divider(height: 32),
+          SectionHeading(
             strings.homeHeading,
             style: theme.textTheme.titleSmall,
           ),

@@ -32,8 +32,10 @@ class PresenceSettings extends ChangeNotifier {
   Set<String> _expanded = {};
   bool _homeEnabled = false;
   List<HomePeriod> _homePeriods = [];
+  bool _workEnabled = false;
 
   PresenceSettings(this._storage) {
+    _workEnabled = _storage.workEnabled;
     _tracked = _readTracked();
     _expanded = {..._storage.expandedPlaces};
     _readHome();
@@ -47,6 +49,20 @@ class PresenceSettings extends ChangeNotifier {
   bool isExpanded(Place place) => _expanded.contains(place.code);
 
   bool get homeEnabled => _homeEnabled;
+
+  // EN: Days worked (WRK-1). Off: no work field, figure or option appears
+  //     anywhere. Turning it off keeps what was recorded, hidden, so turning it
+  //     back on loses nothing.
+  // FR: Jours travaillés (WRK-1). Désactivé : aucun champ, chiffre ni option de
+  //     travail n'apparaît nulle part. Le désactiver garde ce qui a été noté,
+  //     caché ; le réactiver ne perd donc rien.
+  bool get workEnabled => _workEnabled;
+
+  Future<void> setWorkEnabled(bool value) async {
+    await _storage.setWorkEnabled(value);
+    _workEnabled = value;
+    notifyListeners();
+  }
 
   List<HomePeriod> get homePeriods => List.unmodifiable(
         [..._homePeriods]..sort((a, b) => a.from.compareTo(b.from)),

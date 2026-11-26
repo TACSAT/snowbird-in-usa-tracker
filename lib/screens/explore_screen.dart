@@ -12,6 +12,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
+import 'package:snowbird_in_usa_tracker/logic/presence_table.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
+import 'package:snowbird_in_usa_tracker/models/tracked_place.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_picker_screen.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/logic/projection.dart';
@@ -41,6 +48,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
   // EN: Guards against a double tap saving the same trip twice.
   // FR: Évite qu'un double toucher enregistre deux fois le même séjour.
   bool _saving = false;
+
+  // EN: Where the possible trip would be (FEA-2). Null until the user picks;
+  //     the most recently used place is shown and used meanwhile.
+  // FR: Où aurait lieu le voyage envisagé (FEA-2). Null jusqu'au choix de
+  //     l'utilisateur ; le dernier lieu utilisé est montré et employé d'ici là.
+  Place? _whatIfPlace;
+
+  Place get _tripPlace {
+    final recent = context.read<TripRepository>().recentPlaces(limit: 1);
+    return _whatIfPlace ?? (recent.isEmpty ? Place.unitedStates : recent.first);
+  }
 
   DateTime get _today {
     final now = DateTime.now();
@@ -109,6 +127,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               arrivalDate: arrival,
               departureDate: departure,
               status: TripStatus.planned,
+              place: _tripPlace,
             ),
           );
       messenger.showSnackBar(SnackBar(content: Text(strings.whatIfSaved)));
@@ -143,21 +162,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final text = Theme.of(context).textTheme;
     final repo = context.watch<TripRepository>();
     final trips = repo.trips;
-    // EN: Counts include day visits (as one-day stays); the list checks below
-    //     (open stay, stale plans) look at stays only.
-    // FR: Les comptes incluent les visites d'un jour (comme séjours d'un jour) ;
-    //     les vérifications ci-dessous (séjour ouvert, plans périmés) ne
-    //     regardent que les séjours.
-    final counted = repo.countedStays;
     final dates = DateFormat.yMMMMd(strings.localeName);
     String shown(DateTime? d) =>
         d == null ? strings.optionalNotSet : dates.format(d);
 
     final bounds = _bounds;
-    final count = bounds == null
+    final settings = context.watch<PresenceSettings>();
+    // EN: One result per place, each under its own convention (FEA-3).
+    // FR: Un résultat par lieu, chacun selon sa propre convention (FEA-3).
+    final counts = bounds == null
         ? null
-        : RangeCount.compute(
-            trips: counted,
+        : PlaceRangeCount.compute(
+            stays: trips,
+            visits: repo.visits,
+            tracked: settings.tracked,
+            fallback: _tripPlace.country,
             start: bounds.$1,
             end: bounds.$2,
             today: _today,
@@ -203,40 +222,75 @@ class _ExploreScreenState extends State<ExploreScreen> {
               onTap: _pickTo,
             ),
           ],
-          if (bounds != null && count != null) ...[
+          if (bounds != null && counts != null) ...[
             const SizedBox(height: 12),
             Text(
               '${dates.format(bounds.$1)} – ${dates.format(bounds.$2)}',
               style: text.bodyMedium,
             ),
-            const SizedBox(height: 4),
-            // EN: Announced as one unit when the period changes (WCAG status message).
-            // FR: Annoncé d'un bloc quand la période change (message d'état WCAG).
-            MergeSemantics(
-              child: Semantics(
-                liveRegion: true,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      strings.rangeActual(strings.daysCount(count.actual)),
-                      style: text.titleMedium,
+            if (counts.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(strings.tableEmpty),
+              ),
+            // EN: Each place announced as one unit when the period changes
+            //     (WCAG status message).
+            // FR: Chaque lieu annoncé d'un bloc quand la période change
+            //     (message d'état WCAG).
+            for (final count in counts)
+              MergeSemantics(
+                child: Semantics(
+                  liveRegion: true,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          count.convention == CountingConvention.endOfDay
+                              ? '${placeFullName(strings, count.place)} '
+                                  '(${strings.tableEndOfDayTag})'
+                              : placeFullName(strings, count.place),
+                          style: text.titleSmall,
+                        ),
+                        Text(
+                          strings.rangeActual(strings.daysCount(count.actual)),
+                          style: text.titleMedium,
+                        ),
+                        Text(
+                          strings.rangeWithPlanned(
+                            strings.daysCount(count.withPlanned),
+                          ),
+                          style: text.titleMedium,
+                        ),
+                        if (settings.workEnabled)
+                          Text(
+                            strings.rangeWorked(
+                              strings.daysCount(count.worked),
+                            ),
+                            style: text.bodyLarge,
+                          ),
+                      ],
                     ),
-                    Text(
-                      strings.rangeWithPlanned(
-                        strings.daysCount(count.withPlanned),
-                      ),
-                      style: text.titleMedium,
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
           ],
           const Divider(height: 32),
           SectionHeading(strings.whatIfHeading, style: text.titleMedium),
           const SizedBox(height: 4),
           Text(strings.whatIfIntro, style: text.bodyMedium),
+          ValueRow(
+            label: strings.whatIfPlaceLabel,
+            value: placeFullName(strings, _tripPlace),
+            onTap: () async {
+              final picked =
+                  await pickPlace(context, recent: repo.recentPlaces());
+              if (picked != null && mounted) {
+                setState(() => _whatIfPlace = picked);
+              }
+            },
+          ),
           ValueRow(
             label: strings.whatIfArrival,
             value: shown(arrival),
@@ -249,10 +303,22 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
           if (arrival != null && departure != null) ...[
             _WhatIfCard(
-              result: WhatIf.compute(
-                trips: counted,
+              result: PlaceWhatIf.compute(
+                stays: trips,
+                visits: repo.visits,
                 arrival: arrival,
                 departure: departure,
+                place: _tripPlace,
+                tracked: settings.tracked ??
+                    [
+                      for (final entry in PresenceTable.build(
+                        stays: trips,
+                        visits: repo.visits,
+                        home: settings.home,
+                        today: _today,
+                      ).entries)
+                        TrackedPlace(entry.row.place),
+                    ],
               ),
               strings: strings,
             ),
@@ -302,8 +368,9 @@ class _Note extends StatelessWidget {
 // FR: Nombres empilés en phrases complètes plutôt qu'en tableau, qui ne survivrait pas
 //     au grand texte et se lit mal à voix haute.
 class _WhatIfCard extends StatelessWidget {
-  final WhatIf result;
+  final PlaceWhatIf result;
   final AppLocalizations strings;
+
   const _WhatIfCard({required this.result, required this.strings});
 
   @override
@@ -311,7 +378,6 @@ class _WhatIfCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final dates = DateFormat.yMMMMd(strings.localeName);
     final asOf = dates.format(result.asOf);
-
     List<Widget> block(String title, String without, String including) => [
           const SizedBox(height: 12),
           Text(title, style: text.titleSmall),
@@ -323,36 +389,51 @@ class _WhatIfCard extends StatelessWidget {
           strings.daysCount(c.without),
           strings.daysCount(c.including),
         );
-
+    final spt = result.spt;
+    // EN: Each affected place under its own heading (FEA-2), in words; the
+    //     SPT only for a trip in the United States.
+    // FR: Chaque lieu concerné sous son propre titre (FEA-2), en mots ; le
+    //     critère de présence substantielle seulement pour un voyage aux
+    //     États-Unis.
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final y in result.years)
-              ...days(
-                strings.whatIfYear('${y.year}', dates.format(y.through)),
-                y.days,
-              ),
-            // EN: The one figure announced when the result appears or changes: reading
-            //     all of them would talk over the user. The others can be browsed.
-            // FR: Le seul nombre annoncé quand le résultat apparaît ou change : tous les
-            //     lire couvrirait l'utilisateur. Les autres se parcourent.
-            MergeSemantics(
-              child: Semantics(
-                liveRegion: true,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: days(strings.whatIfLast365(asOf), result.last365),
+            for (final place in result.places) ...[
+              const SizedBox(height: 12),
+              Semantics(
+                header: true,
+                child: Text(
+                  place.convention == CountingConvention.endOfDay
+                      ? '${placeFullName(strings, place.place)} '
+                          '(${strings.tableEndOfDayTag})'
+                      : placeFullName(strings, place.place),
+                  style: text.titleMedium,
                 ),
               ),
-            ),
-            ...block(
-              strings.whatIfSpt(asOf),
-              result.sptWithout.formatted,
-              result.sptIncluding.formatted,
-            ),
+              for (final y in place.years)
+                ...days(
+                  strings.whatIfYear('${y.year}', dates.format(y.through)),
+                  y.days,
+                ),
+              MergeSemantics(
+                child: Semantics(
+                  liveRegion: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: days(strings.whatIfLast365(asOf), place.last365),
+                  ),
+                ),
+              ),
+            ],
+            if (spt != null)
+              ...block(
+                strings.whatIfSpt(asOf),
+                spt.$1.formatted,
+                spt.$2.formatted,
+              ),
           ],
         ),
       ),

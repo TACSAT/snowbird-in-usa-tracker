@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// Notification body for a since-last-visit alert. Neutral, no judgment.
   ///
   /// In en, this message translates to:
-  /// **'As of {date}, it has been {threshold} days since your last US visit — the target you set.'**
+  /// **'As of {date}, it has been {threshold} days since your last visit — the target you set.'**
   String alertNotificationBodySince(String date, int threshold);
 
   /// No description provided for @tripStillInUs.
@@ -1591,6 +1591,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{appName} now counts days in Canada, the United States, Mexico and Saint-Pierre-et-Miquelon, by province, territory or state if you wish. Your trips are now stays in the United States, and every US count is unchanged. Choose places and an optional home base under Settings.'**
   String whatsNewBody(String appName);
+
+  /// Section heading for days worked.
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked'**
+  String get workHeading;
+
+  /// Switch that turns on days worked (WRK-1, off by default).
+  ///
+  /// In en, this message translates to:
+  /// **'Record days worked'**
+  String get workSwitch;
+
+  /// Explanation of days worked (WRK-2, WRK-9).
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. Days worked are kept apart from days present and are never guessed from them. No wages, hours or employer details are asked for.'**
+  String get workExplain;
+
+  /// Label above the weekday chips of a stay.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually worked on'**
+  String get workWeekdaysLabel;
+
+  /// Opens the calendar to correct single worked days.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct single days'**
+  String get workCorrectDays;
+
+  /// Days worked in the stay being edited, up to today.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No days worked so far} =1{1 day worked} other{{count} days worked}}'**
+  String workStayCount(int count);
+
+  /// Help at the top of the worked-days calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a day to mark it worked or not worked.'**
+  String get workCalendarHelp;
+
+  /// Screen-reader label of a worked day in the calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}: worked'**
+  String workDayWorked(String date);
+
+  /// Screen-reader label of a day not worked in the calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}: not worked'**
+  String workDayNotWorked(String date);
+
+  /// Closes the worked-days calendar, keeping the changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get workDone;
+
+  /// Switch on a day visit (WRK-4, WRK-5).
+  ///
+  /// In en, this message translates to:
+  /// **'Worked there that day'**
+  String get visitWorked;
+
+  /// Second line of a table row: days worked (TBL-12).
+  ///
+  /// In en, this message translates to:
+  /// **'Worked'**
+  String get tableWorked;
+
+  /// Screen-reader text for days worked in a table row.
+  ///
+  /// In en, this message translates to:
+  /// **'worked: {year} this calendar year, {last} in the last 365 days'**
+  String tableWorkedSemantics(String year, String last);
+
+  /// Alert list title: the place, then what is counted.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: {summary}'**
+  String alertSummaryAt(String place, String summary);
+
+  /// Summary of an alert counting days worked.
+  ///
+  /// In en, this message translates to:
+  /// **'{threshold} days worked within the last {window} days'**
+  String alertSummaryWorked(int threshold, int window);
+
+  /// Label of the present/worked choice of an alert (WRK-10).
+  ///
+  /// In en, this message translates to:
+  /// **'What to count'**
+  String get alertMeasureLabel;
+
+  /// Alert counts days present.
+  ///
+  /// In en, this message translates to:
+  /// **'Days present'**
+  String get alertMeasurePresent;
+
+  /// Alert counts days worked.
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked'**
+  String get alertMeasureWorked;
+
+  /// Notification body with the place first.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: {body}'**
+  String alertNotificationWithPlace(String place, String body);
+
+  /// Notification body for an alert counting days worked.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}, days worked: {body}'**
+  String alertNotificationWorkedPlace(String place, String body);
+
+  /// Range result: actual days worked in that place (WRK-10).
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked: {days}'**
+  String rangeWorked(String days);
+
+  /// Place field of the what-if (FEA-2).
+  ///
+  /// In en, this message translates to:
+  /// **'Place of this trip'**
+  String get whatIfPlaceLabel;
+
+  /// App-bar action to filter the stay list (FEA-4).
+  ///
+  /// In en, this message translates to:
+  /// **'Filter stays'**
+  String get filterTooltip;
+
+  /// Year filter label.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get filterYear;
+
+  /// Filter option: no filter on this field.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// Shown when a filter hides some stays.
+  ///
+  /// In en, this message translates to:
+  /// **'{shown} of {total} stays shown'**
+  String filterShown(int shown, int total);
+
+  /// Removes the stay list filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get filterClear;
+
+  /// Filter with no result.
+  ///
+  /// In en, this message translates to:
+  /// **'No stay matches this filter.'**
+  String get filterNone;
+
+  /// Applies the stay list filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get filterApply;
 }
 
 class _AppLocalizationsDelegate

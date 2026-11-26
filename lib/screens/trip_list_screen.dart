@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
@@ -50,7 +51,140 @@ class TripListScreen extends StatefulWidget {
   State<TripListScreen> createState() => _TripListScreenState();
 }
 
+// EN: The stay list filter (FEA-4): a country (or all), a year the stay touches
+//     (or all) and actual or planned (or both). It narrows the list only; the
+//     Days present table above always counts everything. Kept for the session,
+//     not saved: a filter left on next week would hide stays without saying so.
+// FR: Le filtre de la liste des séjours (FEA-4) : un pays (ou tous), une année
+//     que touche le séjour (ou toutes) et réel ou planifié (ou les deux). Il ne
+//     restreint que la liste ; le tableau des jours de présence au-dessus compte
+//     toujours tout. Gardé pour la session, non enregistré : un filtre resté
+//     actif la semaine suivante cacherait des séjours sans le dire.
+class _StayFilter {
+  final Place? country;
+  final int? year;
+  final TripStatus? status;
+
+  const _StayFilter({this.country, this.year, this.status});
+
+  bool get isActive => country != null || year != null || status != null;
+
+  bool matches(Trip trip) {
+    if (country != null && !country!.contains(trip.place)) return false;
+    if (status != null && trip.status != status) return false;
+    final y = year;
+    if (y != null) {
+      final now = DateTime.now();
+      final last = trip.departureDate?.year ?? now.year;
+      if (trip.arrivalDate.year > y || last < y) return false;
+    }
+    return true;
+  }
+}
+
 class _TripListScreenState extends State<TripListScreen> {
+  _StayFilter _filter = const _StayFilter();
+
+  Future<void> _openFilter(List<Trip> trips) async {
+    final strings = AppLocalizations.of(context);
+    final countries = <Place>{for (final t in trips) t.place.country};
+    final now = DateTime.now().year;
+    final years = <int>{
+      for (final t in trips)
+        for (var y = t.arrivalDate.year;
+            y <= (t.departureDate?.year ?? now);
+            y++)
+          y,
+    }.toList()
+      ..sort((a, b) => b.compareTo(a));
+    var draft = _filter;
+    final applied = await showModalBottomSheet<_StayFilter>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheet) => StatefulBuilder(
+        builder: (sheet, setSheet) => SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                DropdownButtonFormField<Place?>(
+                  isExpanded: true,
+                  initialValue: draft.country,
+                  decoration: InputDecoration(labelText: strings.fieldPlace),
+                  items: [
+                    DropdownMenuItem(child: Text(strings.filterAll)),
+                    for (final c in countries)
+                      DropdownMenuItem(
+                        value: c,
+                        child: Text(placeFullName(strings, c)),
+                      ),
+                  ],
+                  onChanged: (v) => setSheet(
+                    () => draft = _StayFilter(
+                      country: v,
+                      year: draft.year,
+                      status: draft.status,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int?>(
+                  isExpanded: true,
+                  initialValue: draft.year,
+                  decoration: InputDecoration(labelText: strings.filterYear),
+                  items: [
+                    DropdownMenuItem(child: Text(strings.filterAll)),
+                    for (final y in years)
+                      DropdownMenuItem(value: y, child: Text('$y')),
+                  ],
+                  onChanged: (v) => setSheet(
+                    () => draft = _StayFilter(
+                      country: draft.country,
+                      year: v,
+                      status: draft.status,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<TripStatus?>(
+                  isExpanded: true,
+                  initialValue: draft.status,
+                  decoration: InputDecoration(labelText: strings.tripTypeLabel),
+                  items: [
+                    DropdownMenuItem(child: Text(strings.filterAll)),
+                    DropdownMenuItem(
+                      value: TripStatus.actual,
+                      child: Text(strings.tripStatusActual),
+                    ),
+                    DropdownMenuItem(
+                      value: TripStatus.planned,
+                      child: Text(strings.tripStatusPlanned),
+                    ),
+                  ],
+                  onChanged: (v) => setSheet(
+                    () => draft = _StayFilter(
+                      country: draft.country,
+                      year: draft.year,
+                      status: v,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => Navigator.of(sheet).pop(draft),
+                  child: Text(strings.filterApply),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (applied != null && mounted) setState(() => _filter = applied);
+  }
+
   // EN: Locates the export button on screen, where an iPad anchors its share popover.
   // FR: Situe le bouton d'export à l'écran, où l'iPad ancre sa bulle de partage.
   final _exportButtonKey = GlobalKey();
@@ -302,6 +436,10 @@ class _TripListScreenState extends State<TripListScreen> {
     // FR: Le séjour réel en cours, s'il y en a un : il offre « J'ai changé de
     //     lieu... » directement sur l'écran principal, le chemin le plus rapide
     //     pour un changement (STY-3).
+    final shown = [
+      for (final t in trips)
+        if (_filter.matches(t)) t,
+    ];
     final ongoing = trips
         .where((t) => t.status == TripStatus.actual && t.departureDate == null)
         .firstOrNull;
@@ -311,6 +449,14 @@ class _TripListScreenState extends State<TripListScreen> {
         title: const Text(AppIdentity.name),
         centerTitle: false,
         actions: [
+          if (trips.isNotEmpty)
+            IconButton(
+              icon: Icon(
+                _filter.isActive ? Icons.filter_alt : Icons.filter_alt_outlined,
+              ),
+              tooltip: strings.filterTooltip,
+              onPressed: () => _openFilter(trips),
+            ),
           IconButton(
             key: _exportButtonKey,
             icon: const Icon(Icons.ios_share_rounded),
@@ -368,7 +514,7 @@ class _TripListScreenState extends State<TripListScreen> {
           //     laissait aucune place aux séjours (NFR-5).
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 88),
-              itemCount: trips.length + 1,
+              itemCount: shown.length + 1,
               itemBuilder: (context, index) => index == 0
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -384,9 +530,36 @@ class _TripListScreenState extends State<TripListScreen> {
                             ),
                           ),
                         const Divider(height: 1),
+                        if (_filter.isActive)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            child: Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              children: [
+                                Semantics(
+                                  liveRegion: true,
+                                  child: Text(
+                                    shown.isEmpty
+                                        ? strings.filterNone
+                                        : strings.filterShown(
+                                            shown.length,
+                                            trips.length,
+                                          ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => setState(
+                                    () => _filter = const _StayFilter(),
+                                  ),
+                                  child: Text(strings.filterClear),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     )
-                  : _TripTile(trip: trips[index - 1]),
+                  : _TripTile(trip: shown[index - 1]),
             ),
       floatingActionButton: FloatingActionButton(
         tooltip: strings.addTrip,

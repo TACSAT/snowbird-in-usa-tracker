@@ -21,7 +21,9 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/alert_math.dart';
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
@@ -179,11 +181,24 @@ class AlertRepository extends ChangeNotifier {
     final trips = _tripRepository.countedStays;
     switch (alert.kind) {
       case AlertKind.dayCountThreshold:
+        if (_needsLedger(alert)) {
+          return AlertMath.countInLastDays(
+                stays: _tripRepository.trips,
+                visits: _tripRepository.visits,
+                place: alert.place,
+                convention: alert.convention,
+                measure: alert.measure,
+                windowDays: alert.windowDays,
+                today: today,
+              ) >=
+              alert.thresholdDays;
+        }
         return DayCounter.countDaysInLastDays(
               trips: trips,
               days: alert.windowDays,
               today: today,
               includeStatuses: const {TripStatus.actual, TripStatus.planned},
+              place: alert.place,
             ) >=
             alert.thresholdDays;
       case AlertKind.sinceLastVisit:
@@ -215,19 +230,44 @@ class AlertRepository extends ChangeNotifier {
   DateTime? _reachDate(DayAlert alert, List<Trip> trips, DateTime today) {
     switch (alert.kind) {
       case AlertKind.dayCountThreshold:
+        if (_needsLedger(alert)) {
+          return AlertMath.firstDateReaching(
+            stays: _tripRepository.trips,
+            visits: _tripRepository.visits,
+            place: alert.place,
+            convention: alert.convention,
+            measure: alert.measure,
+            thresholdDays: alert.thresholdDays,
+            windowDays: alert.windowDays,
+            from: today,
+            crossingOnly: true,
+          );
+        }
         return DayCounter.firstDateReachingThreshold(
           trips: trips,
           thresholdDays: alert.thresholdDays,
           windowDays: alert.windowDays,
           from: today,
           crossingOnly: true,
+          place: alert.place,
         );
       case AlertKind.sinceLastVisit:
-        final last = DayCounter.lastDeparture(trips: trips);
+        // EN: "Time since last visit" takes a place too (FEA-1).
+        // FR: « Temps depuis le dernier séjour » prend aussi un lieu (FEA-1).
+        final last = DayCounter.lastDeparture(trips: trips, place: alert.place);
         if (last == null) return null;
         return DateTime(last.year, last.month, last.day + alert.thresholdDays);
     }
   }
+
+  // EN: Any-part presence keeps the original DayCounter path (and its tests);
+  //     end of day and days worked go through the ledger.
+  // FR: La présence toute partie garde le chemin d'origine de DayCounter (et
+  //     ses tests) ; la fin de journée et les jours travaillés passent par le
+  //     registre.
+  static bool _needsLedger(DayAlert alert) =>
+      alert.convention != CountingConvention.anyPart ||
+      alert.measure != AlertMeasure.present;
 
   Future<void> _onTripsChanged() async {
     // EN: Trip data changed — reach dates may have moved. No persistence

@@ -7,6 +7,10 @@
 //     peuvent diverger. Aucun stockage, aucun verdict.
 
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
+import 'package:snowbird_in_usa_tracker/models/day_visit.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
+import 'package:snowbird_in_usa_tracker/models/tracked_place.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 
 const _both = {TripStatus.actual, TripStatus.planned};
@@ -167,3 +171,214 @@ List<Trip> stalePlannedTrips(List<Trip> trips, DateTime today) => [
             (t.departureDate?.isBefore(_dateOnly(today)) ?? false))
           t,
     ];
+
+// EN: Ranges and the what-if BY PLACE (FEA-2, FEA-3, WRK-10). The classes above
+//     keep their original United States meaning and tests; these report every
+//     chosen place under its own counting convention, from PresenceLedger.
+// FR: Plages et hypothèse PAR LIEU (FEA-2, FEA-3, WRK-10). Les classes
+//     ci-dessus gardent leur sens d'origine (États-Unis) et leurs tests ;
+//     celles-ci rendent compte de chaque lieu choisi selon sa propre convention
+//     de comptage, à partir de PresenceLedger.
+
+// EN: One place's figures for a range: actual days, days including planned
+//     stays, and actual days worked.
+// FR: Les chiffres d'un lieu pour une plage : jours réels, jours en incluant
+//     les séjours planifiés, et jours travaillés réels.
+class PlaceRangeCount {
+  final Place place;
+  final CountingConvention convention;
+  final int actual;
+  final int withPlanned;
+  final int worked;
+
+  const PlaceRangeCount._(
+    this.place,
+    this.convention,
+    this.actual,
+    this.withPlanned,
+    this.worked,
+  );
+
+  // EN: [tracked] null means the countries with any day in the range, actual
+  //     or planned, in catalogue order: the same idea as the automatic table.
+  // FR: [tracked] null signifie les pays ayant au moins un jour dans la plage,
+  //     réel ou planifié, dans l'ordre du catalogue : la même idée que le
+  //     tableau automatique.
+  static List<PlaceRangeCount> compute({
+    required List<Trip> stays,
+    List<DayVisit> visits = const [],
+    List<TrackedPlace>? tracked,
+    required DateTime start,
+    required DateTime end,
+    required DateTime today,
+    Place? fallback,
+  }) {
+    final now = _dateOnly(today);
+    final last = _dateOnly(end);
+    final actual = <CountingConvention, PresenceLedger>{};
+    final planned = <CountingConvention, PresenceLedger>{};
+    PresenceLedger ledger(CountingConvention c, {required bool withPlanned}) =>
+        (withPlanned ? planned : actual)[c] ??= PresenceLedger.build(
+          stays: stays,
+          visits: visits,
+          from: start,
+          to: end,
+          today: withPlanned && last.isAfter(now) ? last : now,
+          convention: c,
+          includeStatuses: withPlanned ? _both : const {TripStatus.actual},
+        );
+
+    final seen =
+        ledger(CountingConvention.anyPart, withPlanned: true).recordedPlaces;
+    // EN: A copy, so the fallback below never writes into the caller's list.
+    // FR: Une copie, afin que le repli ci-dessous n'écrive jamais dans la
+    //     liste de l'appelant.
+    final list = [
+      ...tracked ??
+          [
+            for (final country in {
+              ...PlaceCatalog.countries,
+              ...([for (final p in seen) p.country]
+                ..sort((a, b) => a.code.compareTo(b.code))),
+            })
+              if (seen.any(country.contains)) TrackedPlace(country),
+          ],
+    ];
+    // EN: A period with no day anywhere still answers "0 days" for the place
+    //     the user is most likely asking about, rather than showing nothing.
+    // FR: Une période sans aucun jour répond quand même « 0 jour » pour le
+    //     lieu sur lequel l'utilisateur s'interroge le plus probablement,
+    //     plutôt que de ne rien montrer.
+    if (list.isEmpty && fallback != null) list.add(TrackedPlace(fallback));
+    return [
+      for (final item in list)
+        PlaceRangeCount._(
+          item.place,
+          item.convention,
+          ledger(item.convention, withPlanned: false).daysIn(item.place),
+          ledger(item.convention, withPlanned: true).daysIn(item.place),
+          ledger(item.convention, withPlanned: false).workedIn(item.place),
+        ),
+    ];
+  }
+}
+
+// EN: One affected place in a what-if: per calendar year and the last 365 days,
+//     without and with the possible trip.
+// FR: Un lieu concerné par une hypothèse : par année civile et sur les 365
+//     derniers jours, sans et avec le voyage envisagé.
+class PlaceComparison {
+  final Place place;
+  final CountingConvention convention;
+  final List<YearComparison> years;
+  final Comparison last365;
+
+  const PlaceComparison(this.place, this.convention, this.years, this.last365);
+}
+
+class PlaceWhatIf {
+  final DateTime asOf;
+  final Place tripPlace;
+  final List<PlaceComparison> places;
+
+  // EN: Only when the trip is in the United States (TBL-7's rule, here too).
+  // FR: Seulement quand le voyage est aux États-Unis (la règle de TBL-7, ici
+  //     aussi).
+  final (SubstantialPresenceResult, SubstantialPresenceResult)? spt;
+
+  const PlaceWhatIf._(this.asOf, this.tripPlace, this.places, this.spt);
+
+  // EN: The affected places are the tracked ones that contain the trip's place
+  //     (a trip to Florida affects "United States" and "Florida"), or else the
+  //     trip's own country. As in WhatIf, counts run to the trip's last day,
+  //     with an open stay assumed to continue until then.
+  // FR: Les lieux concernés sont les lieux suivis qui contiennent le lieu du
+  //     voyage (un voyage en Floride concerne « États-Unis » et « Floride »),
+  //     sinon le pays du voyage. Comme dans WhatIf, les comptes vont jusqu'au
+  //     dernier jour du voyage, un séjour ouvert étant supposé durer jusque-là.
+  factory PlaceWhatIf.compute({
+    required List<Trip> stays,
+    List<DayVisit> visits = const [],
+    required DateTime arrival,
+    required DateTime departure,
+    required Place place,
+    List<TrackedPlace>? tracked,
+  }) {
+    final from = _dateOnly(arrival);
+    final asOf = _dateOnly(departure);
+    if (asOf.isBefore(from)) {
+      throw ArgumentError.value(departure, 'departure', 'precedes arrival');
+    }
+    final trip = Trip(
+      id: 'what-if',
+      arrivalDate: from,
+      departureDate: asOf,
+      status: TripStatus.planned,
+      place: place,
+    );
+    final affected = [
+      for (final t in tracked ?? const <TrackedPlace>[])
+        if (t.place.contains(place)) t,
+    ];
+    if (affected.isEmpty) affected.add(TrackedPlace(place.country));
+
+    final rangeStart = DateTime(from.year);
+    final last365Start = DateTime(asOf.year, asOf.month, asOf.day - 364);
+    final first = rangeStart.isBefore(last365Start) ? rangeStart : last365Start;
+    PresenceLedger ledger(List<Trip> list, CountingConvention c) =>
+        PresenceLedger.build(
+          stays: list,
+          visits: visits,
+          from: first,
+          to: asOf,
+          today: asOf,
+          convention: c,
+          includeStatuses: _both,
+        );
+
+    final comparisons = <PlaceComparison>[];
+    for (final item in affected) {
+      final without = ledger(stays, item.convention);
+      final including = ledger([...stays, trip], item.convention);
+      Comparison compare(DateTime start, DateTime end) => Comparison(
+            without.daysIn(item.place, start: start, end: end),
+            including.daysIn(item.place, start: start, end: end),
+          );
+      comparisons.add(
+        PlaceComparison(
+          item.place,
+          item.convention,
+          [
+            for (var year = from.year; year <= asOf.year; year++)
+              () {
+                final through =
+                    year == asOf.year ? asOf : DateTime(year, 12, 31);
+                return YearComparison(
+                  year,
+                  through,
+                  compare(DateTime(year), through),
+                );
+              }(),
+          ],
+          compare(last365Start, asOf),
+        ),
+      );
+    }
+
+    final counted = [...stays, for (final v in visits) v.asStay()];
+    SubstantialPresenceResult spt(List<Trip> list) =>
+        DayCounter.substantialPresence(
+          trips: list,
+          asOf: asOf,
+          includeStatuses: _both,
+        );
+    return PlaceWhatIf._(
+      asOf,
+      place,
+      comparisons,
+      Place.unitedStates.contains(place)
+          ? (spt(counted), spt([...counted, trip]))
+          : null,
+    );
+  }
+}

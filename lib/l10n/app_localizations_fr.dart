@@ -445,7 +445,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String alertNotificationBodySince(String date, int threshold) {
-    return 'En date du $date, il s\'est écoulé $threshold jours depuis votre dernier séjour aux É.-U. — la cible que vous avez fixée.';
+    return 'En date du $date, il s\'est écoulé $threshold jours depuis votre dernier séjour — la cible que vous avez fixée.';
   }
 
   @override
@@ -1023,4 +1023,120 @@ class AppLocalizationsFr extends AppLocalizations {
   String whatsNewBody(String appName) {
     return '$appName compte maintenant les jours au Canada, aux États-Unis, au Mexique et à Saint-Pierre-et-Miquelon, par province, territoire ou État si vous le souhaitez. Vos séjours sont désormais des séjours aux États-Unis, et chaque total des États-Unis reste inchangé. Choisissez les lieux et un domicile facultatif dans les Paramètres.';
   }
+
+  @override
+  String get workHeading => 'Jours travaillés';
+
+  @override
+  String get workSwitch => 'Noter les jours travaillés';
+
+  @override
+  String get workExplain =>
+      'Facultatif. Les jours travaillés sont gardés à part des jours de présence et n\'en sont jamais déduits. Aucun salaire, aucune heure ni aucun détail sur l\'employeur n\'est demandé.';
+
+  @override
+  String get workWeekdaysLabel => 'Jours habituellement travaillés';
+
+  @override
+  String get workCorrectDays => 'Corriger des jours isolés';
+
+  @override
+  String workStayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jours travaillés',
+      one: '1 jour travaillé',
+      zero: 'Aucun jour travaillé pour l\'instant',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get workCalendarHelp =>
+      'Touchez un jour pour le marquer travaillé ou non travaillé.';
+
+  @override
+  String workDayWorked(String date) {
+    return '$date : travaillé';
+  }
+
+  @override
+  String workDayNotWorked(String date) {
+    return '$date : non travaillé';
+  }
+
+  @override
+  String get workDone => 'Terminé';
+
+  @override
+  String get visitWorked => 'Travaillé sur place ce jour-là';
+
+  @override
+  String get tableWorked => 'Travaillés';
+
+  @override
+  String tableWorkedSemantics(String year, String last) {
+    return 'travaillés : $year cette année civile, $last au cours des 365 derniers jours';
+  }
+
+  @override
+  String alertSummaryAt(String place, String summary) {
+    return '$place : $summary';
+  }
+
+  @override
+  String alertSummaryWorked(int threshold, int window) {
+    return '$threshold jours travaillés dans les $window derniers jours';
+  }
+
+  @override
+  String get alertMeasureLabel => 'Ce qui est compté';
+
+  @override
+  String get alertMeasurePresent => 'Jours de présence';
+
+  @override
+  String get alertMeasureWorked => 'Jours travaillés';
+
+  @override
+  String alertNotificationWithPlace(String place, String body) {
+    return '$place : $body';
+  }
+
+  @override
+  String alertNotificationWorkedPlace(String place, String body) {
+    return '$place, jours travaillés : $body';
+  }
+
+  @override
+  String rangeWorked(String days) {
+    return 'Jours travaillés : $days';
+  }
+
+  @override
+  String get whatIfPlaceLabel => 'Lieu de ce voyage';
+
+  @override
+  String get filterTooltip => 'Filtrer les séjours';
+
+  @override
+  String get filterYear => 'Année';
+
+  @override
+  String get filterAll => 'Tous';
+
+  @override
+  String filterShown(int shown, int total) {
+    return '$shown séjours affichés sur $total';
+  }
+
+  @override
+  String get filterClear => 'Effacer le filtre';
+
+  @override
+  String get filterNone => 'Aucun séjour ne correspond à ce filtre.';
+
+  @override
+  String get filterApply => 'Afficher';
 }

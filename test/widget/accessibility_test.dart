@@ -12,6 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
+import 'package:snowbird_in_usa_tracker/screens/work_calendar_screen.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
 import 'package:snowbird_in_usa_tracker/models/home_base.dart';
 import 'package:snowbird_in_usa_tracker/screens/places_settings_screen.dart';
@@ -205,6 +207,11 @@ void main() {
           const VisitsScreen(),
           const VisitEditScreen(),
           const PlacesSettingsScreen(),
+          WorkCalendarScreen(
+            from: DateTime(2026, 3, 2),
+            to: DateTime(2026, 4, 15),
+            plan: WorkPlan(weekdays: const {1, 2, 3, 4, 5}),
+          ),
         ]) {
           await _open(tester, screen);
           final sections = find.byType(ExpansionTile);
@@ -320,6 +327,16 @@ void main() {
               .copyWith(convention: CountingConvention.endOfDay),
         );
         await a.places.setExpanded(Place.canada, true);
+        // EN: Days worked on, with a worked stay: every row gains a line.
+        // FR: Jours travaillés activés, avec un séjour travaillé : chaque
+        //     ligne gagne une ligne.
+        await a.places.setWorkEnabled(true);
+        final yukon = a.trips.trips.firstWhere(
+          (t) => t.place == Place.parse('CA-YT'),
+        );
+        await a.trips.updateTrip(
+          yukon.copyWith(work: WorkPlan(weekdays: const {1, 2, 3, 4, 5})),
+        );
         await tester.pumpAndSettle();
         expect(find.text('Yukon'), findsOneWidget);
         expect(_truncated(tester), isEmpty);
@@ -332,6 +349,27 @@ void main() {
           );
           await tester.pump();
         }
+        expect(_truncated(tester), isEmpty);
+        expect(tester.takeException(), isNull);
+        // EN: The stay screen with its days worked section, at the same size.
+        // FR: L'écran du séjour avec sa section des jours travaillés, à la
+        //     même taille.
+        await _open(
+          tester,
+          TripEditScreen(
+            existing: a.trips.trips.firstWhere(
+              (t) => t.place == Place.parse('CA-YT'),
+            ),
+          ),
+        );
+        await tester.ensureVisible(
+          find.text(
+            locale == 'en'
+                ? 'Correct single days'
+                : 'Corriger des jours isolés',
+          ),
+        );
+        await tester.pumpAndSettle();
         expect(_truncated(tester), isEmpty);
         expect(tester.takeException(), isNull);
       });
@@ -520,7 +558,7 @@ void main() {
         await a.trips.addTrip(openTrip);
         for (final (screen, index) in <(Widget, int)>[
           (TripEditScreen(existing: openTrip), 1),
-          (const AlertEditScreen(), 0),
+          (const AlertEditScreen(), 1),
         ]) {
           await _open(tester, screen);
           final row = find.byType(ValueRow).at(index);

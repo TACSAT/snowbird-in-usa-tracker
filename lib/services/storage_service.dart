@@ -118,6 +118,9 @@ class StorageService {
   static const _kExpandedPlacesKey = 'snowbird.places.expanded.v1';
   static const _kHomeBaseKey = 'snowbird.home.v1';
   static const _kPlacesNoteKey = 'snowbird.flags.placesNoteShown.v1';
+  // EN: Whether days worked are recorded (WRK-1: off by default).
+  // FR: Si les jours travaillés sont notés (WRK-1 : désactivé par défaut).
+  static const _kWorkEnabledKey = 'snowbird.settings.workEnabled.v1';
 
   final SharedPreferences _prefs;
 
@@ -388,6 +391,11 @@ class StorageService {
       _write(() => _prefs.setString(_kHomeBaseKey, json));
 
   bool get placesNoteShown => _prefs.getBool(_kPlacesNoteKey) ?? false;
+
+  bool get workEnabled => _prefs.getBool(_kWorkEnabledKey) ?? false;
+
+  Future<void> setWorkEnabled(bool value) =>
+      _write(() => _prefs.setBool(_kWorkEnabledKey, value));
 
   Future<void> setPlacesNoteShown() => _prefs.setBool(_kPlacesNoteKey, true);
 

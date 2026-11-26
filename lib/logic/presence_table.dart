@@ -45,11 +45,19 @@ class PlaceRow {
   final WindowFigures recorded;
   final WindowFigures assumed;
 
+  // EN: Days worked there (TBL-12): shown as a second line only when work is
+  //     on, never summed with days present.
+  // FR: Jours travaillés sur place (TBL-12) : montrés en seconde ligne
+  //     seulement si le travail est activé, jamais additionnés aux jours de
+  //     présence.
+  final WindowFigures worked;
+
   const PlaceRow({
     required this.place,
     required this.convention,
     required this.recorded,
     required this.assumed,
+    this.worked = const WindowFigures(0, 0),
   });
 
   bool get isEmpty => recorded.isZero && assumed.isZero;
@@ -172,6 +180,9 @@ class PresenceTable {
         ),
         assumed: figures(
           ({start, end}) => l.assumedIn(place, start: start, end: end),
+        ),
+        worked: figures(
+          ({start, end}) => l.workedIn(place, start: start, end: end),
         ),
       );
     }
