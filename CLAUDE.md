@@ -87,6 +87,10 @@ the app never judges, but it computes any published formula the user could do by
   regions), `place_names.dart` (names come from the `placeName` ARB select, keyed by code
   with `-` → `_`), `move_flow.dart` ("I have moved…"), `split_stay_screen.dart`,
   `visits_screen.dart` (day visits, stored under `snowbird.visits.v1`).
+- Main screen table: `lib/logic/presence_table.dart` (pure data from `PresenceLedger`)
+  drawn by `screens/presence_table_card.dart`. Table and home-base preferences live in
+  `state/presence_settings.dart` (`PresenceSettings`, a provider every widget-test wrapper
+  must supply) and `screens/places_settings_screen.dart`.
 - Counting reads `TripRepository.countedStays` (stays plus each day visit as a one-day
   stay); lists and editors read `trips` / `visits`.
 - Localization: `l10n.yaml` + `lib/l10n/*.arb` → generated `AppLocalizations`

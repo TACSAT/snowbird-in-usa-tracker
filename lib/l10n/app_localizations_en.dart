@@ -202,7 +202,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reminders you created for day-count targets you set yourself.';
 
   @override
-  String get summaryHeading => 'Days in the US';
+  String get summaryHeading => 'Days present';
 
   @override
   String get tripTypeLabel => 'Trip type';
@@ -886,5 +886,132 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String errorTooManyVisits(int max) {
     return 'You have reached the limit of $max day visits.';
+  }
+
+  @override
+  String get tableColumnYear => 'This year';
+
+  @override
+  String get tableColumnLast365 => 'Last 365';
+
+  @override
+  String tableRowSemantics(String place, String year, String last) {
+    return '$place: $year this calendar year, $last in the last 365 days';
+  }
+
+  @override
+  String get tableRegionNotRecorded => 'Region not recorded';
+
+  @override
+  String get tableAssumed => 'Assumed at home';
+
+  @override
+  String get tableNotRecorded => 'Not recorded';
+
+  @override
+  String get tableCrossingNote =>
+      'Crossing days count in both places, so places can add up to more than the calendar.';
+
+  @override
+  String tableNow(String place, String days) {
+    return 'Now: $place, $days';
+  }
+
+  @override
+  String get tableAnyPartNote => 'Counted by any part of the day.';
+
+  @override
+  String get tableEndOfDayNote =>
+      'Rows marked \"end of day\" count where you were at midnight.';
+
+  @override
+  String get tableEndOfDayTag => 'end of day';
+
+  @override
+  String get tableEmpty => 'No days recorded in these periods.';
+
+  @override
+  String get tableChoosePlaces => 'Choose places';
+
+  @override
+  String get tableShowRegions => 'Show regions';
+
+  @override
+  String get tableHideRegions => 'Hide regions';
+
+  @override
+  String get placesSettingsTitle => 'Places and home';
+
+  @override
+  String get placesTrackedHeading => 'Places in the table';
+
+  @override
+  String get placesAutomatic => 'Show places with recorded days';
+
+  @override
+  String get placesAutomaticHelper =>
+      'Turn off to choose the places, their order and how days are counted.';
+
+  @override
+  String get placesAdd => 'Add place';
+
+  @override
+  String get placesRemove => 'Remove';
+
+  @override
+  String get placesMoveUp => 'Move up';
+
+  @override
+  String get placesMoveDown => 'Move down';
+
+  @override
+  String get placesPinned => 'Show even with no days';
+
+  @override
+  String get placesConventionLabel => 'How days are counted';
+
+  @override
+  String get conventionAnyPart => 'Any part of the day';
+
+  @override
+  String get conventionEndOfDay => 'End of the day';
+
+  @override
+  String get conventionExplain =>
+      'Any part of the day: a date counts if you were there at any moment of it, so a crossing day counts in both places. End of the day: a date counts where you were at midnight. Rules differ from one place to another; the app does not choose for you.';
+
+  @override
+  String get homeHeading => 'Home base';
+
+  @override
+  String get homeSwitch => 'Count unrecorded days at home';
+
+  @override
+  String get homeExplain =>
+      'When on, a past day with no stay counts as a day assumed at home, shown apart from recorded days. The days you leave and come back count there too. This is not a statement of legal residence.';
+
+  @override
+  String get homeAddPeriod => 'Add home place';
+
+  @override
+  String homePeriod(String place, String date) {
+    return '$place, from $date';
+  }
+
+  @override
+  String get homeRemove => 'Remove home place';
+
+  @override
+  String get homeFromLabel => 'Home from';
+
+  @override
+  String get homeNeedPlace => 'Add your home place first.';
+
+  @override
+  String get whatsNewTitle => 'New: days by place';
+
+  @override
+  String whatsNewBody(String appName) {
+    return '$appName now counts days in Canada, the United States, Mexico and Saint-Pierre-et-Miquelon, by province, territory or state if you wish. Your trips are now stays in the United States, and every US count is unchanged. Choose places and an optional home base under Settings.';
   }
 }

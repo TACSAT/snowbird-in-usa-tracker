@@ -16,6 +16,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/screens/places_settings_screen.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/screens/place_picker_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/split_stay_screen.dart';
@@ -99,6 +101,7 @@ Future<_App> _start(
         Provider<StorageService>.value(value: storage),
         ChangeNotifierProvider.value(value: SettingsController(storage)),
         ChangeNotifierProvider.value(value: result.trips),
+        ChangeNotifierProvider.value(value: PresenceSettings(storage)),
         ChangeNotifierProvider.value(value: result.alerts),
         Provider<AlertScheduler>.value(value: result.scheduler),
       ],
@@ -311,6 +314,7 @@ void main() {
           SplitStayScreen(stay: openTrip),
           const VisitsScreen(),
           const VisitEditScreen(),
+          const PlacesSettingsScreen(),
         ]) {
           await _open(tester, screen);
           final sections = find.byType(ExpansionTile);
@@ -369,22 +373,30 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('each summary figure is its own stop; SPT is a button',
+  // EN: The Days present table is one stop per place, with both figures in
+  //     its label (TBL-10).
+  // FR: Le tableau des jours de présence est un arrêt par lieu, avec les deux
+  //     chiffres dans son libellé (TBL-10).
+  testWidgets('each table row is its own stop; SPT is a button',
       (tester) async {
     final handle = tester.ensureSemantics();
     final a = await _start(tester, size: tall);
     await a.trips.addTrip(openTrip);
     await tester.pumpAndSettle();
     expect(
-      _stop(tester, 'This calendar year').label,
-      'This calendar year: 3 days',
+      _stop(tester, 'United States:').label,
+      'United States: 3 days this calendar year, '
+      '3 days in the last 365 days',
     );
-    expect(_stop(tester, 'Last 365 days').label, 'Last 365 days: 3 days');
+    expect(
+      _stop(tester, 'Not recorded').label,
+      startsWith('Not recorded: '),
+    );
     final spt = _stop(tester, 'Substantial Presence');
     expect(spt.flagsCollection.isButton, isTrue);
     expect(spt.hasAction(SemanticsAction.tap), isTrue);
     expect(spt.label, contains('3'));
-    expect(_headings(tester), contains('Days in the US'));
+    expect(_headings(tester), contains('Days present'));
     handle.dispose();
   });
 

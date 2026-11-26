@@ -206,7 +206,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Rappels que vous avez créés pour des cibles de jours que vous avez fixées vous-même.';
 
   @override
-  String get summaryHeading => 'Jours aux États-Unis';
+  String get summaryHeading => 'Jours de présence';
 
   @override
   String get tripTypeLabel => 'Type de séjour';
@@ -894,5 +894,133 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String errorTooManyVisits(int max) {
     return 'Vous avez atteint la limite de $max visites d\'un jour.';
+  }
+
+  @override
+  String get tableColumnYear => 'Cette année';
+
+  @override
+  String get tableColumnLast365 => '365 derniers';
+
+  @override
+  String tableRowSemantics(String place, String year, String last) {
+    return '$place : $year cette année civile, $last au cours des 365 derniers jours';
+  }
+
+  @override
+  String get tableRegionNotRecorded => 'Région non précisée';
+
+  @override
+  String get tableAssumed => 'Présumés au domicile';
+
+  @override
+  String get tableNotRecorded => 'Non enregistrés';
+
+  @override
+  String get tableCrossingNote =>
+      'Les jours de passage comptent dans les deux lieux ; les lieux peuvent donc totaliser plus que le calendrier.';
+
+  @override
+  String tableNow(String place, String days) {
+    return 'Actuellement : $place, $days';
+  }
+
+  @override
+  String get tableAnyPartNote => 'Compté selon toute partie du jour.';
+
+  @override
+  String get tableEndOfDayNote =>
+      'Les lignes marquées « fin de journée » comptent là où vous étiez à minuit.';
+
+  @override
+  String get tableEndOfDayTag => 'fin de journée';
+
+  @override
+  String get tableEmpty => 'Aucun jour enregistré pendant ces périodes.';
+
+  @override
+  String get tableChoosePlaces => 'Choisir les lieux';
+
+  @override
+  String get tableShowRegions => 'Afficher les régions';
+
+  @override
+  String get tableHideRegions => 'Masquer les régions';
+
+  @override
+  String get placesSettingsTitle => 'Lieux et domicile';
+
+  @override
+  String get placesTrackedHeading => 'Lieux du tableau';
+
+  @override
+  String get placesAutomatic =>
+      'Afficher les lieux ayant des jours enregistrés';
+
+  @override
+  String get placesAutomaticHelper =>
+      'Désactivez pour choisir les lieux, leur ordre et la façon de compter les jours.';
+
+  @override
+  String get placesAdd => 'Ajouter un lieu';
+
+  @override
+  String get placesRemove => 'Retirer';
+
+  @override
+  String get placesMoveUp => 'Monter';
+
+  @override
+  String get placesMoveDown => 'Descendre';
+
+  @override
+  String get placesPinned => 'Afficher même sans jours';
+
+  @override
+  String get placesConventionLabel => 'Façon de compter les jours';
+
+  @override
+  String get conventionAnyPart => 'Toute partie du jour';
+
+  @override
+  String get conventionEndOfDay => 'Fin de la journée';
+
+  @override
+  String get conventionExplain =>
+      'Toute partie du jour : une date compte si vous étiez sur place à un moment quelconque ; un jour de passage compte donc dans les deux lieux. Fin de la journée : une date compte là où vous étiez à minuit. Les règles diffèrent d\'un lieu à l\'autre ; l\'application ne choisit pas pour vous.';
+
+  @override
+  String get homeHeading => 'Domicile';
+
+  @override
+  String get homeSwitch => 'Compter les jours non enregistrés au domicile';
+
+  @override
+  String get homeExplain =>
+      'Lorsque cette option est activée, un jour passé sans séjour compte comme un jour présumé au domicile, affiché à part des jours enregistrés. Les jours de départ et de retour y comptent aussi. Ce n\'est pas une déclaration de résidence légale.';
+
+  @override
+  String get homeAddPeriod => 'Ajouter un domicile';
+
+  @override
+  String homePeriod(String place, String date) {
+    return '$place, à partir du $date';
+  }
+
+  @override
+  String get homeRemove => 'Retirer ce domicile';
+
+  @override
+  String get homeFromLabel => 'Domicile à partir du';
+
+  @override
+  String get homeNeedPlace => 'Ajoutez d\'abord votre lieu de domicile.';
+
+  @override
+  String get whatsNewTitle => 'Nouveau : les jours par lieu';
+
+  @override
+  String whatsNewBody(String appName) {
+    return '$appName compte maintenant les jours au Canada, aux États-Unis, au Mexique et à Saint-Pierre-et-Miquelon, par province, territoire ou État si vous le souhaitez. Vos séjours sont désormais des séjours aux États-Unis, et chaque total des États-Unis reste inchangé. Choisissez les lieux et un domicile facultatif dans les Paramètres.';
   }
 }

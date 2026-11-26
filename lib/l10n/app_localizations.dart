@@ -419,7 +419,7 @@ abstract class AppLocalizations {
   /// Heading of the day-count summary card on the trip list screen.
   ///
   /// In en, this message translates to:
-  /// **'Days in the US'**
+  /// **'Days present'**
   String get summaryHeading;
 
   /// Section label for the actual-vs-planned selector on the trip form.
@@ -1363,6 +1363,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You have reached the limit of {max} day visits.'**
   String errorTooManyVisits(int max);
+
+  /// Short column heading: this calendar year.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get tableColumnYear;
+
+  /// Short column heading: the last 365 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 365'**
+  String get tableColumnLast365;
+
+  /// Screen-reader text for one table row (TBL-10). year and last are formatted day counts.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: {year} this calendar year, {last} in the last 365 days'**
+  String tableRowSemantics(String place, String year, String last);
+
+  /// Row under a country: days recorded with no province, territory or state.
+  ///
+  /// In en, this message translates to:
+  /// **'Region not recorded'**
+  String get tableRegionNotRecorded;
+
+  /// Row under a place: unrecorded days assumed at the home base (HOM-2).
+  ///
+  /// In en, this message translates to:
+  /// **'Assumed at home'**
+  String get tableAssumed;
+
+  /// Row: past days with nothing recorded and no home base.
+  ///
+  /// In en, this message translates to:
+  /// **'Not recorded'**
+  String get tableNotRecorded;
+
+  /// Shown when a date counted in two countries (TBL-8).
+  ///
+  /// In en, this message translates to:
+  /// **'Crossing days count in both places, so places can add up to more than the calendar.'**
+  String get tableCrossingNote;
+
+  /// Current place and length of the ongoing stay (TBL-9).
+  ///
+  /// In en, this message translates to:
+  /// **'Now: {place}, {days}'**
+  String tableNow(String place, String days);
+
+  /// Label of the counting convention under the table.
+  ///
+  /// In en, this message translates to:
+  /// **'Counted by any part of the day.'**
+  String get tableAnyPartNote;
+
+  /// Label of the end-of-day convention under the table.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows marked \"end of day\" count where you were at midnight.'**
+  String get tableEndOfDayNote;
+
+  /// Tag on a row counted at the end of the day.
+  ///
+  /// In en, this message translates to:
+  /// **'end of day'**
+  String get tableEndOfDayTag;
+
+  /// Table with no rows.
+  ///
+  /// In en, this message translates to:
+  /// **'No days recorded in these periods.'**
+  String get tableEmpty;
+
+  /// Button from the table to the places settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose places'**
+  String get tableChoosePlaces;
+
+  /// Screen-reader hint to expand a country row.
+  ///
+  /// In en, this message translates to:
+  /// **'Show regions'**
+  String get tableShowRegions;
+
+  /// Screen-reader hint to collapse a country row.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide regions'**
+  String get tableHideRegions;
+
+  /// Title of the places and home base settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Places and home'**
+  String get placesSettingsTitle;
+
+  /// Section heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Places in the table'**
+  String get placesTrackedHeading;
+
+  /// Switch: automatic table.
+  ///
+  /// In en, this message translates to:
+  /// **'Show places with recorded days'**
+  String get placesAutomatic;
+
+  /// Helper under the automatic switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off to choose the places, their order and how days are counted.'**
+  String get placesAutomaticHelper;
+
+  /// Button to add a tracked place.
+  ///
+  /// In en, this message translates to:
+  /// **'Add place'**
+  String get placesAdd;
+
+  /// Tooltip to remove a tracked place.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get placesRemove;
+
+  /// Tooltip to move a tracked place up.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get placesMoveUp;
+
+  /// Tooltip to move a tracked place down.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get placesMoveDown;
+
+  /// Switch: keep a tracked place visible with zero days (TBL-5).
+  ///
+  /// In en, this message translates to:
+  /// **'Show even with no days'**
+  String get placesPinned;
+
+  /// Label of the counting convention choice.
+  ///
+  /// In en, this message translates to:
+  /// **'How days are counted'**
+  String get placesConventionLabel;
+
+  /// Counting convention: any moment of the date.
+  ///
+  /// In en, this message translates to:
+  /// **'Any part of the day'**
+  String get conventionAnyPart;
+
+  /// Counting convention: where you were at midnight.
+  ///
+  /// In en, this message translates to:
+  /// **'End of the day'**
+  String get conventionEndOfDay;
+
+  /// Explanation of the two conventions (CNT-1).
+  ///
+  /// In en, this message translates to:
+  /// **'Any part of the day: a date counts if you were there at any moment of it, so a crossing day counts in both places. End of the day: a date counts where you were at midnight. Rules differ from one place to another; the app does not choose for you.'**
+  String get conventionExplain;
+
+  /// Section heading for the home base.
+  ///
+  /// In en, this message translates to:
+  /// **'Home base'**
+  String get homeHeading;
+
+  /// Switch for the home base (HOM-3: off by default).
+  ///
+  /// In en, this message translates to:
+  /// **'Count unrecorded days at home'**
+  String get homeSwitch;
+
+  /// Explanation of the home base (HOM-2, HOM-3, HOM-5).
+  ///
+  /// In en, this message translates to:
+  /// **'When on, a past day with no stay counts as a day assumed at home, shown apart from recorded days. The days you leave and come back count there too. This is not a statement of legal residence.'**
+  String get homeExplain;
+
+  /// Button to add a home period.
+  ///
+  /// In en, this message translates to:
+  /// **'Add home place'**
+  String get homeAddPeriod;
+
+  /// A home period in the list.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}, from {date}'**
+  String homePeriod(String place, String date);
+
+  /// Tooltip to remove a home period.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove home place'**
+  String get homeRemove;
+
+  /// Date field of a new home period.
+  ///
+  /// In en, this message translates to:
+  /// **'Home from'**
+  String get homeFromLabel;
+
+  /// Shown when the switch is turned on with no home place.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your home place first.'**
+  String get homeNeedPlace;
+
+  /// One-time note after upgrading (MIG-4).
+  ///
+  /// In en, this message translates to:
+  /// **'New: days by place'**
+  String get whatsNewTitle;
+
+  /// Body of the one-time upgrade note (MIG-4).
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} now counts days in Canada, the United States, Mexico and Saint-Pierre-et-Miquelon, by province, territory or state if you wish. Your trips are now stays in the United States, and every US count is unchanged. Choose places and an optional home base under Settings.'**
+  String whatsNewBody(String appName);
 }
 
 class _AppLocalizationsDelegate

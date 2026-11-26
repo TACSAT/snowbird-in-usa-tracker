@@ -19,7 +19,6 @@ import 'package:provider/provider.dart';
 
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
-import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
@@ -27,9 +26,9 @@ import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/move_flow.dart';
 import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
+import 'package:snowbird_in_usa_tracker/screens/presence_table_card.dart';
 import 'package:snowbird_in_usa_tracker/screens/visits_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
-import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart';
 import 'package:snowbird_in_usa_tracker/services/record_exporter.dart';
@@ -113,6 +112,25 @@ class _TripListScreenState extends State<TripListScreen> {
     // FR: Montré à chaque lancement tant que le problème dure (le premier
     //     enregistrement réussi le règle) : le silence ferait croire à des séjours
     //     perdus (FR-13).
+    // EN: One note, once, for someone upgrading with trips from before places
+    //     (MIG-4): no question asked, only what is new. A new user never sees
+    //     it; the flag is set either way so it can never come back.
+    // FR: Une note, une seule fois, pour qui met à jour avec des séjours
+    //     d'avant les lieux (MIG-4) : aucune question, seulement ce qui est
+    //     nouveau. Un nouvel utilisateur ne la voit jamais ; le drapeau est posé
+    //     dans tous les cas pour qu'elle ne revienne jamais.
+    if (!storage.placesNoteShown) {
+      if (storage.loadedOlderTrips) {
+        if (!mounted) return;
+        final strings = AppLocalizations.of(context);
+        await _showAck(
+          title: strings.whatsNewTitle,
+          body: strings.whatsNewBody(AppIdentity.name),
+          button: strings.backupReminderAcknowledge,
+        );
+      }
+      await storage.setPlacesNoteShown();
+    }
     if (storage.loadProblem != StorageLoadProblem.none) {
       if (!mounted) return;
       final strings = AppLocalizations.of(context);
@@ -279,7 +297,6 @@ class _TripListScreenState extends State<TripListScreen> {
     final strings = AppLocalizations.of(context);
     final repo = context.watch<TripRepository>();
     final trips = repo.trips;
-    final counted = repo.countedStays;
     // EN: The ongoing actual stay, if any: it offers "I have moved..." right on
     //     the main screen, the quickest path for a move (STY-3).
     // FR: Le séjour réel en cours, s'il y en a un : il offre « J'ai changé de
@@ -356,7 +373,7 @@ class _TripListScreenState extends State<TripListScreen> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _SummaryCard(trips: counted),
+                        const PresenceTableCard(),
                         if (ongoing != null)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -377,172 +394,6 @@ class _TripListScreenState extends State<TripListScreen> {
           MaterialPageRoute<void>(builder: (_) => const TripEditScreen()),
         ),
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-// EN: Neutral day-count summary: actual days this calendar year and in the rolling
-//     last 365 days. These are the two windows a snowbird checks most; both count
-//     only ACTUAL trips so a planned trip never inflates a "days so far" figure.
-// FR: Résumé neutre de comptage : jours réels cette année civile et sur les 365
-//     derniers jours glissants. Ce sont les deux fenêtres qu'un snowbird consulte
-//     le plus ; les deux ne comptent que les séjours RÉELS pour qu'un séjour
-//     planifié ne gonfle jamais un chiffre « jours à ce jour ».
-class _SummaryCard extends StatelessWidget {
-  final List<Trip> trips;
-  const _SummaryCard({required this.trips});
-
-  @override
-  Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
-    final now = DateTime.now();
-
-    final thisYear = DayCounter.countDaysInCalendarYear(
-      trips: trips,
-      year: now.year,
-    );
-    final last365 = DayCounter.countDaysInLastDays(trips: trips, days: 365);
-
-    // EN: The IRS Substantial Presence figure (FR-7) — published arithmetic, shown
-    //     as a NEUTRAL number, never compared to a threshold. Reuse PresenceRecord's
-    //     exact formatter (whole when exact, else two decimals) so the on-screen
-    //     figure matches the exported record to the digit.
-    // FR: La valeur de présence substantielle de l'IRS (FR-7) — arithmétique
-    //     publiée, affichée comme un nombre NEUTRE, jamais comparée à un seuil.
-    //     Réutiliser le formateur exact de PresenceRecord (entier si exact, sinon
-    //     deux décimales) pour que la valeur à l'écran corresponde au chiffre près à
-    //     la fiche exportée.
-    final theme = Theme.of(context);
-    final sptText = PresenceRecord.build(trips: trips).formattedSpt;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeading(
-            strings.summaryHeading,
-            style: theme.textTheme.titleSmall,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _StatBlock(
-                  value: '$thisYear',
-                  label: strings.windowThisYear,
-                  days: strings.daysCount(thisYear),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _StatBlock(
-                  value: '$last365',
-                  label: strings.windowLast365,
-                  days: strings.daysCount(last365),
-                ),
-              ),
-            ],
-          ),
-          // EN: One tap from the counts to the planning question (FR-3).
-          // FR: Un toucher des comptes à la question de planification (FR-3).
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
-              ),
-              child: Text(strings.exploreTitle),
-            ),
-          ),
-          const Divider(height: 20),
-          // EN: SPT figure block — tapping it opens the neutral reference page so
-          //     the number always travels with its context and its not-advice note.
-          // FR: Bloc de la valeur SPT — le toucher ouvre la page de référence neutre
-          //     pour que le nombre voyage toujours avec son contexte et sa mention
-          //     « pas un conseil ».
-          MergeSemantics(
-            child: Semantics(
-              button: true,
-              child: InkWell(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ReferenceScreen(),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              strings.recordSptLabel,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ),
-                          Text(sptText, style: theme.textTheme.titleLarge),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.info_outline,
-                            size: 18,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ],
-                      ),
-                      Text(
-                        strings.sptDisclaimer,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// EN: One large, high-contrast number with its window label — sized up for older
-//     eyes (NFR-5). The number is a plain integer; the plural "days" word sits
-//     beneath it as an accessible full-text label for screen readers.
-// FR: Un grand nombre à fort contraste avec son étiquette de fenêtre — agrandi
-//     pour des yeux plus âgés (NFR-5). Le nombre est un entier simple ; le mot
-//     pluriel « jours » se place en dessous comme étiquette texte accessible aux
-//     lecteurs d'écran.
-class _StatBlock extends StatelessWidget {
-  final String value;
-  final String label;
-  final String days;
-  const _StatBlock({
-    required this.value,
-    required this.label,
-    required this.days,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Semantics(
-      container: true,
-      label: '$label: $days',
-      child: ExcludeSemantics(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(value, style: theme.textTheme.headlineMedium),
-            Text(label, style: theme.textTheme.bodyMedium),
-          ],
-        ),
       ),
     );
   }

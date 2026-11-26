@@ -105,6 +105,19 @@ class StorageService {
   static const _kThemeModeKey = 'snowbird.settings.themeMode.v1';
   static const _kTextScaleKey = 'snowbird.settings.textScale.v1';
   static const _kHighContrastKey = 'snowbird.settings.highContrast.v1';
+  // EN: Days present table preferences and the home base (sections 6 and 9).
+  //     Plain JSON under their own keys: an older build ignores them, and a
+  //     damaged value only falls back to the default (automatic table, home
+  //     off), which changes no recorded day.
+  // FR: Préférences du tableau des jours de présence et lieu de résidence
+  //     (sections 6 et 9). Du JSON simple sous leurs propres clés : une version
+  //     plus ancienne les ignore, et une valeur abîmée revient seulement à la
+  //     valeur par défaut (tableau automatique, domicile désactivé), ce qui ne
+  //     change aucun jour enregistré.
+  static const _kTrackedPlacesKey = 'snowbird.places.tracked.v1';
+  static const _kExpandedPlacesKey = 'snowbird.places.expanded.v1';
+  static const _kHomeBaseKey = 'snowbird.home.v1';
+  static const _kPlacesNoteKey = 'snowbird.flags.placesNoteShown.v1';
 
   final SharedPreferences _prefs;
 
@@ -145,7 +158,23 @@ class StorageService {
   // FR: Charger les séjours persistés. Les enregistrements fautifs sont ignorés un à
   //     un pour ne jamais masquer les bons, et le texte original est gardé pour la
   //     quarantaine.
-  List<Trip> loadTrips() => _load(_kTripsKey, 'trips', Trip.fromJson);
+  List<Trip> loadTrips() {
+    final trips = _load(_kTripsKey, 'trips', Trip.fromJson);
+    // EN: Remember whether these trips came from before places existed, for
+    //     the one-time "what is new" note (MIG-4).
+    // FR: Retenir si ces séjours datent d'avant les lieux, pour la note unique
+    //     « quoi de neuf » (MIG-4).
+    _loadedOlderTrips =
+        trips.isNotEmpty && _premigration.containsKey(_kTripsKey);
+    return trips;
+  }
+
+  bool _loadedOlderTrips = false;
+
+  // EN: True when this launch read trips written by a version before places.
+  // FR: Vrai quand ce lancement a lu des séjours écrits par une version
+  //     antérieure aux lieux.
+  bool get loadedOlderTrips => _loadedOlderTrips;
 
   // EN: Persist the full trip list, replacing what was stored. Throws
   //     StorageWriteException if the device refuses, so a failure is never silent.
@@ -340,6 +369,27 @@ class StorageService {
       _prefs.setString(_kThemeModeKey, name);
 
   bool get highContrast => _prefs.getBool(_kHighContrastKey) ?? false;
+
+  String? get trackedPlacesJson => _prefs.getString(_kTrackedPlacesKey);
+
+  Future<void> setTrackedPlacesJson(String? json) => json == null
+      ? _write(() => _prefs.remove(_kTrackedPlacesKey))
+      : _write(() => _prefs.setString(_kTrackedPlacesKey, json));
+
+  List<String> get expandedPlaces =>
+      _prefs.getStringList(_kExpandedPlacesKey) ?? const [];
+
+  Future<void> setExpandedPlaces(List<String> codes) =>
+      _prefs.setStringList(_kExpandedPlacesKey, codes);
+
+  String? get homeBaseJson => _prefs.getString(_kHomeBaseKey);
+
+  Future<void> setHomeBaseJson(String json) =>
+      _write(() => _prefs.setString(_kHomeBaseKey, json));
+
+  bool get placesNoteShown => _prefs.getBool(_kPlacesNoteKey) ?? false;
+
+  Future<void> setPlacesNoteShown() => _prefs.setBool(_kPlacesNoteKey, true);
 
   Future<void> setHighContrast(bool value) =>
       _prefs.setBool(_kHighContrastKey, value);

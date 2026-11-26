@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
@@ -39,6 +40,7 @@ Widget _wrap(
       providers: [
         Provider<StorageService>.value(value: storage),
         ChangeNotifierProvider<TripRepository>.value(value: trips),
+        ChangeNotifierProvider.value(value: PresenceSettings(storage)),
       ],
       child: MaterialApp(
         locale: locale,
@@ -110,7 +112,8 @@ void main() {
 
     await _tapText(tester, 'Save');
     expect(trips.trips.single.place, Place.parse('CA-ON'));
-    expect(find.textContaining('Ontario, Canada'), findsOneWidget);
+    expect(find.textContaining('Ontario, Canada ·'), findsOneWidget);
+    expect(find.text('Now: Ontario, Canada, 1 day'), findsOneWidget);
 
     // EN: The next new stay starts with that place: chosen once (section 18).
     // FR: Le séjour suivant commence avec ce lieu : choisi une fois
@@ -274,7 +277,7 @@ void main() {
     await tester.pumpWidget(_wrap(storage, trips));
     await tester.pumpAndSettle();
     final handle = tester.ensureSemantics();
-    expect(find.bySemanticsLabel('This calendar year: 0 days'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('^United States:')), findsNothing);
 
     await tester.tap(find.byIcon(Icons.more_vert));
     await tester.pumpAndSettle();
@@ -298,8 +301,12 @@ void main() {
     expect(find.text('Michigan, United States'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel('This calendar year: 1 day'), findsOneWidget);
-    expect(find.bySemanticsLabel('Last 365 days: 1 day'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        'United States: 1 day this calendar year, 1 day in the last 365 days',
+      ),
+      findsOneWidget,
+    );
     handle.dispose();
     expect(trips.tripCount, 1, reason: 'a visit is not a stay');
   });
