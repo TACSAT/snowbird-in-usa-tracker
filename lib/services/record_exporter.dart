@@ -30,6 +30,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
@@ -41,6 +43,17 @@ abstract final class RecordExporter {
   // EN: Base filename (no extension) used for every exported artifact.
   // FR: Nom de fichier de base (sans extension) pour chaque artefact exporté.
   static const _fileBase = 'us-presence-record';
+
+  // EN: File names follow the scope, so a file named "us-presence-record" only
+  //     ever holds the US-only record (EXP-1).
+  // FR: Les noms de fichier suivent la portée, afin qu'un fichier nommé
+  //     « us-presence-record » ne contienne jamais que la fiche des États-Unis
+  //     seuls (EXP-1).
+  static String fileBaseFor(PresenceRecord record) => record.isUnitedStates
+      ? _fileBase
+      : record.scope == null
+          ? 'presence-record'
+          : 'presence-record-${record.scope!.code.toLowerCase()}';
 
   // EN: Build the PDF document bytes. Pure formatting — takes the already-computed
   //     record plus the active locale for date/label localisation.
@@ -55,7 +68,7 @@ abstract final class RecordExporter {
     final dateFmt = DateFormat.yMMMd(localeName);
     final doc = pw.Document(
       theme: fonts.theme,
-      title: strings.recordHeading,
+      title: recordHeadingFor(record, strings),
       author: AppIdentity.maker,
     );
 
@@ -77,7 +90,7 @@ abstract final class RecordExporter {
             : pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 8),
                 child: pw.Text(
-                  fonts.printable(strings.recordHeading),
+                  fonts.printable(recordHeadingFor(record, strings)),
                   style: const pw.TextStyle(
                     fontSize: 9,
                     color: PdfColors.grey600,
@@ -146,7 +159,7 @@ abstract final class RecordExporter {
     final bytes =
         await buildPdf(record, strings: strings, localeName: localeName);
     final dir = await freshExportDir(await getTemporaryDirectory());
-    final file = File('${dir.path}/$_fileBase.pdf');
+    final file = File('${dir.path}/${fileBaseFor(record)}.pdf');
     await file.writeAsBytes(bytes, flush: true);
     await shareFiles([file], 'application/pdf', origin);
   }
@@ -167,6 +180,7 @@ abstract final class RecordExporter {
     final files = await writeImages(
       Printing.raster(bytes, dpi: 200).asyncMap((page) => page.toPng()),
       await freshExportDir(await getTemporaryDirectory()),
+      base: fileBaseFor(record),
     );
     await shareFiles(files, 'image/png', origin);
   }
@@ -182,6 +196,7 @@ abstract final class RecordExporter {
     final file = await writeText(
       buildRecordText(record, strings: strings, localeName: localeName),
       await freshExportDir(await getTemporaryDirectory()),
+      base: fileBaseFor(record),
     );
     await shareFiles([file], 'text/plain', origin);
   }
@@ -192,13 +207,29 @@ abstract final class RecordExporter {
   // FR: Partager le CSV via la feuille de partage de l'OS. Un BOM UTF-8 est ajouté
   //     en tête pour que les tableurs de bureau (notamment Excel sous Windows)
   //     lisent correctement le texte français accentué au lieu de mojibake.
+  // EN: The day-by-day ledger (EXP-5), with the same UTF-8 mark as the CSV.
+  // FR: Le registre jour par jour (EXP-5), avec la même marque UTF-8 que le
+  //     CSV.
+  static Future<void> shareLedgerCsv(
+    PresenceRecord record, {
+    required Rect origin,
+  }) async {
+    final dir = await freshExportDir(await getTemporaryDirectory());
+    final file = File('${dir.path}/${fileBaseFor(record)}-by-day.csv');
+    await file.writeAsBytes(
+      [0xEF, 0xBB, 0xBF, ...utf8.encode(record.toLedgerCsv())],
+      flush: true,
+    );
+    await shareFiles([file], 'text/csv', origin);
+  }
+
   static Future<void> shareCsv(
     PresenceRecord record, {
     required Rect origin,
   }) async {
     final bom = [0xEF, 0xBB, 0xBF];
     final dir = await freshExportDir(await getTemporaryDirectory());
-    final file = File('${dir.path}/$_fileBase.csv');
+    final file = File('${dir.path}/${fileBaseFor(record)}.csv');
     await file.writeAsBytes(
       [...bom, ...utf8.encode(record.toCsv())],
       flush: true,
@@ -227,11 +258,12 @@ abstract final class RecordExporter {
   // FR: Écrire chaque page dès son arrivée, pour n'en garder qu'une en mémoire.
   static Future<List<File>> writeImages(
     Stream<Uint8List> pages,
-    Directory dir,
-  ) async {
+    Directory dir, {
+    String base = _fileBase,
+  }) async {
     final files = <File>[];
     await for (final png in pages) {
-      final file = File('${dir.path}/$_fileBase-${files.length + 1}.png');
+      final file = File('${dir.path}/$base-${files.length + 1}.png');
       files.add(await file.writeAsBytes(png, flush: true));
     }
     if (files.isEmpty) {
@@ -244,8 +276,12 @@ abstract final class RecordExporter {
   //     Windows apps) guess another encoding and garble accents.
   // FR: UTF-8 avec marque d'ordre : sans elle, certains lecteurs (aperçus iOS, anciennes
   //     applis Windows) devinent un autre encodage et abîment les accents.
-  static Future<File> writeText(String text, Directory dir) =>
-      File('${dir.path}/$_fileBase.txt')
+  static Future<File> writeText(
+    String text,
+    Directory dir, {
+    String base = _fileBase,
+  }) =>
+      File('${dir.path}/$base.txt')
           .writeAsBytes([0xEF, 0xBB, 0xBF, ...utf8.encode(text)], flush: true);
 
   static Future<void> shareFiles(
@@ -271,7 +307,7 @@ abstract final class RecordExporter {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
-          fonts.printable(strings.recordHeading),
+          fonts.printable(recordHeadingFor(record, strings)),
           style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
         ),
         pw.SizedBox(height: 2),
@@ -319,6 +355,10 @@ abstract final class RecordExporter {
           ),
         );
 
+    pw.Widget note(String text) => pw.Text(
+          fonts.printable(text),
+          style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+        );
     return pw.Container(
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
@@ -329,19 +369,75 @@ abstract final class RecordExporter {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            fonts.printable(strings.recordSummaryTitle),
+            fonts.printable(
+              record.isUnitedStates
+                  ? strings.recordSummaryTitle
+                  : strings.recordSummaryTitleAll,
+            ),
             style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 4),
-          line(strings.windowThisYear, '${t.thisCalendarYear}'),
-          line(strings.windowLast365, '${t.rollingLast365}'),
-          line(strings.windowLastYear, '${t.priorCalendarYear}'),
-          pw.Divider(color: PdfColors.grey300),
-          line(strings.recordSptLabel, record.formattedSpt),
-          pw.Text(
-            fonts.printable(strings.recordSptFormula),
-            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
-          ),
+          if (record.isUnitedStates) ...[
+            line(strings.windowThisYear, '${t.thisCalendarYear}'),
+            line(strings.windowLast365, '${t.rollingLast365}'),
+            line(strings.windowLastYear, '${t.priorCalendarYear}'),
+          ] else
+            // EN: Each place with its own convention, and assumed, planned
+            //     and (if chosen) worked days apart (EXP-2).
+            // FR: Chaque lieu avec sa propre convention, et les jours
+            //     présumés, planifiés et (si choisis) travaillés à part
+            //     (EXP-2).
+            for (final p in record.places) ...[
+              pw.SizedBox(height: 4),
+              pw.Text(
+                fonts.printable(placeFullName(strings, p.place)),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              line(strings.windowThisYear, '${p.thisCalendarYear}'),
+              line(strings.windowLast365, '${p.rollingLast365}'),
+              line(strings.windowLastYear, '${p.priorCalendarYear}'),
+              note(
+                strings.recordCountedBy(conventionName(strings, p.convention)),
+              ),
+              if (p.assumedThisYear > 0 || p.assumedLast365 > 0)
+                note(
+                  strings.recordAssumedLine(
+                    strings.daysCount(p.assumedThisYear),
+                    strings.daysCount(p.assumedLast365),
+                  ),
+                ),
+              if (p.plannedThisYear > 0)
+                note(
+                  strings.recordPlannedLine(
+                    '${record.asOf.year}',
+                    strings.daysCount(p.plannedThisYear),
+                  ),
+                ),
+              if (record.includeWork)
+                note(
+                  strings.recordWorkedLine(
+                    strings.daysCount(p.workedThisYear),
+                    strings.daysCount(p.workedLast365),
+                  ),
+                ),
+            ],
+          if (record.showsSpt) ...[
+            pw.Divider(color: PdfColors.grey300),
+            line(strings.recordSptLabel, record.formattedSpt),
+            pw.Text(
+              fonts.printable(strings.recordSptFormula),
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
+            ),
+          ],
+          if (record.isUnitedStates)
+            note(
+              strings.recordCountedBy(
+                conventionName(strings, CountingConvention.anyPart),
+              ),
+            ),
         ],
       ),
     );
@@ -357,11 +453,30 @@ abstract final class RecordExporter {
       strings.recordColDates,
       strings.recordColDays,
       strings.recordColStatus,
+      strings.fieldPlace,
       strings.recordColDetails,
     ].map(fonts.printable).toList();
 
     final data = <List<String>>[];
-    for (final trip in record.trips) {
+    for (final entry in record.entries) {
+      final visit = entry.visit;
+      if (visit != null) {
+        data.add([
+          fonts.printable(dateFmt.format(visit.date)),
+          '1',
+          fonts.printable(
+            visit.status == TripStatus.planned
+                ? '${strings.recordVisit} (${strings.tripStatusPlanned})'
+                : strings.recordVisit,
+          ),
+          fonts.printable(placeFullName(strings, visit.place)),
+          record.includeWork && visit.worked
+              ? fonts.printable(strings.tableWorked)
+              : '',
+        ]);
+        continue;
+      }
+      final trip = entry.stay!;
       final departure = trip.departureDate;
       final dates = '${dateFmt.format(trip.arrivalDate)} – '
           '${departure == null ? strings.tripOngoing : dateFmt.format(departure)}';
@@ -375,15 +490,26 @@ abstract final class RecordExporter {
       // FR: Une rangée de tableau PDF ne peut s'étendre sur deux pages, donc de
       //     longs détails se poursuivent sur des rangées aux autres cellules vides.
       //     Rien n'est omis.
-      final chunks = _chunks(fonts.printable(_details(trip, strings)));
+      final chunks = _chunks(
+        fonts.printable(
+          [
+            _details(trip, strings),
+            if (record.includeWork)
+              strings.rangeWorked(
+                strings.daysCount(record.workedInStay(trip)),
+              ),
+          ].where((t) => t.isNotEmpty).join('\n'),
+        ),
+      );
       data.add([
         fonts.printable(dates),
         '${trip.daysPresent(record.asOf)}',
         fonts.printable(status),
+        fonts.printable(stayPlaceName(strings, trip)),
         chunks.first,
       ]);
       for (final more in chunks.skip(1)) {
-        data.add(['', '', '', more]);
+        data.add(['', '', '', '', more]);
       }
     }
 
@@ -401,7 +527,8 @@ abstract final class RecordExporter {
         0: const pw.FlexColumnWidth(3),
         1: const pw.FlexColumnWidth(1),
         2: const pw.FlexColumnWidth(1.4),
-        3: const pw.FlexColumnWidth(4),
+        3: const pw.FlexColumnWidth(2),
+        4: const pw.FlexColumnWidth(3.4),
       },
     );
   }

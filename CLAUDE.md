@@ -75,6 +75,11 @@ the app never judges, but it computes any published formula the user could do by
   frozen old engine in `test/support/`, which must never be edited).
 - `lib/logic/projection.dart` — range counts and the what-if, built on `DayCounter`.
 - `lib/logic/presence_record.dart` — the record's data + CSV (fixed English headers by design).
+  Scope: all places or one country; the default, United States, is the original US Presence
+  Record (proven against frozen copies in `test/support/legacy_presence_record.dart` and
+  `legacy_record_text.dart`). Place columns are appended at the END of the CSV; days worked only
+  when `includeWork` (never remembered, WRK-8). `toLedgerCsv()` is the day-by-day ledger.
+  `screens/export_screen.dart` chooses scope, work opt-in and shows a preview before any format.
 - `lib/state/trip_repository.dart` — ChangeNotifier state layer (via `provider`);
   refuses overlapping or future actual trips; saves before changing memory.
 - `lib/state/alert_repository.dart` + `lib/services/notification_service.dart` — alerts,

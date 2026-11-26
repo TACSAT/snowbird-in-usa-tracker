@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/screens/export_screen.dart';
 import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
 import 'package:snowbird_in_usa_tracker/screens/work_calendar_screen.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
@@ -207,6 +208,7 @@ void main() {
           const VisitsScreen(),
           const VisitEditScreen(),
           const PlacesSettingsScreen(),
+          const ExportScreen(),
           WorkCalendarScreen(
             from: DateTime(2026, 3, 2),
             to: DateTime(2026, 4, 15),
@@ -641,9 +643,19 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(_truncated(tester), isEmpty);
+      // EN: The screen is a lazy list: scroll to the last format, checking
+      //     the text on the way, so every part is laid out at this size.
+      // FR: L'écran est une liste paresseuse : défiler jusqu'au dernier
+      //     format en vérifiant le texte en chemin, afin que chaque partie
+      //     soit mise en page à cette taille.
       final last = find.byIcon(Icons.print_outlined);
-      await tester.ensureVisible(last);
+      await tester.scrollUntilVisible(
+        last,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
+      expect(_truncated(tester), isEmpty);
       expect(last.hitTestable(), findsOneWidget);
     });
   }
