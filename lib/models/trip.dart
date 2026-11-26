@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
 
 // EN: Distinguishes trips that have already happened from those the user intends
 //     to take. UI and day-counter logic treat them differently — planned trips can
@@ -63,6 +64,27 @@ class Trip {
   // FR: Détails optionnels du passage de SORTIE — même forme que [arrivalInfo].
   final CrossingInfo? departureInfo;
 
+  // EN: Where this stay was (REQUIREMENTS-places.md section 4): a country, with or
+  //     without a region. Every stay has one (PLC-1). Data written before places
+  //     existed has none and is read as the United States with no region (MIG-1),
+  //     which is exactly what every trip meant then; so the default here is the
+  //     United States too.
+  // FR: Où ce séjour a eu lieu (REQUIREMENTS-places.md, section 4) : un pays, avec
+  //     ou sans région. Chaque séjour en a un (PLC-1). Les données écrites avant
+  //     l'existence des lieux n'en ont pas et sont lues comme les États-Unis sans
+  //     région (MIG-1), ce que chaque séjour signifiait alors ; la valeur par
+  //     défaut est donc aussi les États-Unis.
+  final Place place;
+
+  // EN: Optional free-text name for a stay "Elsewhere" (PLC-5), such as
+  //     "Iceland". Kept only when [place] is Elsewhere: the four countries are
+  //     named by the app from their code, never by typed text.
+  // FR: Nom libre facultatif pour un séjour « Ailleurs » (PLC-5), par exemple
+  //     « Islande ». Conservé seulement quand [place] vaut Ailleurs : les quatre
+  //     pays sont nommés par l'application à partir de leur code, jamais par du
+  //     texte saisi.
+  final String? placeName;
+
   // EN: Direct constructor — prefer Trip.create() for new trips (it generates a
   //     UUID and strips time components). Use this constructor only when
   //     round-tripping from storage (Trip.fromJson) or in tests with fixed IDs.
@@ -79,6 +101,8 @@ class Trip {
     this.notes,
     this.arrivalInfo,
     this.departureInfo,
+    this.place = Place.unitedStates,
+    this.placeName,
   });
 
   // EN: Factory constructor for creating brand-new trips at runtime. Generates a
@@ -96,6 +120,8 @@ class Trip {
     String? notes,
     CrossingInfo? arrivalInfo,
     CrossingInfo? departureInfo,
+    Place place = Place.unitedStates,
+    String? placeName,
   }) {
     if (departureDate == null && status == TripStatus.planned) {
       throw ArgumentError('A planned trip needs a departureDate.');
@@ -119,6 +145,8 @@ class Trip {
       //     petits qu'avant l'existence de ces champs.
       arrivalInfo: (arrivalInfo?.isEmpty ?? true) ? null : arrivalInfo,
       departureInfo: (departureInfo?.isEmpty ?? true) ? null : departureInfo,
+      place: place,
+      placeName: _placeNameFor(place, placeName),
     );
   }
 
@@ -211,7 +239,10 @@ class Trip {
     Object? notes = _sentinel,
     Object? arrivalInfo = _sentinel,
     Object? departureInfo = _sentinel,
+    Place? place,
+    Object? placeName = _sentinel,
   }) {
+    final nextPlace = place ?? this.place;
     return Trip(
       id: id ?? this.id,
       arrivalDate:
@@ -230,6 +261,16 @@ class Trip {
       departureInfo: departureInfo == _sentinel
           ? this.departureInfo
           : departureInfo as CrossingInfo?,
+      place: nextPlace,
+      // EN: Re-apply the Elsewhere-only rule, so moving a stay from Elsewhere to
+      //     a named country drops a name that would no longer mean anything.
+      // FR: Réappliquer la règle « Ailleurs seulement », afin que déplacer un
+      //     séjour d'Ailleurs vers un pays nommé retire un nom qui n'aurait plus
+      //     de sens.
+      placeName: _placeNameFor(
+        nextPlace,
+        placeName == _sentinel ? this.placeName : placeName as String?,
+      ),
     );
   }
 
@@ -250,6 +291,13 @@ class Trip {
         'departureDate':
             departureDate == null ? null : _isoDate(departureDate!),
         'status': status.name,
+        // EN: Always written from schema version 3 on, so that a stay's place
+        //     never depends on a default that a later version might change.
+        // FR: Toujours écrit à partir de la version 3 du schéma, afin que le lieu
+        //     d'un séjour ne dépende jamais d'une valeur par défaut qu'une version
+        //     ultérieure pourrait changer.
+        'place': place.code,
+        if (placeName != null) 'placeName': placeName,
         if (name != null) 'name': name,
         if (notes != null) 'notes': notes,
         // EN: Only write crossing details that carry something. isNotEmpty is
@@ -338,6 +386,18 @@ class Trip {
     //     appli lisant des données plus récentes ignore les clés inconnues. Une
     //     heure de passage malformée lance quand même (entrée non fiable), pour
     //     que StorageService puisse ignorer ce seul enregistrement.
+    // EN: Migration (MIG-1): a record with no "place" key was written before
+    //     places existed, when every trip was a trip to the United States. A
+    //     present but malformed code is damage and throws, so the record is
+    //     quarantined rather than counted in the wrong country.
+    // FR: Migration (MIG-1) : un enregistrement sans clé « place » a été écrit
+    //     avant l'existence des lieux, quand chaque séjour était un séjour aux
+    //     États-Unis. Un code présent mais malformé est un dommage et lève une
+    //     exception, afin que l'enregistrement soit mis en quarantaine plutôt que
+    //     compté dans le mauvais pays.
+    final placeRaw = readText('place');
+    final place = placeRaw == null ? Place.unitedStates : Place.parse(placeRaw);
+
     CrossingInfo? parseCrossing(String key) {
       final raw = json[key];
       if (raw == null) return null;
@@ -357,6 +417,8 @@ class Trip {
       notes: _capText(readText('notes'), InputLimits.maxNotesLength),
       arrivalInfo: parseCrossing('arrivalInfo'),
       departureInfo: parseCrossing('departureInfo'),
+      place: place,
+      placeName: _placeNameFor(place, readText('placeName')),
     );
   }
 
@@ -375,7 +437,7 @@ class Trip {
   @override
   String toString() => 'Trip(id: $id, arrival: ${_isoDate(arrivalDate)}, '
       'departure: ${departureDate == null ? 'open' : _isoDate(departureDate!)}, '
-      'status: ${status.name})';
+      'status: ${status.name}, place: ${place.code})';
 
   // ---------------------------------------------------------------------------
   // Private helpers
@@ -396,6 +458,15 @@ class Trip {
   // EN: Strip the time component so all dates in the model are midnight-anchored.
   // FR: Supprimer la composante horaire pour que toutes les dates soient ancrées
   //     à minuit.
+  // EN: The Elsewhere name is trimmed and capped like every other free text, and
+  //     kept only for a stay Elsewhere (see [placeName]).
+  // FR: Le nom « Ailleurs » est épuré et plafonné comme tout autre texte libre,
+  //     et conservé seulement pour un séjour Ailleurs (voir [placeName]).
+  static String? _placeNameFor(Place place, String? raw) =>
+      place == Place.elsewhere
+          ? _capText(raw, InputLimits.maxPlaceNameLength)
+          : null;
+
   static DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 
   // EN: Inclusive calendar days, anchored in UTC so DST cannot drop a day.

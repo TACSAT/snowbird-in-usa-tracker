@@ -21,6 +21,7 @@
 //     États-Unis ce soir-là, ce jour compte).
 
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 
 // EN: The result of the IRS Substantial Presence computation, kept as EXACT
@@ -96,6 +97,21 @@ class SubstantialPresenceResult {
 //     classe maintient une surface d'API propre et facilite les alias d'import si
 //     nécessaire.
 abstract final class DayCounter {
+  // EN: Every method takes a [place] (default: the United States) and counts only
+  //     stays inside it (Place.contains: a country includes its regions). The
+  //     default keeps every existing caller, and the Substantial Presence figure,
+  //     counting exactly what they counted before places existed (MIG-1), and no
+  //     stay in Canada or Mexico can leak into a United States figure. These are
+  //     "any part of the day" counts; PresenceLedger adds "end of day" and the
+  //     multi-place table.
+  // FR: Chaque méthode prend un [place] (par défaut : les États-Unis) et ne compte
+  //     que les séjours qui s'y trouvent (Place.contains : un pays inclut ses
+  //     régions). La valeur par défaut fait que chaque appelant existant, et le
+  //     chiffre de présence substantielle, comptent exactement ce qu'ils
+  //     comptaient avant l'existence des lieux (MIG-1), et qu'aucun séjour au
+  //     Canada ou au Mexique ne peut s'ajouter à un chiffre des États-Unis. Ce
+  //     sont des comptes « toute partie du jour » ; PresenceLedger ajoute « fin de
+  //     journée » et le tableau à plusieurs lieux.
   // EN: Count UNIQUE calendar days within [windowStart, windowEnd] inclusive, across
   //     all trips whose status is in [includeStatuses]. A day covered by several
   //     trips counts once: leaving and re-entering on one date is one day of
@@ -113,6 +129,7 @@ abstract final class DayCounter {
     required DateTime windowEnd,
     DateTime? asOf,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
+    Place place = Place.unitedStates,
   }) {
     assert(
       !windowEnd.isBefore(windowStart),
@@ -120,7 +137,12 @@ abstract final class DayCounter {
     );
     final effectiveAsOf = asOf ?? DateTime.now();
     final spans = _mergedSpans(
-      trips.where((t) => includeStatuses.contains(t.status)).map(
+      trips
+          .where(
+            (t) =>
+                includeStatuses.contains(t.status) && place.contains(t.place),
+          )
+          .map(
             (t) => (
               _dayNumber(t.arrivalDate),
               _dayNumber(t.effectiveEnd(effectiveAsOf)),
@@ -144,6 +166,7 @@ abstract final class DayCounter {
     required int days,
     DateTime? today,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
+    Place place = Place.unitedStates,
   }) {
     assert(days >= 1, 'days must be at least 1.');
     final end = _dateOnly(today ?? DateTime.now());
@@ -163,6 +186,7 @@ abstract final class DayCounter {
       windowEnd: end,
       asOf: end,
       includeStatuses: includeStatuses,
+      place: place,
     );
   }
 
@@ -176,6 +200,7 @@ abstract final class DayCounter {
     required int year,
     DateTime? asOf,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
+    Place place = Place.unitedStates,
   }) {
     return countDaysInWindow(
       trips: trips,
@@ -183,6 +208,7 @@ abstract final class DayCounter {
       windowEnd: DateTime(year, 12, 31),
       asOf: asOf,
       includeStatuses: includeStatuses,
+      place: place,
     );
   }
 
@@ -211,6 +237,7 @@ abstract final class DayCounter {
     required List<Trip> trips,
     required DateTime asOf,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
+    Place place = Place.unitedStates,
   }) {
     final asOfDate = _dateOnly(asOf);
     final year = asOfDate.year;
@@ -225,18 +252,21 @@ abstract final class DayCounter {
       windowEnd: asOfDate,
       asOf: asOfDate,
       includeStatuses: includeStatuses,
+      place: place,
     );
     final prior = countDaysInCalendarYear(
       trips: trips,
       year: year - 1,
       asOf: asOfDate,
       includeStatuses: includeStatuses,
+      place: place,
     );
     final secondPrior = countDaysInCalendarYear(
       trips: trips,
       year: year - 2,
       asOf: asOfDate,
       includeStatuses: includeStatuses,
+      place: place,
     );
 
     return SubstantialPresenceResult(
@@ -303,6 +333,7 @@ abstract final class DayCounter {
       TripStatus.actual,
       TripStatus.planned,
     },
+    Place place = Place.unitedStates,
   }) {
     if (thresholdDays < InputLimits.minThresholdDays ||
         thresholdDays > InputLimits.maxThresholdDays) {
@@ -340,7 +371,11 @@ abstract final class DayCounter {
     final start = _dayNumber(from);
     final ceiling = start + InputLimits.maxReachSearchDays;
     final spans = _mergedSpans(
-      trips.where((t) => includeStatuses.contains(t.status)).map((t) {
+      trips
+          .where(
+        (t) => includeStatuses.contains(t.status) && place.contains(t.place),
+      )
+          .map((t) {
         final departure = t.departureDate;
         return (
           _dayNumber(t.arrivalDate),
@@ -396,10 +431,12 @@ abstract final class DayCounter {
   static DateTime? lastDeparture({
     required List<Trip> trips,
     Set<TripStatus> includeStatuses = const {TripStatus.actual},
+    Place place = Place.unitedStates,
   }) {
     DateTime? last;
     for (final trip in trips) {
       if (!includeStatuses.contains(trip.status)) continue;
+      if (!place.contains(trip.place)) continue;
       final departure = trip.departureDate;
       if (departure == null) return null;
       if (last == null || departure.isAfter(last)) last = departure;

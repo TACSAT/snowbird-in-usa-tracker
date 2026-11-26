@@ -131,6 +131,11 @@ abstract final class InputLimits {
   //     d'ergonomie), jamais un motif de rejet d'un import entier — même
   //     politique que l'étiquette d'alerte (voir kMaxAlertLabelLength).
   static const int maxTripNameLength = 80;
+  // EN: The optional name of a country "Elsewhere" (PLC-5): long enough for any
+  //     country's name, short enough to fit a table row.
+  // FR: Le nom facultatif d'un pays « Ailleurs » (PLC-5) : assez long pour le nom
+  //     de n'importe quel pays, assez court pour tenir dans une ligne de tableau.
+  static const int maxPlaceNameLength = 80;
   static const int maxLocationLength = 120;
   static const int maxMeansOfTravelLength = 60;
   static const int maxCarrierLength = 120;

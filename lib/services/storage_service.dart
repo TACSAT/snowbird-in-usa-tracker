@@ -52,7 +52,20 @@ class StorageService {
   //     lirait mal les nouvelles données, et convertir dans _records(). Version et
   //     données partagent une seule valeur pour ne jamais diverger après une
   //     écriture interrompue (FR-13).
-  static const schemaVersion = 2;
+  //
+  // EN: 3 = every stay carries a "place" code (REQUIREMENTS-places.md MIG-2). A v2
+  //     stay has none and is read as the United States with no region (MIG-1, in
+  //     Trip.fromJson), so v2 data loads unchanged. An older build cannot count v3
+  //     data correctly (it would add a Canadian stay to United States days), and
+  //     it refuses anything newer than it knows; release notes must say so.
+  // FR: 3 = chaque séjour porte un code « place » (REQUIREMENTS-places.md MIG-2).
+  //     Un séjour v2 n'en a pas et est lu comme les États-Unis sans région (MIG-1,
+  //     dans Trip.fromJson) ; les données v2 se chargent donc inchangées. Une
+  //     version plus ancienne ne peut pas compter correctement des données v3
+  //     (elle ajouterait un séjour au Canada aux jours aux États-Unis), et elle
+  //     refuse tout ce qui est plus récent qu'elle ; les notes de version doivent
+  //     le dire.
+  static const schemaVersion = 3;
 
   // EN: The key names keep their "v1" suffix although the content is versioned now:
   //     renaming would split the history across two keys.
@@ -106,6 +119,19 @@ class StorageService {
   final Map<String, String> _toQuarantine = {};
   final Set<String> _readOnly = {};
 
+  // EN: Keys loaded from an OLDER schema version, with their original text. The
+  //     original is kept aside under "<key>.premigration" while the first save in
+  //     the new version is written, and removed only once that save has succeeded
+  //     (MIG-3): an interrupted first save can never leave the user with neither
+  //     the old data nor the new.
+  // FR: Clés chargées depuis une version PLUS ANCIENNE du schéma, avec leur texte
+  //     d'origine. L'original est mis de côté sous « <clé>.premigration » pendant
+  //     l'écriture du premier enregistrement dans la nouvelle version, et retiré
+  //     seulement une fois cet enregistrement réussi (MIG-3) : un premier
+  //     enregistrement interrompu ne peut jamais laisser l'utilisateur sans les
+  //     anciennes données ni les nouvelles.
+  final Map<String, String> _premigration = {};
+
   StorageLoadProblem get loadProblem => _loadProblem;
 
   // EN: Load the persisted trips. Bad records are skipped one by one so they never
@@ -146,7 +172,7 @@ class StorageService {
     final List<dynamic> records;
     try {
       if (stored is! String) throw const FormatException('Not a string.');
-      final found = _records(jsonDecode(raw), field);
+      final found = _records(jsonDecode(raw), field, key, raw);
       if (found == null) {
         _readOnly.add(key);
         _loadProblem = StorageLoadProblem.newerVersion;
@@ -182,12 +208,22 @@ class StorageService {
   //     this app understands".
   // FR: Extraire la liste d'enregistrements de toute version prise en charge ; null
   //     signifie « plus récent que ce que cette appli comprend ».
-  List<dynamic>? _records(Object? decoded, String field) {
-    if (decoded is List) return decoded;
+  List<dynamic>? _records(
+    Object? decoded,
+    String field,
+    String key,
+    String raw,
+  ) {
+    if (decoded is List) {
+      _premigration[key] = raw;
+      return decoded;
+    }
     if (decoded is! Map) throw const FormatException('Unknown storage shape.');
     final version = decoded['schemaVersion'];
     if (version is! int) throw const FormatException('Missing schemaVersion.');
     if (version > schemaVersion) return null;
+    if (version < schemaVersion) _premigration[key] = raw;
+
     final records = decoded[field];
     if (records is! List) throw FormatException('Missing "$field" list.');
     return records;
@@ -222,7 +258,23 @@ class StorageService {
 
     final encoded =
         jsonEncode({'schemaVersion': schemaVersion, field: records});
+    final original = _premigration[key];
+    final premigrationKey = '$key.premigration';
+    if (original != null) {
+      await _write(() => _prefs.setString(premigrationKey, original));
+    }
     await _write(() => _prefs.setString(key, encoded));
+    if (original != null) {
+      _premigration.remove(key);
+      // EN: The new data is safely written; a failure to tidy up the copy only
+      //     leaves a harmless extra key, so it must not fail the save.
+      // FR: Les nouvelles données sont écrites en sécurité ; un échec du ménage de
+      //     la copie ne laisse qu'une clé de trop, sans danger : il ne doit pas
+      //     faire échouer l'enregistrement.
+      try {
+        await _prefs.remove(premigrationKey);
+      } catch (_) {}
+    }
   }
 
   // EN: Platform code reports failure by returning false or by throwing; both

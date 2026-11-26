@@ -61,9 +61,18 @@ the app never judges, but it computes any published formula the user could do by
 ## Architecture
 
 - `lib/main.dart` / `lib/app.dart` — entry + MaterialApp (localization wiring).
-- `lib/models/trip.dart` — Trip model (actual vs planned).
+- `lib/models/trip.dart` — Trip model (actual vs planned); a Trip is a "stay" in
+  `REQUIREMENTS-places.md` and carries a `Place` (default United States).
+- `lib/models/place.dart` — ISO 3166 place codes and the shipped catalogue (no names;
+  names go in the ARB files). `day_visit.dart`, `home_base.dart` — engine inputs.
 - `lib/logic/day_counter.dart` — day-count math (the correctness-critical core;
-  it has the test suite: `test/logic/day_counter_test.dart`).
+  it has the test suite: `test/logic/day_counter_test.dart`). Every method takes a
+  `place`, default United States, so US figures and the SPT never include other places.
+- `lib/logic/presence_ledger.dart` — the days-by-place engine: a day-by-day ledger
+  under "any part of the day" or "end of day", with regions, day visits, home base
+  and unrecorded days. Tests: `test/logic/presence_ledger_test.dart` (worked examples,
+  random-history invariants) and `test/logic/migration_test.dart` (v2 → v3 against the
+  frozen old engine in `test/support/`, which must never be edited).
 - `lib/logic/projection.dart` — range counts and the what-if, built on `DayCounter`.
 - `lib/logic/presence_record.dart` — the record's data + CSV (fixed English headers by design).
 - `lib/state/trip_repository.dart` — ChangeNotifier state layer (via `provider`);

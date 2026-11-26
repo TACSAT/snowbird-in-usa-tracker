@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Version 3. **Approved by the owner 2026-11-25 (decisions in section 17). Not built yet.** |
+| **Status** | Version 3. **Approved by the owner 2026-11-25 (decisions in section 17).** Step 0 reported done by the owner 2026-11-26. Step 1 (model, migration, engine) built on branch `places-engine`, 2026-11-26. |
 | **Date** | 2026-11-25 |
 | **Changes** | The app counts days in *any place the user tracks*, not only the United States |
 | **Maker** | teagarden.net |
@@ -127,6 +127,9 @@ Without it, a resident would have to log every day at home.
   into an export without saying so.
 - **HOM-3 (Must)** Off by default. Not a statement of legal residence, and worded so.
 - **HOM-4 (Must)** Without it, unrecorded days show as "not recorded".
+- **HOM-5 (Must)** By "any part of the day", the day a stay starts after an unrecorded day
+  and the day it ends before one also count as assumed days at home: the user was home for
+  part of them. Not when that date is already recorded in the home place. (Owner, 2026-11-26.)
 
 ## 7. Work (optional)
 
@@ -372,6 +375,7 @@ app lock if not already done.
 | 11 | Work tracking as in section 7? | Yes |
 | 12 | Talk to users before building (MKT-1)? | Yes; it is the cheapest protection |
 | 13 | App lock in the first release? | Yes **if simple**; otherwise soon after |
+| 14 | With a home base, do crossing days count as home too? (2026-11-26) | Yes, by "any part of the day" (HOM-5) |
 
 ## 18. Acceptance
 
