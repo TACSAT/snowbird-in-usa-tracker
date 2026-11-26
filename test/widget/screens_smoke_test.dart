@@ -76,8 +76,21 @@ void main() {
   testWidgets('Reference page renders its intro and items', (tester) async {
     await tester.pumpWidget(_host(home: const ReferenceScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('US Substantial Presence Test'), findsOneWidget);
     expect(find.textContaining('not advice'), findsWidgets);
+    // EN: Every country section is reachable, down to the last one.
+    // FR: Chaque section de pays est accessible, jusqu'à la dernière.
+    for (final title in [
+      'How the app counts',
+      'US Substantial Presence Test',
+      'US territories',
+      'Deemed residence in Canada',
+      'Days in Mexico',
+      'Outside the Schengen area',
+    ]) {
+      await tester.scrollUntilVisible(find.text(title), 200);
+      expect(find.text(title), findsOneWidget);
+    }
+    expect(find.textContaining('Checked November 25, 2026'), findsWidgets);
   });
 
   testWidgets('About renders version and the external-link buttons',

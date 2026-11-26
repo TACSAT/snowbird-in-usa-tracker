@@ -319,7 +319,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuAbout => 'About';
 
   @override
-  String get menuReference => 'Common day-count rules';
+  String get menuReference => 'Background by place';
 
   @override
   String get settingsTitle => 'Settings';
@@ -371,11 +371,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkError => 'Could not open the link.';
 
   @override
-  String get referenceTitle => 'Common day-count rules';
+  String get referenceTitle => 'Background by place';
 
   @override
   String referenceIntro(String appName) {
-    return 'These are numbers people commonly track. $appName sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.';
+    return 'Neutral background for each place the app counts. $appName sets no limit for you: you enter your own in Alerts. This page is not advice: verify your own situation with a qualified professional.';
   }
 
   @override
@@ -1269,4 +1269,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportAsLedger => 'Day-by-day ledger (CSV)';
+
+  @override
+  String get referenceHowTitle => 'How the app counts';
+
+  @override
+  String referenceHowBody(String appName) {
+    return 'Each stay is in one place: a country, with a province, territory or state if you wish. By default a date counts in a place if you were there at any part of it, so a day you cross a border counts in both places. You can choose end of day instead for any place. Days with no stay are shown as not recorded, or as assumed at home if you set a home base. $appName applies no exclusion (transit, commuting, medical care or any other): those depend on circumstances it does not know.';
+  }
+
+  @override
+  String referenceSptExclusions(String appName) {
+    return 'The published test leaves out some days, for example for some regular commuters from Canada or Mexico. $appName does not apply these exclusions: the figure counts every recorded day.';
+  }
+
+  @override
+  String get referenceTerritoriesTitle => 'US territories';
+
+  @override
+  String get referenceTerritoriesBody =>
+      'Puerto Rico, the U.S. Virgin Islands, Guam, American Samoa and the Northern Mariana Islands are recorded as places of their own. They are not part of the United States count: the Substantial Presence Test does not include them.';
+
+  @override
+  String get referenceCanadaTaxTitle => 'Deemed residence in Canada';
+
+  @override
+  String get referenceCanadaTaxBody =>
+      'For deemed residence, the Canada Revenue Agency counts each day or part of a day spent in Canada, which is how the app counts by default. Other Canadian rules may count differently.';
+
+  @override
+  String get referenceMexicoTitle => 'Days in Mexico';
+
+  @override
+  String referenceMexicoBody(String appName) {
+    return 'Rules for visitors, workers and residents in Mexico are set by Mexican authorities. $appName can count days by state if you record them; check the current rules that apply to you.';
+  }
+
+  @override
+  String get referenceSpmTitle => 'Outside the Schengen area';
+
+  @override
+  String referenceSpmBody(String appName) {
+    return 'Saint-Pierre-et-Miquelon is part of France but outside the Schengen area, with its own entry rules. $appName counts its days on their own, never as days in metropolitan France, which is recorded as Elsewhere for now.';
+  }
+
+  @override
+  String referenceSource(String source, String date) {
+    return 'Source: $source. Checked $date.';
+  }
+
+  @override
+  String get referenceSourceIrs => 'IRS, \"Substantial Presence Test\"';
+
+  @override
+  String get referenceSourceCra =>
+      'Canada Revenue Agency, \"Deemed residents of Canada\"';
+
+  @override
+  String get referenceSourceTravel =>
+      'Government of Canada, \"Travel advice: Saint-Pierre-et-Miquelon\"';
+
+  @override
+  String get referenceGeneralTitle => 'All places';
 }
