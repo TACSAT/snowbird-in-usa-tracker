@@ -25,6 +25,9 @@ import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/move_flow.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
+import 'package:snowbird_in_usa_tracker/screens/visits_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
@@ -39,7 +42,7 @@ enum _ExportChoice { pdf, text, image, csv, print }
 
 // EN: Overflow-menu destinations (FR-14/15/20).
 // FR: Destinations du menu de débordement (FR-14/15/20).
-enum _Menu { explore, reference, settings, about }
+enum _Menu { explore, visits, reference, settings, about }
 
 class TripListScreen extends StatefulWidget {
   const TripListScreen({super.key});
@@ -143,7 +146,13 @@ class _TripListScreenState extends State<TripListScreen> {
       return;
     }
 
-    final record = PresenceRecord.build(trips: trips);
+    // EN: The record's figures include day visits, as one-day stays, so they
+    //     match the summary on screen.
+    // FR: Les chiffres du relevé incluent les visites d'un jour, comme séjours
+    //     d'un jour, afin de concorder avec le résumé à l'écran.
+    final record = PresenceRecord.build(
+      trips: context.read<TripRepository>().countedStays,
+    );
 
     final choice = await showModalBottomSheet<_ExportChoice>(
       context: context,
@@ -234,6 +243,7 @@ class _TripListScreenState extends State<TripListScreen> {
   void _onMenu(BuildContext context, _Menu item) {
     final Widget screen = switch (item) {
       _Menu.explore => const ExploreScreen(),
+      _Menu.visits => const VisitsScreen(),
       _Menu.reference => const ReferenceScreen(),
       _Menu.settings => const SettingsScreen(),
       _Menu.about => const AboutScreen(),
@@ -267,7 +277,17 @@ class _TripListScreenState extends State<TripListScreen> {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    final trips = context.watch<TripRepository>().trips;
+    final repo = context.watch<TripRepository>();
+    final trips = repo.trips;
+    final counted = repo.countedStays;
+    // EN: The ongoing actual stay, if any: it offers "I have moved..." right on
+    //     the main screen, the quickest path for a move (STY-3).
+    // FR: Le séjour réel en cours, s'il y en a un : il offre « J'ai changé de
+    //     lieu... » directement sur l'écran principal, le chemin le plus rapide
+    //     pour un changement (STY-3).
+    final ongoing = trips
+        .where((t) => t.status == TripStatus.actual && t.departureDate == null)
+        .firstOrNull;
 
     return Scaffold(
       appBar: AppBar(
@@ -293,6 +313,10 @@ class _TripListScreenState extends State<TripListScreen> {
               PopupMenuItem(
                 value: _Menu.explore,
                 child: Text(strings.exploreTitle),
+              ),
+              PopupMenuItem(
+                value: _Menu.visits,
+                child: Text(strings.visitsTitle),
               ),
               PopupMenuItem(
                 value: _Menu.reference,
@@ -332,7 +356,16 @@ class _TripListScreenState extends State<TripListScreen> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _SummaryCard(trips: trips),
+                        _SummaryCard(trips: counted),
+                        if (ongoing != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                            child: FilledButton.tonalIcon(
+                              icon: const Icon(Icons.moving),
+                              label: Text(strings.movedOn),
+                              onPressed: () => startMove(context, ongoing),
+                            ),
+                          ),
                         const Divider(height: 1),
                       ],
                     )
@@ -550,8 +583,14 @@ class _TripTile extends StatelessWidget {
     // FR: Un séjour sans nom a déjà ses dates pour titre ; ne pas les répéter.
     final hasName = trip.name?.isNotEmpty ?? false;
     final daysText = isCurrent ? strings.tripDaysSoFar(days) : days;
-    final subtitle =
+    final rest =
         hasName ? strings.tripSubtitle(arrival, departure, daysText) : daysText;
+    // EN: Every stay shows its place (EXP-3 on screen too); the full name, so
+    //     "Georgia" is never ambiguous.
+    // FR: Chaque séjour montre son lieu (EXP-3 à l'écran aussi) ; le nom
+    //     complet, afin que « Géorgie » ne soit jamais ambigu.
+    final subtitle =
+        strings.tripPlaceSubtitle(stayPlaceName(strings, trip), rest);
     final chip = Chip(
       label: Text(
         isPlanned

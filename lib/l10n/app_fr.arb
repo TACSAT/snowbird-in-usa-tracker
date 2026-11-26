@@ -374,7 +374,7 @@
     }
   },
 
-  "tripStillInUs": "Je suis encore aux É.-U.",
+  "tripStillInUs": "J'y suis encore",
 
   "tripStillInUsHelper": "Laissez activé jusqu'à ce que votre date de départ soit connue. Les jours comptent jusqu'à aujourd'hui.",
 
@@ -568,5 +568,40 @@
     }
   },
 
-  "aboutPrivacyPolicy": "Politique de confidentialité"
+  "aboutPrivacyPolicy": "Politique de confidentialité",
+
+  "placeName": "{code, select, CA{Canada} US{États-Unis} MX{Mexique} PM{Saint-Pierre-et-Miquelon} PR{Porto Rico} VI{Îles Vierges des États-Unis} GU{Guam} AS{Samoa américaines} MP{Îles Mariannes du Nord} ZZ{Ailleurs} CA_AB{Alberta} CA_BC{Colombie-Britannique} CA_MB{Manitoba} CA_NB{Nouveau-Brunswick} CA_NL{Terre-Neuve-et-Labrador} CA_NS{Nouvelle-Écosse} CA_NT{Territoires du Nord-Ouest} CA_NU{Nunavut} CA_ON{Ontario} CA_PE{Île-du-Prince-Édouard} CA_QC{Québec} CA_SK{Saskatchewan} CA_YT{Yukon} US_AL{Alabama} US_AK{Alaska} US_AZ{Arizona} US_AR{Arkansas} US_CA{Californie} US_CO{Colorado} US_CT{Connecticut} US_DE{Delaware} US_DC{District de Columbia} US_FL{Floride} US_GA{Géorgie} US_HI{Hawaï} US_ID{Idaho} US_IL{Illinois} US_IN{Indiana} US_IA{Iowa} US_KS{Kansas} US_KY{Kentucky} US_LA{Louisiane} US_ME{Maine} US_MD{Maryland} US_MA{Massachusetts} US_MI{Michigan} US_MN{Minnesota} US_MS{Mississippi} US_MO{Missouri} US_MT{Montana} US_NE{Nebraska} US_NV{Nevada} US_NH{New Hampshire} US_NJ{New Jersey} US_NM{Nouveau-Mexique} US_NY{New York} US_NC{Caroline du Nord} US_ND{Dakota du Nord} US_OH{Ohio} US_OK{Oklahoma} US_OR{Oregon} US_PA{Pennsylvanie} US_RI{Rhode Island} US_SC{Caroline du Sud} US_SD{Dakota du Sud} US_TN{Tennessee} US_TX{Texas} US_UT{Utah} US_VT{Vermont} US_VA{Virginie} US_WA{Washington} US_WV{Virginie-Occidentale} US_WI{Wisconsin} US_WY{Wyoming} MX_AGU{Aguascalientes} MX_BCN{Basse-Californie} MX_BCS{Basse-Californie-du-Sud} MX_CAM{Campeche} MX_CHH{Chihuahua} MX_CHP{Chiapas} MX_CMX{Mexico (ville)} MX_COA{Coahuila} MX_COL{Colima} MX_DUR{Durango} MX_GRO{Guerrero} MX_GUA{Guanajuato} MX_HID{Hidalgo} MX_JAL{Jalisco} MX_MEX{État de Mexico} MX_MIC{Michoacán} MX_MOR{Morelos} MX_NAY{Nayarit} MX_NLE{Nuevo León} MX_OAX{Oaxaca} MX_PUE{Puebla} MX_QUE{Querétaro} MX_ROO{Quintana Roo} MX_SIN{Sinaloa} MX_SLP{San Luis Potosí} MX_SON{Sonora} MX_TAB{Tabasco} MX_TAM{Tamaulipas} MX_TLA{Tlaxcala} MX_VER{Veracruz} MX_YUC{Yucatán} MX_ZAC{Zacatecas} other{{code}}}",
+  "placeInCountry": "{region}, {country}",
+  "placeElsewhereNamed": "Ailleurs ({name})",
+  "placeWholeCountry": "{country}, région non précisée",
+  "fieldPlace": "Lieu",
+  "errorPlaceRequired": "Choisissez un lieu.",
+  "fieldElsewhereName": "Nom du pays (facultatif)",
+  "placePickerTitle": "Choisir un lieu",
+  "placeSearchHint": "Rechercher par nom",
+  "placeRecent": "Récents",
+  "placeCountries": "Pays",
+  "placeNoMatch": "Aucun lieu ne correspond à ce nom.",
+  "placeChooseRegion": "Province, territoire ou État",
+  "tripPlaceSubtitle": "{place} · {rest}",
+  "addNextStop": "Ajouter l'étape suivante",
+  "movedOn": "J'ai changé de lieu…",
+  "moveConfirmTitle": "Nouveau lieu : {place}",
+  "moveDateLabel": "Date du changement",
+  "moveExplain": "Le séjour actuel ({from}) se termine à cette date, et un nouveau séjour ({to}) commence le même jour. Ce jour compte dans les deux lieux.",
+  "errorMoveBeforeArrival": "Le changement ne peut pas précéder le début du séjour actuel.",
+  "splitStay": "Diviser en deux lieux",
+  "splitTitle": "Diviser ce séjour",
+  "splitDateLabel": "Second lieu à partir du",
+  "splitBeforeLabel": "Lieu avant cette date",
+  "splitAfterLabel": "Lieu à partir de cette date",
+  "splitExplain": "Les deux parties restent dans le pays ({country}) ; son total ne change donc pas. La date choisie termine la première partie et commence la seconde ; elle compte donc dans les deux lieux.",
+  "errorSplitDate": "Choisissez une date comprise dans le séjour.",
+  "visitsTitle": "Visites d'un jour",
+  "visitsExplain": "Une visite d'un jour est une partie de journée passée dans un autre lieu, sans y déménager : travail, courses ou rendez-vous. Elle compte comme un jour de présence dans ce lieu, sans séjour aller ni séjour retour.",
+  "visitsEmpty": "Aucune visite d'un jour enregistrée.",
+  "addVisit": "Ajouter une visite d'un jour",
+  "deleteVisit": "Supprimer la visite d'un jour",
+  "fieldVisitDate": "Date de la visite",
+  "errorTooManyVisits": "Vous avez atteint la limite de {max} visites d'un jour."
 }

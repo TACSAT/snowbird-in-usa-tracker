@@ -22,6 +22,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
+import 'package:snowbird_in_usa_tracker/models/day_visit.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 
 // EN: What went wrong, if anything, while loading. Surfaced to the user because
@@ -77,6 +78,11 @@ class StorageService {
   // FR: Clé de la liste des alertes définies par l'utilisateur — même
   //     convention de versionnage.
   static const _kAlertsKey = 'snowbird.alerts.v1';
+  // EN: Day visits (WRK-5) live under their own key, so an older build that
+  //     knows nothing of them leaves them untouched instead of dropping them.
+  // FR: Les visites d'un jour (WRK-5) ont leur propre clé, afin qu'une version
+  //     plus ancienne qui les ignore les laisse intactes au lieu de les perdre.
+  static const _kVisitsKey = 'snowbird.visits.v1';
 
   // EN: One-shot onboarding flags. The disclaimer (FR-14) and the single
   //     backup reminder (FR-11) must each be shown exactly once; these booleans
@@ -155,6 +161,12 @@ class StorageService {
 
   Future<void> saveAlerts(List<DayAlert> alerts) =>
       _save(_kAlertsKey, 'alerts', alerts.map((a) => a.toJson()).toList());
+
+  List<DayVisit> loadVisits() =>
+      _load(_kVisitsKey, 'visits', DayVisit.fromJson);
+
+  Future<void> saveVisits(List<DayVisit> visits) =>
+      _save(_kVisitsKey, 'visits', visits.map((v) => v.toJson()).toList());
 
   List<T> _load<T>(
     String key,

@@ -243,7 +243,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('I am still in the US'));
+    await tester.tap(find.text('I am still here'));
     await tester.pumpAndSettle();
     expect(find.text('Departure date'), findsNothing);
     await tester.scrollUntilVisible(
@@ -274,7 +274,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byType(ListTile).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('I am still in the US'));
+    await tester.tap(find.text('I am still here'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Departure date'));
     await tester.pumpAndSettle();

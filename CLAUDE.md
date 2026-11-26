@@ -83,7 +83,12 @@ the app never judges, but it computes any published formula the user could do by
   (`shared_preferences`). Stored data carries `schemaVersion`; unreadable data is copied
   to a `.quarantine` key before anything overwrites it. Raise the version on any change
   an older app would misread.
-- `lib/screens/` — UI screens.
+- `lib/screens/` — UI screens. Places: `place_picker_screen.dart` (recent first, search,
+  regions), `place_names.dart` (names come from the `placeName` ARB select, keyed by code
+  with `-` → `_`), `move_flow.dart` ("I have moved…"), `split_stay_screen.dart`,
+  `visits_screen.dart` (day visits, stored under `snowbird.visits.v1`).
+- Counting reads `TripRepository.countedStays` (stays plus each day visit as a one-day
+  stay); lists and editors read `trips` / `visits`.
 - Localization: `l10n.yaml` + `lib/l10n/*.arb` → generated `AppLocalizations`
   (`flutter: generate: true`).
 

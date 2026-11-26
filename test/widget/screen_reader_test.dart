@@ -16,6 +16,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_picker_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/split_stay_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/visits_screen.dart';
 import 'package:snowbird_in_usa_tracker/app.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
@@ -303,6 +307,10 @@ void main() {
           const SettingsScreen(),
           const ReferenceScreen(),
           const AboutScreen(),
+          PlacePickerScreen(recent: [Place.parse('CA-ON'), Place.mexico]),
+          SplitStayScreen(stay: openTrip),
+          const VisitsScreen(),
+          const VisitEditScreen(),
         ]) {
           await _open(tester, screen);
           final sections = find.byType(ExpansionTile);

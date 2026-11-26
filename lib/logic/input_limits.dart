@@ -99,6 +99,11 @@ abstract final class InputLimits {
   //     atteindra un jour.
   static const int maxTrips = 2000;
 
+  // EN: The same safety ceiling for day visits (WRK-5), stored apart from stays.
+  // FR: Le même plafond de sécurité pour les visites d'un jour (WRK-5),
+  //     enregistrées à part des séjours.
+  static const int maxVisits = 2000;
+
   // EN: Years offered by the date pickers: any living memory of a trip, and plans a
   //     decade ahead.
   // FR: Années offertes par les sélecteurs : tout souvenir de séjour, et des projets
