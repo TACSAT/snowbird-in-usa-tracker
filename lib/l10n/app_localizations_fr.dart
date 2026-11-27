@@ -323,7 +323,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get menuAbout => 'À propos';
 
   @override
-  String get menuReference => 'Règles courantes de comptage';
+  String get menuReference => 'Repères par lieu';
 
   @override
   String get settingsTitle => 'Réglages';
@@ -375,11 +375,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get linkError => 'Impossible d\'ouvrir le lien.';
 
   @override
-  String get referenceTitle => 'Règles courantes de comptage';
+  String get referenceTitle => 'Repères par lieu';
 
   @override
   String referenceIntro(String appName) {
-    return 'Voici des nombres que les gens suivent souvent. $appName n\'en fixe aucun pour vous — vous saisissez les vôtres dans les Alertes. Cette page est une information générale, pas un conseil : vérifiez votre propre situation auprès d\'un professionnel qualifié.';
+    return 'Des repères neutres pour chaque lieu que compte l\'application. $appName ne fixe aucune limite pour vous : vous saisissez les vôtres dans les Alertes. Cette page n\'est pas un conseil : vérifiez votre propre situation auprès d\'un professionnel qualifié.';
   }
 
   @override
@@ -1280,4 +1280,67 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get exportAsLedger => 'Registre jour par jour (CSV)';
+
+  @override
+  String get referenceHowTitle => 'Comment l\'application compte';
+
+  @override
+  String referenceHowBody(String appName) {
+    return 'Chaque séjour a lieu dans un seul lieu : un pays, avec une province, un territoire ou un État si vous le souhaitez. Par défaut, une date compte dans un lieu si vous y étiez à un moment quelconque ; un jour de passage de frontière compte donc dans les deux lieux. Vous pouvez plutôt choisir la fin de la journée pour n\'importe quel lieu. Les jours sans séjour apparaissent comme non enregistrés, ou comme présumés au domicile si vous avez défini un domicile. $appName n\'applique aucune exclusion (transit, navette, soins médicaux ni aucune autre) : elles dépendent de circonstances que l\'application ne connaît pas.';
+  }
+
+  @override
+  String referenceSptExclusions(String appName) {
+    return 'Le critère publié exclut certains jours, par exemple pour certains navetteurs réguliers venant du Canada ou du Mexique. $appName n\'applique pas ces exclusions : le chiffre compte chaque jour enregistré.';
+  }
+
+  @override
+  String get referenceTerritoriesTitle => 'Territoires des États-Unis';
+
+  @override
+  String get referenceTerritoriesBody =>
+      'Porto Rico, les Îles Vierges des États-Unis, Guam, les Samoa américaines et les Îles Mariannes du Nord sont enregistrés comme des lieux distincts. Ils ne font pas partie du total des États-Unis : le critère de présence substantielle ne les inclut pas.';
+
+  @override
+  String get referenceCanadaTaxTitle => 'Résidence réputée au Canada';
+
+  @override
+  String get referenceCanadaTaxBody =>
+      'Pour la résidence réputée, l\'Agence du revenu du Canada compte chaque jour ou partie de jour passé au Canada, ce qui correspond à la façon de compter par défaut de l\'application. D\'autres règles canadiennes peuvent compter autrement.';
+
+  @override
+  String get referenceMexicoTitle => 'Jours au Mexique';
+
+  @override
+  String referenceMexicoBody(String appName) {
+    return 'Les règles qui visent les visiteurs, les travailleurs et les résidents au Mexique sont fixées par les autorités mexicaines. $appName peut compter les jours par État si vous les notez ; vérifiez les règles en vigueur qui s\'appliquent à vous.';
+  }
+
+  @override
+  String get referenceSpmTitle => 'Hors de l\'espace Schengen';
+
+  @override
+  String referenceSpmBody(String appName) {
+    return 'Saint-Pierre-et-Miquelon fait partie de la France mais se trouve hors de l\'espace Schengen, avec ses propres règles d\'entrée. $appName compte ses jours à part, jamais comme des jours en France métropolitaine, qui est notée pour l\'instant comme Ailleurs.';
+  }
+
+  @override
+  String referenceSource(String source, String date) {
+    return 'Source : $source. Vérifiée le $date.';
+  }
+
+  @override
+  String get referenceSourceIrs =>
+      'IRS, « Substantial Presence Test » (en anglais)';
+
+  @override
+  String get referenceSourceCra =>
+      'Agence du revenu du Canada, « Résidents réputés du Canada »';
+
+  @override
+  String get referenceSourceTravel =>
+      'Gouvernement du Canada, « Conseils aux voyageurs : Saint-Pierre-et-Miquelon »';
+
+  @override
+  String get referenceGeneralTitle => 'Tous les lieux';
 }

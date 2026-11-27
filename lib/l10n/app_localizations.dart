@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// Overflow menu item opening the neutral reference page.
   ///
   /// In en, this message translates to:
-  /// **'Common day-count rules'**
+  /// **'Background by place'**
   String get menuReference;
 
   /// Settings screen title.
@@ -725,13 +725,13 @@ abstract class AppLocalizations {
   /// Reference screen title (FR-15).
   ///
   /// In en, this message translates to:
-  /// **'Common day-count rules'**
+  /// **'Background by place'**
   String get referenceTitle;
 
   /// Reference screen intro; restates the no-defaults, not-advice stance.
   ///
   /// In en, this message translates to:
-  /// **'These are numbers people commonly track. {appName} sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.'**
+  /// **'Neutral background for each place the app counts. {appName} sets no limit for you: you enter your own in Alerts. This page is not advice: verify your own situation with a qualified professional.'**
   String referenceIntro(String appName);
 
   /// Reference item heading: IRS SPT.
@@ -1921,6 +1921,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Day-by-day ledger (CSV)'**
   String get exportAsLedger;
+
+  /// Reference section on the counting rules (CNT-1, CNT-8).
+  ///
+  /// In en, this message translates to:
+  /// **'How the app counts'**
+  String get referenceHowTitle;
+
+  /// Body of the counting section.
+  ///
+  /// In en, this message translates to:
+  /// **'Each stay is in one place: a country, with a province, territory or state if you wish. By default a date counts in a place if you were there at any part of it, so a day you cross a border counts in both places. You can choose end of day instead for any place. Days with no stay are shown as not recorded, or as assumed at home if you set a home base. {appName} applies no exclusion (transit, commuting, medical care or any other): those depend on circumstances it does not know.'**
+  String referenceHowBody(String appName);
+
+  /// Second paragraph of the SPT item (CNT-8).
+  ///
+  /// In en, this message translates to:
+  /// **'The published test leaves out some days, for example for some regular commuters from Canada or Mexico. {appName} does not apply these exclusions: the figure counts every recorded day.'**
+  String referenceSptExclusions(String appName);
+
+  /// Reference item on US territories (PLC-3).
+  ///
+  /// In en, this message translates to:
+  /// **'US territories'**
+  String get referenceTerritoriesTitle;
+
+  /// Body of the US territories item.
+  ///
+  /// In en, this message translates to:
+  /// **'Puerto Rico, the U.S. Virgin Islands, Guam, American Samoa and the Northern Mariana Islands are recorded as places of their own. They are not part of the United States count: the Substantial Presence Test does not include them.'**
+  String get referenceTerritoriesBody;
+
+  /// Reference item on Canadian deemed residence.
+  ///
+  /// In en, this message translates to:
+  /// **'Deemed residence in Canada'**
+  String get referenceCanadaTaxTitle;
+
+  /// Body of the deemed residence item.
+  ///
+  /// In en, this message translates to:
+  /// **'For deemed residence, the Canada Revenue Agency counts each day or part of a day spent in Canada, which is how the app counts by default. Other Canadian rules may count differently.'**
+  String get referenceCanadaTaxBody;
+
+  /// Reference item on Mexico.
+  ///
+  /// In en, this message translates to:
+  /// **'Days in Mexico'**
+  String get referenceMexicoTitle;
+
+  /// Body of the Mexico item.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules for visitors, workers and residents in Mexico are set by Mexican authorities. {appName} can count days by state if you record them; check the current rules that apply to you.'**
+  String referenceMexicoBody(String appName);
+
+  /// Reference item on Saint-Pierre-et-Miquelon (PLC-4).
+  ///
+  /// In en, this message translates to:
+  /// **'Outside the Schengen area'**
+  String get referenceSpmTitle;
+
+  /// Body of the Saint-Pierre-et-Miquelon item.
+  ///
+  /// In en, this message translates to:
+  /// **'Saint-Pierre-et-Miquelon is part of France but outside the Schengen area, with its own entry rules. {appName} counts its days on their own, never as days in metropolitan France, which is recorded as Elsewhere for now.'**
+  String referenceSpmBody(String appName);
+
+  /// Dated source under a reference item (FEA-5).
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {source}. Checked {date}.'**
+  String referenceSource(String source, String date);
+
+  /// Source name: IRS page.
+  ///
+  /// In en, this message translates to:
+  /// **'IRS, \"Substantial Presence Test\"'**
+  String get referenceSourceIrs;
+
+  /// Source name: CRA page.
+  ///
+  /// In en, this message translates to:
+  /// **'Canada Revenue Agency, \"Deemed residents of Canada\"'**
+  String get referenceSourceCra;
+
+  /// Source name: travel.gc.ca page.
+  ///
+  /// In en, this message translates to:
+  /// **'Government of Canada, \"Travel advice: Saint-Pierre-et-Miquelon\"'**
+  String get referenceSourceTravel;
+
+  /// Heading of the general reference sections.
+  ///
+  /// In en, this message translates to:
+  /// **'All places'**
+  String get referenceGeneralTitle;
 }
 
 class _AppLocalizationsDelegate

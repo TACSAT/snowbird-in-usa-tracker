@@ -355,7 +355,7 @@
   "menuAbout": "About",
   "@menuAbout": { "description": "Overflow menu item opening the About screen." },
 
-  "menuReference": "Common day-count rules",
+  "menuReference": "Background by place",
   "@menuReference": { "description": "Overflow menu item opening the neutral reference page." },
 
   "settingsTitle": "Settings",
@@ -414,10 +414,10 @@
   "linkError": "Could not open the link.",
   "@linkError": { "description": "Shown when an external link cannot be opened." },
 
-  "referenceTitle": "Common day-count rules",
+  "referenceTitle": "Background by place",
   "@referenceTitle": { "description": "Reference screen title (FR-15)." },
 
-  "referenceIntro": "These are numbers people commonly track. {appName} sets none of them for you — you enter your own in Alerts. This page is background information, not advice: verify your own situation with a qualified professional.",
+  "referenceIntro": "Neutral background for each place the app counts. {appName} sets no limit for you: you enter your own in Alerts. This page is not advice: verify your own situation with a qualified professional.",
   "@referenceIntro": {
     "description": "Reference screen intro; restates the no-defaults, not-advice stance.",
     "placeholders": {
@@ -953,5 +953,38 @@
   "exportFormatsHeading": "Share or print",
   "@exportFormatsHeading": {"description": "Heading above the export formats."},
   "exportAsLedger": "Day-by-day ledger (CSV)",
-  "@exportAsLedger": {"description": "Export the day-by-day ledger (EXP-5)."}
+  "@exportAsLedger": {"description": "Export the day-by-day ledger (EXP-5)."},
+
+  "referenceHowTitle": "How the app counts",
+  "@referenceHowTitle": {"description": "Reference section on the counting rules (CNT-1, CNT-8)."},
+  "referenceHowBody": "Each stay is in one place: a country, with a province, territory or state if you wish. By default a date counts in a place if you were there at any part of it, so a day you cross a border counts in both places. You can choose end of day instead for any place. Days with no stay are shown as not recorded, or as assumed at home if you set a home base. {appName} applies no exclusion (transit, commuting, medical care or any other): those depend on circumstances it does not know.",
+  "@referenceHowBody": {"description": "Body of the counting section.", "placeholders": {"appName": {"type": "String"}}},
+  "referenceSptExclusions": "The published test leaves out some days, for example for some regular commuters from Canada or Mexico. {appName} does not apply these exclusions: the figure counts every recorded day.",
+  "@referenceSptExclusions": {"description": "Second paragraph of the SPT item (CNT-8).", "placeholders": {"appName": {"type": "String"}}},
+  "referenceTerritoriesTitle": "US territories",
+  "@referenceTerritoriesTitle": {"description": "Reference item on US territories (PLC-3)."},
+  "referenceTerritoriesBody": "Puerto Rico, the U.S. Virgin Islands, Guam, American Samoa and the Northern Mariana Islands are recorded as places of their own. They are not part of the United States count: the Substantial Presence Test does not include them.",
+  "@referenceTerritoriesBody": {"description": "Body of the US territories item."},
+  "referenceCanadaTaxTitle": "Deemed residence in Canada",
+  "@referenceCanadaTaxTitle": {"description": "Reference item on Canadian deemed residence."},
+  "referenceCanadaTaxBody": "For deemed residence, the Canada Revenue Agency counts each day or part of a day spent in Canada, which is how the app counts by default. Other Canadian rules may count differently.",
+  "@referenceCanadaTaxBody": {"description": "Body of the deemed residence item."},
+  "referenceMexicoTitle": "Days in Mexico",
+  "@referenceMexicoTitle": {"description": "Reference item on Mexico."},
+  "referenceMexicoBody": "Rules for visitors, workers and residents in Mexico are set by Mexican authorities. {appName} can count days by state if you record them; check the current rules that apply to you.",
+  "@referenceMexicoBody": {"description": "Body of the Mexico item.", "placeholders": {"appName": {"type": "String"}}},
+  "referenceSpmTitle": "Outside the Schengen area",
+  "@referenceSpmTitle": {"description": "Reference item on Saint-Pierre-et-Miquelon (PLC-4)."},
+  "referenceSpmBody": "Saint-Pierre-et-Miquelon is part of France but outside the Schengen area, with its own entry rules. {appName} counts its days on their own, never as days in metropolitan France, which is recorded as Elsewhere for now.",
+  "@referenceSpmBody": {"description": "Body of the Saint-Pierre-et-Miquelon item.", "placeholders": {"appName": {"type": "String"}}},
+  "referenceSource": "Source: {source}. Checked {date}.",
+  "@referenceSource": {"description": "Dated source under a reference item (FEA-5).", "placeholders": {"source": {"type": "String"}, "date": {"type": "String"}}},
+  "referenceSourceIrs": "IRS, \"Substantial Presence Test\"",
+  "@referenceSourceIrs": {"description": "Source name: IRS page."},
+  "referenceSourceCra": "Canada Revenue Agency, \"Deemed residents of Canada\"",
+  "@referenceSourceCra": {"description": "Source name: CRA page."},
+  "referenceSourceTravel": "Government of Canada, \"Travel advice: Saint-Pierre-et-Miquelon\"",
+  "@referenceSourceTravel": {"description": "Source name: travel.gc.ca page."},
+  "referenceGeneralTitle": "All places",
+  "@referenceGeneralTitle": {"description": "Heading of the general reference sections."}
 }
