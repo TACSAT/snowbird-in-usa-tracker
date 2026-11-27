@@ -1027,5 +1027,10 @@
   "lockReason": "Unlock {appName}",
   "@lockReason": {"description": "Reason shown in the phone's own prompt.", "placeholders": {"appName": {"type": "String"}}},
   "lockFailed": "Not unlocked. You can try again.",
-  "@lockFailed": {"description": "The check failed or was cancelled."}
+  "@lockFailed": {"description": "The check failed or was cancelled."},
+
+  "recordJobLabel": "Job or contract",
+  "@recordJobLabel": {"description": "Label of a stay's job or contract on the record (form text says \"optional\")."},
+  "recordVisitWorked": "Worked there",
+  "@recordVisitWorked": {"description": "A worked day visit on the record."}
 }

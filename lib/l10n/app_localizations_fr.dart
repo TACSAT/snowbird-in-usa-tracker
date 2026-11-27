@@ -1413,4 +1413,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get lockFailed => 'Non déverrouillée. Vous pouvez réessayer.';
+
+  @override
+  String get recordJobLabel => 'Emploi ou contrat';
+
+  @override
+  String get recordVisitWorked => 'Travaillé sur place';
 }

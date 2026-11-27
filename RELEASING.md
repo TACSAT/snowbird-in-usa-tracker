@@ -53,6 +53,10 @@ do not want that, keep the real file elsewhere and symlink it.
 
 ## Device checklist (iPhone, iPad, Android)
 
+Before the real phones, run the simulator pass: `tools/device_pass.sh <device id>` (captures
+every screen in EN and FR and builds every export into `build/device_pass/`) and, on an iOS
+simulator, `tools/lock_pass.sh <udid>` (real Face ID check). Results: `DEVICE-PASS.md`.
+
 1. First alert: permission prompt appears; the alert arrives with the app closed and open.
 2. Deny permission, then switch the alert off and on.
 3. Change the time zone and reopen; a delivered alert stays in the tray.

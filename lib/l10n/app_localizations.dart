@@ -2131,6 +2131,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not unlocked. You can try again.'**
   String get lockFailed;
+
+  /// Label of a stay's job or contract on the record (form text says "optional").
+  ///
+  /// In en, this message translates to:
+  /// **'Job or contract'**
+  String get recordJobLabel;
+
+  /// A worked day visit on the record.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked there'**
+  String get recordVisitWorked;
 }
 
 class _AppLocalizationsDelegate

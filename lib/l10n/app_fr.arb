@@ -742,5 +742,8 @@
   "lockTitle": "{appName} est verrouillée",
   "lockUnlock": "Déverrouiller",
   "lockReason": "Déverrouiller {appName}",
-  "lockFailed": "Non déverrouillée. Vous pouvez réessayer."
+  "lockFailed": "Non déverrouillée. Vous pouvez réessayer.",
+
+  "recordJobLabel": "Emploi ou contrat",
+  "recordVisitWorked": "Travaillé sur place"
 }

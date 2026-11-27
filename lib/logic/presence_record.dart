@@ -460,7 +460,9 @@ class PresenceRecord {
           _safeText(t.notes ?? ''),
           ..._placeColumns(t.place, t.placeName),
           if (includeWork) ...[
-            '${workedInStay(t)}',
+            // EN: Blank, not 0, for a stay with no work pattern.
+            // FR: Vide, et non 0, pour un séjour sans motif de travail.
+            t.work == null ? '' : '${workedInStay(t)}',
             _purposeText(t.purpose),
             _safeText(t.label ?? ''),
           ],
