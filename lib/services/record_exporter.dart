@@ -32,6 +32,8 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
 import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
+import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart'
+    show purposeName;
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
@@ -494,10 +496,18 @@ abstract final class RecordExporter {
         fonts.printable(
           [
             _details(trip, strings),
-            if (record.includeWork)
+            if (record.includeWork) ...[
               strings.rangeWorked(
                 strings.daysCount(record.workedInStay(trip)),
               ),
+              if (trip.purpose != null)
+                strings.recordLine(
+                  strings.workPurposeLabel,
+                  purposeName(strings, trip.purpose!),
+                ),
+              if (trip.label != null)
+                strings.recordLine(strings.workLabelField, trip.label!),
+            ],
           ].where((t) => t.isNotEmpty).join('\n'),
         ),
       );

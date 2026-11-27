@@ -12,6 +12,7 @@ import 'package:snowbird_in_usa_tracker/models/day_visit.dart';
 import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/models/tracked_place.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
+import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
 
 const _both = {TripStatus.actual, TripStatus.planned};
 
@@ -273,7 +274,40 @@ class PlaceComparison {
   final List<YearComparison> years;
   final Comparison last365;
 
-  const PlaceComparison(this.place, this.convention, this.years, this.last365);
+  // EN: Days worked there, without and with the trip (WRK-10): per year and
+  //     over the last 365 days, from the stops' work patterns.
+  // FR: Jours travaillés sur place, sans et avec le voyage (WRK-10) : par année
+  //     et sur les 365 derniers jours, d'après les motifs de travail des étapes.
+  final List<YearComparison> workedYears;
+  final Comparison worked365;
+
+  const PlaceComparison(
+    this.place,
+    this.convention,
+    this.years,
+    this.last365, {
+    this.workedYears = const [],
+    this.worked365 = const Comparison(0, 0),
+  });
+}
+
+// EN: One stop of a possible trip (FEA-2: "or several stops"), with an
+//     optional work pattern for days worked during it (WRK-10).
+// FR: Une étape d'un voyage envisagé (FEA-2 : « ou plusieurs étapes »), avec un
+//     motif de travail facultatif pour les jours travaillés pendant celle-ci
+//     (WRK-10).
+class WhatIfStop {
+  final Place place;
+  final DateTime arrival;
+  final DateTime departure;
+  final WorkPlan? work;
+
+  const WhatIfStop({
+    required this.place,
+    required this.arrival,
+    required this.departure,
+    this.work,
+  });
 }
 
 class PlaceWhatIf {
@@ -303,24 +337,73 @@ class PlaceWhatIf {
     required DateTime departure,
     required Place place,
     List<TrackedPlace>? tracked,
+  }) =>
+      PlaceWhatIf.computeStops(
+        stays: stays,
+        visits: visits,
+        stops: [
+          WhatIfStop(place: place, arrival: arrival, departure: departure),
+        ],
+        tracked: tracked,
+      );
+
+  // EN: The what-if over several stops, in any order. Counts run from the
+  //     first arrival to the last departure; the affected places are those of
+  //     every stop (a tracked place containing a stop, or else the stop's own
+  //     country), each listed once.
+  // FR: L'hypothèse sur plusieurs étapes, dans n'importe quel ordre. Les
+  //     comptes vont de la première arrivée au dernier départ ; les lieux
+  //     concernés sont ceux de chaque étape (un lieu suivi contenant une étape,
+  //     sinon le pays de l'étape), chacun une fois.
+  factory PlaceWhatIf.computeStops({
+    required List<Trip> stays,
+    List<DayVisit> visits = const [],
+    required List<WhatIfStop> stops,
+    List<TrackedPlace>? tracked,
   }) {
-    final from = _dateOnly(arrival);
-    final asOf = _dateOnly(departure);
-    if (asOf.isBefore(from)) {
-      throw ArgumentError.value(departure, 'departure', 'precedes arrival');
+    if (stops.isEmpty) throw ArgumentError.value(stops, 'stops', 'is empty');
+    final trips = <Trip>[];
+    for (var i = 0; i < stops.length; i++) {
+      final stop = stops[i];
+      final a = _dateOnly(stop.arrival);
+      final d = _dateOnly(stop.departure);
+      if (d.isBefore(a)) {
+        throw ArgumentError.value(
+          stop.departure,
+          'departure',
+          'precedes arrival',
+        );
+      }
+      trips.add(
+        Trip(
+          id: 'what-if-$i',
+          arrivalDate: a,
+          departureDate: d,
+          status: TripStatus.planned,
+          place: stop.place,
+          work: stop.work == null || stop.work!.isEmpty
+              ? null
+              : stop.work!.clippedTo(a, d),
+        ),
+      );
     }
-    final trip = Trip(
-      id: 'what-if',
-      arrivalDate: from,
-      departureDate: asOf,
-      status: TripStatus.planned,
-      place: place,
-    );
-    final affected = [
-      for (final t in tracked ?? const <TrackedPlace>[])
-        if (t.place.contains(place)) t,
-    ];
-    if (affected.isEmpty) affected.add(TrackedPlace(place.country));
+    trips.sort((x, y) => x.arrivalDate.compareTo(y.arrivalDate));
+    final from = trips.first.arrivalDate;
+    final asOf = trips
+        .map((t) => t.departureDate!)
+        .reduce((x, y) => x.isAfter(y) ? x : y);
+    final place = trips.first.place;
+    final affected = <TrackedPlace>[];
+    for (final stop in trips) {
+      final matching = [
+        for (final t in tracked ?? const <TrackedPlace>[])
+          if (t.place.contains(stop.place)) t,
+      ];
+      if (matching.isEmpty) matching.add(TrackedPlace(stop.place.country));
+      for (final t in matching) {
+        if (!affected.any((a) => a.place == t.place)) affected.add(t);
+      }
+    }
 
     final rangeStart = DateTime(from.year);
     final last365Start = DateTime(asOf.year, asOf.month, asOf.day - 364);
@@ -339,15 +422,18 @@ class PlaceWhatIf {
     final comparisons = <PlaceComparison>[];
     for (final item in affected) {
       final without = ledger(stays, item.convention);
-      final including = ledger([...stays, trip], item.convention);
+      final including = ledger([...stays, ...trips], item.convention);
       Comparison compare(DateTime start, DateTime end) => Comparison(
             without.daysIn(item.place, start: start, end: end),
             including.daysIn(item.place, start: start, end: end),
           );
-      comparisons.add(
-        PlaceComparison(
-          item.place,
-          item.convention,
+      Comparison worked(DateTime start, DateTime end) => Comparison(
+            without.workedIn(item.place, start: start, end: end),
+            including.workedIn(item.place, start: start, end: end),
+          );
+      List<YearComparison> perYear(
+        Comparison Function(DateTime, DateTime) f,
+      ) =>
           [
             for (var year = from.year; year <= asOf.year; year++)
               () {
@@ -356,11 +442,18 @@ class PlaceWhatIf {
                 return YearComparison(
                   year,
                   through,
-                  compare(DateTime(year), through),
+                  f(DateTime(year), through),
                 );
               }(),
-          ],
+          ];
+      comparisons.add(
+        PlaceComparison(
+          item.place,
+          item.convention,
+          perYear(compare),
           compare(last365Start, asOf),
+          workedYears: perYear(worked),
+          worked365: worked(last365Start, asOf),
         ),
       );
     }
@@ -376,8 +469,8 @@ class PlaceWhatIf {
       asOf,
       place,
       comparisons,
-      Place.unitedStates.contains(place)
-          ? (spt(counted), spt([...counted, trip]))
+      trips.any((t) => Place.unitedStates.contains(t.place))
+          ? (spt(counted), spt([...counted, ...trips]))
           : null,
     );
   }

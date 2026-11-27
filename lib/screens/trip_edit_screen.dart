@@ -42,6 +42,7 @@ import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
+import 'package:snowbird_in_usa_tracker/screens/weekday_chips.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
 import 'package:snowbird_in_usa_tracker/screens/work_calendar_screen.dart';
@@ -110,6 +111,9 @@ class _TripEditScreenState extends State<TripEditScreen> {
   // FR: Jours travaillés pendant ce séjour (section 7). Modifiés seulement si
   //     le travail est activé ; sinon le plan enregistré reste tel quel.
   late WorkPlan _work = widget.existing?.work ?? WorkPlan.none;
+  late StayPurpose? _purpose = widget.existing?.purpose;
+  late final TextEditingController _jobLabel =
+      TextEditingController(text: widget.existing?.label ?? '');
   String? _placeError;
   final _placeKey = GlobalKey();
   // EN: Problem with the dates, shown under the row concerned until it changes.
@@ -206,6 +210,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
       _name,
       _notes,
       _placeName,
+      _jobLabel,
       _entryTz,
       _entryLocation,
       _entryMeans,
@@ -347,6 +352,9 @@ class _TripEditScreenState extends State<TripEditScreen> {
                   from: _arrival,
                   to: _workEnd(),
                   onChanged: (plan) => setState(() => _work = plan),
+                  purpose: _purpose,
+                  onPurpose: (p) => setState(() => _purpose = p),
+                  jobLabel: _jobLabel,
                 ),
 
               // EN: Optional crossing detail sections, collapsed by default so the
@@ -561,6 +569,8 @@ class _TripEditScreenState extends State<TripEditScreen> {
             place: place,
             placeName: _placeName.text,
             work: _work,
+            purpose: _purpose,
+            label: _jobLabel.text,
           ),
         );
       } else {
@@ -576,6 +586,8 @@ class _TripEditScreenState extends State<TripEditScreen> {
             place: place,
             placeName: _placeName.text,
             work: _work,
+            purpose: _purpose,
+            label: _jobLabel.text,
           ),
         );
       }
@@ -675,29 +687,38 @@ class _TripEditScreenState extends State<TripEditScreen> {
 // FR: Le motif de jours de semaine (WRK-3, première moitié), un compte à jour,
 //     et l'accès au calendrier pour les corrections de jours isolés (seconde
 //     moitié).
+// EN: A stay purpose in words.
+// FR: Un but de séjour en mots.
+String purposeName(AppLocalizations strings, StayPurpose p) => switch (p) {
+      StayPurpose.personal => strings.purposePersonal,
+      StayPurpose.work => strings.purposeWork,
+      StayPurpose.transit => strings.purposeTransit,
+      StayPurpose.other => strings.purposeOther,
+    };
+
 class _WorkSection extends StatelessWidget {
   final WorkPlan plan;
   final DateTime? from;
   final DateTime? to;
   final ValueChanged<WorkPlan> onChanged;
+  final StayPurpose? purpose;
+  final ValueChanged<StayPurpose?> onPurpose;
+  final TextEditingController jobLabel;
 
   const _WorkSection({
     required this.plan,
     required this.from,
     required this.to,
     required this.onChanged,
+    required this.purpose,
+    required this.onPurpose,
+    required this.jobLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final locale = strings.localeName;
-    final first = locale.startsWith('en') ? DateTime.sunday : DateTime.monday;
-    final days = [for (var i = 0; i < 7; i++) (first - 1 + i) % 7 + 1];
-    // EN: 2 March 2026 is a Monday: a fixed week to name the days from.
-    // FR: Le 2 mars 2026 est un lundi : une semaine fixe pour nommer les jours.
-    DateTime sample(int weekday) => DateTime(2026, 3, 1 + weekday);
     final start = from;
     final end = to;
     var count = 0;
@@ -722,30 +743,7 @@ class _WorkSection extends StatelessWidget {
             const SizedBox(height: 4),
             Text(strings.workWeekdaysLabel),
             const SizedBox(height: 4),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final day in days)
-                  Semantics(
-                    label: DateFormat.EEEE(locale).format(sample(day)),
-                    excludeSemantics: true,
-                    toggled: plan.weekdays.contains(day),
-                    button: true,
-                    child: FilterChip(
-                      label: Text(DateFormat.E(locale).format(sample(day))),
-                      selected: plan.weekdays.contains(day),
-                      onSelected: (on) => onChanged(
-                        plan.withWeekdays(
-                          on
-                              ? {...plan.weekdays, day}
-                              : ({...plan.weekdays}..remove(day)),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            WeekdayChips(plan: plan, onChanged: onChanged),
             const SizedBox(height: 8),
             Text(strings.workStayCount(count)),
             Align(
@@ -765,6 +763,39 @@ class _WorkSection extends StatelessWidget {
                         if (corrected != null) onChanged(corrected);
                       },
               ),
+            ),
+            // EN: Purpose and label (WRK-7): optional, free, and changing no
+            //     count; no wages, hours or employer details (WRK-9).
+            // FR: But et étiquette (WRK-7) : facultatifs, libres, et ne
+            //     changeant aucun compte ; ni salaire, ni heures, ni détails
+            //     sur l'employeur (WRK-9).
+            const SizedBox(height: 8),
+            // EN: The label sits above the menu so it can wrap at large text;
+            //     inside the field it would be cut off.
+            // FR: L'étiquette est au-dessus du menu afin de pouvoir passer à la
+            //     ligne en grand texte ; dans le champ, elle serait tronquée.
+            Text(strings.workPurposeLabel),
+            Semantics(
+              label: strings.workPurposeLabel,
+              child: DropdownButtonFormField<StayPurpose?>(
+                isExpanded: true,
+                initialValue: purpose,
+                items: [
+                  DropdownMenuItem(child: Text(strings.purposeNotSet)),
+                  for (final p in StayPurpose.values)
+                    DropdownMenuItem(
+                      value: p,
+                      child: Text(purposeName(strings, p)),
+                    ),
+                ],
+                onChanged: onPurpose,
+              ),
+            ),
+            const SizedBox(height: 8),
+            LabeledField(
+              controller: jobLabel,
+              maxLength: InputLimits.maxStayLabelLength,
+              label: strings.workLabelField,
             ),
           ],
         ),

@@ -170,4 +170,69 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Substantial Presence'), findsOneWidget);
   });
+
+  testWidgets('a what-if with two stops is saved as two planned stays',
+      (tester) async {
+    final app = await _start(
+      tester,
+      home: const ExploreScreen(),
+      stays: _stays,
+      work: true,
+    );
+    expect(find.text('Add a stop'), findsNothing, reason: 'no departure yet');
+    await tester.tap(find.text('Possible arrival'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Possible departure'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Add a stop'));
+    await tester.tap(find.text('Add a stop'));
+    await tester.pumpAndSettle();
+    expect(find.text('Stop 1'), findsOneWidget);
+    expect(find.text('Stop 2'), findsOneWidget);
+    expect(find.text('Possible arrival'), findsNWidgets(2));
+    expect(
+      find.text('Mon'),
+      findsNWidgets(2),
+      reason: 'each stop has its own work pattern',
+    );
+
+    final departures = find.text('Possible departure');
+    await tester.ensureVisible(departures.last);
+    await tester.tap(departures.last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Days worked, 365 days ending'), findsWidgets);
+
+    final save = find.text('Save as a planned trip');
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    final planned =
+        app.trips.trips.where((t) => t.status == TripStatus.planned).toList();
+    expect(planned, hasLength(2));
+    expect(find.text('Stop 2'), findsNothing, reason: 'cleared after saving');
+  });
+
+  testWidgets('a stop can be removed again', (tester) async {
+    await _start(tester, home: const ExploreScreen(), stays: _stays);
+    await tester.tap(find.text('Possible departure'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Add a stop'));
+    await tester.tap(find.text('Add a stop'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Remove this stop'), findsNWidgets(2));
+    await tester.tap(find.byTooltip('Remove this stop').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Stop 1'), findsNothing);
+    expect(find.text('Possible arrival'), findsOneWidget);
+    expect(find.text('Mon'), findsNothing, reason: 'work is off here');
+  });
 }

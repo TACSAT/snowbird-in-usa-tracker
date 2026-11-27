@@ -720,5 +720,27 @@
   "referenceSourceIrs": "IRS, « Substantial Presence Test » (en anglais)",
   "referenceSourceCra": "Agence du revenu du Canada, « Résidents réputés du Canada »",
   "referenceSourceTravel": "Gouvernement du Canada, « Conseils aux voyageurs : Saint-Pierre-et-Miquelon »",
-  "referenceGeneralTitle": "Tous les lieux"
+  "referenceGeneralTitle": "Tous les lieux",
+
+  "workPurposeLabel": "But de ce séjour",
+  "purposeNotSet": "Non précisé",
+  "purposePersonal": "Personnel",
+  "purposeWork": "Travail",
+  "purposeTransit": "Transit",
+  "purposeOther": "Autre",
+  "workLabelField": "Emploi ou contrat (facultatif)",
+
+  "whatIfStop": "Étape {number}",
+  "whatIfAddStop": "Ajouter une étape",
+  "whatIfRemoveStop": "Retirer cette étape",
+  "whatIfWorkedYear": "Jours travaillés, année civile {year}, jusqu'au {date}",
+  "whatIfWorkedLast365": "Jours travaillés, 365 jours se terminant le {date}",
+
+  "lockSetting": "Verrouiller par visage, empreinte ou code",
+  "lockSettingHelper": "Demande le déverrouillage du téléphone à chaque ouverture de {appName}. C'est le téléphone qui vérifie ; rien n'en sort.",
+  "lockUnavailable": "Ce téléphone n'a aucun visage, empreinte ni code configuré.",
+  "lockTitle": "{appName} est verrouillée",
+  "lockUnlock": "Déverrouiller",
+  "lockReason": "Déverrouiller {appName}",
+  "lockFailed": "Non déverrouillée. Vous pouvez réessayer."
 }

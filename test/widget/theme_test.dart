@@ -88,6 +88,12 @@ void main() {
       await tester.pumpAndSettle();
       // EN: "Follow phone" also appears under Language, above; take the last one.
       // FR: « Follow phone » figure aussi sous Langue, plus haut ; prendre le dernier.
+      await tester.scrollUntilVisible(
+        find.text(label).last,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text(label).last);
       await tester.pumpAndSettle();
       await expectShown(tester, phoneLight: phoneLight, phoneDark: phoneDark);
@@ -140,7 +146,11 @@ void main() {
           .push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()))
           .ignore();
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('High contrast and bold text'));
+      await tester.scrollUntilVisible(
+        find.text('High contrast and bold text'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('High contrast and bold text'));
       await tester.pumpAndSettle();

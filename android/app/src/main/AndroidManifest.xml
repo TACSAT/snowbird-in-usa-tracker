@@ -17,6 +17,12 @@
              de compte de jours — moins de permissions, par conception). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- EN: The optional app lock (WRK-11) asks the phone's own face,
+             fingerprint or code check. No network: still no INTERNET.
+         FR: Le verrouillage facultatif (WRK-11) demande la vérification
+             du téléphone (visage, empreinte ou code). Aucun réseau :
+             toujours pas d'INTERNET. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <!-- EN: allowBackup="true" is Android's default, but we set it EXPLICITLY
              because it is a product requirement (PLAN.md FR-11), not an accident:
              the app ships no bespoke backup feature, so the user's trip data must

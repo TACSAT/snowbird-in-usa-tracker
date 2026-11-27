@@ -2017,6 +2017,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All places'**
   String get referenceGeneralTitle;
+
+  /// Optional purpose of a stay (WRK-7).
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose of this stay'**
+  String get workPurposeLabel;
+
+  /// No purpose chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get purposeNotSet;
+
+  /// Purpose: personal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get purposePersonal;
+
+  /// Purpose: work.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get purposeWork;
+
+  /// Purpose: passing through.
+  ///
+  /// In en, this message translates to:
+  /// **'Transit'**
+  String get purposeTransit;
+
+  /// Purpose: other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get purposeOther;
+
+  /// Optional label of a stay (WRK-7).
+  ///
+  /// In en, this message translates to:
+  /// **'Job or contract (optional)'**
+  String get workLabelField;
+
+  /// Heading of one stop of a what-if with several stops (FEA-2).
+  ///
+  /// In en, this message translates to:
+  /// **'Stop {number}'**
+  String whatIfStop(int number);
+
+  /// Adds another stop to the what-if, starting on the previous departure.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a stop'**
+  String get whatIfAddStop;
+
+  /// Removes one stop from the what-if.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this stop'**
+  String get whatIfRemoveStop;
+
+  /// What-if block: days worked in a year (WRK-10).
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked, calendar year {year}, through {date}'**
+  String whatIfWorkedYear(String year, String date);
+
+  /// What-if block: days worked over the last 365 days (WRK-10).
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked, 365 days ending {date}'**
+  String whatIfWorkedLast365(String date);
+
+  /// Settings switch for the app lock (WRK-11).
+  ///
+  /// In en, this message translates to:
+  /// **'Lock with face, fingerprint or code'**
+  String get lockSetting;
+
+  /// Helper under the app lock switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Asks for the phone\'s own unlock each time you open {appName}. The phone does the check; nothing leaves it.'**
+  String lockSettingHelper(String appName);
+
+  /// The lock cannot be turned on.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone has no face, fingerprint or code set up.'**
+  String get lockUnavailable;
+
+  /// Title of the lock screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} is locked'**
+  String lockTitle(String appName);
+
+  /// Button on the lock screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get lockUnlock;
+
+  /// Reason shown in the phone's own prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock {appName}'**
+  String lockReason(String appName);
+
+  /// The check failed or was cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not unlocked. You can try again.'**
+  String get lockFailed;
 }
 
 class _AppLocalizationsDelegate

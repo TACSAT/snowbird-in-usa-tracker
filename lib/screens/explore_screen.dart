@@ -26,6 +26,8 @@ import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
+import 'package:snowbird_in_usa_tracker/screens/weekday_chips.dart';
+import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
@@ -42,22 +44,44 @@ class _ExploreScreenState extends State<ExploreScreen> {
   _Range _range = _Range.thisYear;
   DateTime? _from;
   DateTime? _to;
-  DateTime? _arrival;
-  DateTime? _departure;
+  // EN: The possible trip, as one or more stops (FEA-2). Each stop's place is
+  //     null until picked; the most recently used place is shown meanwhile.
+  // FR: Le voyage envisagé, en une ou plusieurs étapes (FEA-2). Le lieu de
+  //     chaque étape est null jusqu'au choix ; le dernier lieu utilisé est
+  //     montré d'ici là.
+  List<_Stop> _stops = [_Stop()];
 
   // EN: Guards against a double tap saving the same trip twice.
   // FR: Évite qu'un double toucher enregistre deux fois le même séjour.
   bool _saving = false;
 
-  // EN: Where the possible trip would be (FEA-2). Null until the user picks;
-  //     the most recently used place is shown and used meanwhile.
-  // FR: Où aurait lieu le voyage envisagé (FEA-2). Null jusqu'au choix de
-  //     l'utilisateur ; le dernier lieu utilisé est montré et employé d'ici là.
-  Place? _whatIfPlace;
-
-  Place get _tripPlace {
+  Place _placeOf(_Stop stop) {
     final recent = context.read<TripRepository>().recentPlaces(limit: 1);
-    return _whatIfPlace ?? (recent.isEmpty ? Place.unitedStates : recent.first);
+    return stop.place ?? (recent.isEmpty ? Place.unitedStates : recent.first);
+  }
+
+  Place get _tripPlace => _placeOf(_stops.first);
+
+  // EN: The stops as the calculation needs them, or null until every stop has
+  //     both dates.
+  // FR: Les étapes telles que le calcul les demande, ou null tant que chaque
+  //     étape n'a pas ses deux dates.
+  List<WhatIfStop>? get _completeStops {
+    final out = <WhatIfStop>[];
+    for (final stop in _stops) {
+      final a = stop.arrival;
+      final d = stop.departure;
+      if (a == null || d == null) return null;
+      out.add(
+        WhatIfStop(
+          place: _placeOf(stop),
+          arrival: a,
+          departure: d,
+          work: stop.work,
+        ),
+      );
+    }
+    return out;
   }
 
   DateTime get _today {
@@ -102,34 +126,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
     if (d != null && mounted) setState(() => _to = d);
   }
 
-  Future<void> _pickArrival() async {
-    final d = await _pick(_arrival, _today);
+  Future<void> _pickArrival(_Stop stop) async {
+    final d = await _pick(stop.arrival, _today);
     if (d == null || !mounted) return;
     setState(() {
-      _arrival = d;
-      if (_departure?.isBefore(d) ?? false) _departure = null;
+      stop.arrival = d;
+      if (stop.departure?.isBefore(d) ?? false) stop.departure = null;
     });
   }
 
-  Future<void> _pickDeparture() async {
-    final d = await _pick(_departure, _arrival ?? _today);
-    if (d != null && mounted) setState(() => _departure = d);
+  Future<void> _pickDeparture(_Stop stop) async {
+    final d = await _pick(stop.departure, stop.arrival ?? _today);
+    if (d != null && mounted) setState(() => stop.departure = d);
   }
 
-  Future<void> _savePlanned(DateTime arrival, DateTime departure) async {
+  // EN: A new stop starts on the previous stop's departure, so a border
+  //     crossing is entered once (as STY-2 does for stays).
+  // FR: Une nouvelle étape commence au départ de la précédente, afin qu'un
+  //     passage de frontière soit saisi une fois (comme STY-2 pour les
+  //     séjours).
+  void _addStop() => setState(() {
+        _stops = [..._stops, _Stop()..arrival = _stops.last.departure];
+      });
+
+  Future<void> _savePlanned(List<WhatIfStop> stops) async {
     if (_saving) return;
     _saving = true;
     final strings = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final repo = context.read<TripRepository>();
     try {
-      await context.read<TripRepository>().addTrip(
-            Trip.create(
-              arrivalDate: arrival,
-              departureDate: departure,
-              status: TripStatus.planned,
-              place: _tripPlace,
-            ),
-          );
+      for (final stop in stops) {
+        await repo.addTrip(
+          Trip.create(
+            arrivalDate: stop.arrival,
+            departureDate: stop.departure,
+            status: TripStatus.planned,
+            place: stop.place,
+            work: stop.work,
+          ),
+        );
+      }
       messenger.showSnackBar(SnackBar(content: Text(strings.whatIfSaved)));
       // EN: Clear it: the trip is now counted as planned, and leaving it here would
       //     show a difference of zero.
@@ -151,10 +188,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
   }
 
-  void _clearWhatIf() => setState(() {
-        _arrival = null;
-        _departure = null;
-      });
+  void _clearWhatIf() => setState(() => _stops = [_Stop()]);
 
   @override
   Widget build(BuildContext context) {
@@ -181,8 +215,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
             end: bounds.$2,
             today: _today,
           );
-    final arrival = _arrival;
-    final departure = _departure;
+    final complete = _completeStops;
+    final started = _stops.length > 1 ||
+        _stops.first.arrival != null ||
+        _stops.first.departure != null;
     final hasOpen = trips.any((t) => t.departureDate == null);
     final stale = stalePlannedTrips(trips, _today).length;
 
@@ -280,35 +316,76 @@ class _ExploreScreenState extends State<ExploreScreen> {
           SectionHeading(strings.whatIfHeading, style: text.titleMedium),
           const SizedBox(height: 4),
           Text(strings.whatIfIntro, style: text.bodyMedium),
-          ValueRow(
-            label: strings.whatIfPlaceLabel,
-            value: placeFullName(strings, _tripPlace),
-            onTap: () async {
-              final picked =
-                  await pickPlace(context, recent: repo.recentPlaces());
-              if (picked != null && mounted) {
-                setState(() => _whatIfPlace = picked);
-              }
-            },
-          ),
-          ValueRow(
-            label: strings.whatIfArrival,
-            value: shown(arrival),
-            onTap: _pickArrival,
-          ),
-          ValueRow(
-            label: strings.whatIfDeparture,
-            value: shown(departure),
-            onTap: _pickDeparture,
-          ),
-          if (arrival != null && departure != null) ...[
+          for (final (index, stop) in _stops.indexed) ...[
+            if (_stops.length > 1)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SectionHeading(
+                        strings.whatIfStop(index + 1),
+                        style: text.titleSmall,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: strings.whatIfRemoveStop,
+                      onPressed: () => setState(
+                        () => _stops = [..._stops]..removeAt(index),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ValueRow(
+              label: strings.whatIfPlaceLabel,
+              value: placeFullName(strings, _placeOf(stop)),
+              onTap: () async {
+                final picked =
+                    await pickPlace(context, recent: repo.recentPlaces());
+                if (picked != null && mounted) {
+                  setState(() => stop.place = picked);
+                }
+              },
+            ),
+            ValueRow(
+              label: strings.whatIfArrival,
+              value: shown(stop.arrival),
+              onTap: () => _pickArrival(stop),
+            ),
+            ValueRow(
+              label: strings.whatIfDeparture,
+              value: shown(stop.departure),
+              onTap: () => _pickDeparture(stop),
+            ),
+            // EN: Days worked during the stop (WRK-10), only with work on.
+            // FR: Jours travaillés pendant l'étape (WRK-10), seulement si le
+            //     travail est activé.
+            if (settings.workEnabled) ...[
+              Text(strings.workWeekdaysLabel),
+              const SizedBox(height: 4),
+              WeekdayChips(
+                plan: stop.work,
+                onChanged: (plan) => setState(() => stop.work = plan),
+              ),
+            ],
+          ],
+          if (_stops.last.departure != null)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                icon: const Icon(Icons.add),
+                label: Text(strings.whatIfAddStop),
+                onPressed: _addStop,
+              ),
+            ),
+          if (complete != null) ...[
             _WhatIfCard(
-              result: PlaceWhatIf.compute(
+              result: PlaceWhatIf.computeStops(
                 stays: trips,
                 visits: repo.visits,
-                arrival: arrival,
-                departure: departure,
-                place: _tripPlace,
+                stops: complete,
                 tracked: settings.tracked ??
                     [
                       for (final entry in PresenceTable.build(
@@ -321,14 +398,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ],
               ),
               strings: strings,
+              showWorked: settings.workEnabled,
             ),
             const SizedBox(height: 8),
             FilledButton(
-              onPressed: () => _savePlanned(arrival, departure),
+              onPressed: () => _savePlanned(complete),
               child: Text(strings.whatIfSave, textAlign: TextAlign.center),
             ),
           ],
-          if (arrival != null || departure != null)
+          if (started)
             TextButton(
               onPressed: _clearWhatIf,
               child: Text(strings.whatIfClear),
@@ -370,8 +448,13 @@ class _Note extends StatelessWidget {
 class _WhatIfCard extends StatelessWidget {
   final PlaceWhatIf result;
   final AppLocalizations strings;
+  final bool showWorked;
 
-  const _WhatIfCard({required this.result, required this.strings});
+  const _WhatIfCard({
+    required this.result,
+    required this.strings,
+    this.showWorked = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -427,6 +510,17 @@ class _WhatIfCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (showWorked) ...[
+                for (final y in place.workedYears)
+                  ...days(
+                    strings.whatIfWorkedYear(
+                      '${y.year}',
+                      dates.format(y.through),
+                    ),
+                    y.days,
+                  ),
+                ...days(strings.whatIfWorkedLast365(asOf), place.worked365),
+              ],
             ],
             if (spt != null)
               ...block(
@@ -439,4 +533,17 @@ class _WhatIfCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// EN: One editable stop of the what-if. Mutable on purpose: it lives only in
+//     this screen's state, is never saved as is, and setState follows every
+//     change.
+// FR: Une étape modifiable de l'hypothèse. Mutable à dessein : elle ne vit que
+//     dans l'état de cet écran, n'est jamais enregistrée telle quelle, et
+//     setState suit chaque changement.
+class _Stop {
+  Place? place;
+  DateTime? arrival;
+  DateTime? departure;
+  WorkPlan work = WorkPlan.none;
 }

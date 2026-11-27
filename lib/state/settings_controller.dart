@@ -64,6 +64,17 @@ class SettingsController extends ChangeNotifier {
   //     désactivé signifie « suivre le téléphone », jamais « moins que demandé ».
   bool get highContrast => _highContrast;
 
+  // EN: The optional app lock (WRK-11), off by default. The screens decide
+  //     when to ask the phone; this only remembers the choice.
+  // FR: Le verrouillage facultatif (WRK-11), désactivé par défaut. Les écrans
+  //     décident quand interroger le téléphone ; ceci ne retient que le choix.
+  bool get appLock => _storage.appLock;
+
+  Future<void> setAppLock(bool value) async {
+    await _storage.setAppLock(value);
+    notifyListeners();
+  }
+
   Future<void> setHighContrast(bool value) async {
     _highContrast = value;
     await _storage.setHighContrast(value);

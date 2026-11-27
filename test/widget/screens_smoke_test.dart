@@ -65,6 +65,8 @@ void main() {
     expect(find.text('Appearance'), findsOneWidget);
 
     expect(settings.themeMode, ThemeMode.system);
+    await tester.ensureVisible(find.text('Dark'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
     expect(settings.themeMode, ThemeMode.dark);

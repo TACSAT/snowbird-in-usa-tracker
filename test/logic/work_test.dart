@@ -250,4 +250,49 @@ void main() {
       }
     }
   });
+
+  // EN: Purpose and label (WRK-7): stored, capped, carried by a split, and an
+  //     unknown purpose from a newer version is dropped, not fatal.
+  // FR: But et étiquette (WRK-7) : enregistrés, plafonnés, conservés par une
+  //     division ; un but inconnu d'une version plus récente est ignoré, sans
+  //     erreur.
+  group('purpose and label', () {
+    test('round trip, cap and unknown values', () {
+      final stay = Trip.create(
+        arrivalDate: DateTime(2026, 3, 1),
+        departureDate: DateTime(2026, 3, 31),
+        status: TripStatus.actual,
+        place: _on,
+        purpose: StayPurpose.work,
+        label: '  ${'Harvest crew ' * 20}',
+      );
+      expect(stay.label, hasLength(80));
+      final back = Trip.fromJson(stay.toJson());
+      expect(back.purpose, StayPurpose.work);
+      expect(back.label, stay.label);
+      final future = Trip.fromJson({...stay.toJson(), 'purpose': 'volunteer'});
+      expect(future.purpose, isNull);
+      final plain = Trip.fromJson(
+        {...stay.toJson()}
+          ..remove('purpose')
+          ..remove('label'),
+      );
+      expect((plain.purpose, plain.label), (null, null));
+      expect(stay.copyWith(purpose: null).purpose, isNull);
+    });
+
+    test('a purpose changes no count', () {
+      final base = Trip(
+        id: 'a',
+        arrivalDate: DateTime(2026, 3, 1),
+        departureDate: DateTime(2026, 3, 31),
+        status: TripStatus.actual,
+        place: _on,
+      );
+      final l1 = _ledger([base]);
+      final l2 = _ledger([base.copyWith(purpose: StayPurpose.work)]);
+      expect(l2.daysIn(_on), l1.daysIn(_on));
+      expect(l2.workedIn(_on), 0, reason: 'work is never inferred');
+    });
+  });
 }

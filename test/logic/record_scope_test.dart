@@ -143,7 +143,7 @@ final _mixed = [
     DateTime(2026, 6, 1),
     work: WorkPlan(weekdays: {1, 2, 3, 4, 5}),
     notes: 'Ontario job',
-  ),
+  ).copyWith(purpose: StayPurpose.work, label: 'Greenhouse contract'),
   _stay('MX-SON', DateTime(2026, 6, 1), DateTime(2026, 6, 20)),
   _stay(
     'CA-QC',
@@ -285,10 +285,17 @@ void main() {
         final offText = buildRecordText(off, strings: _en, localeName: 'en');
         for (final output in [off.toCsv(), off.toLedgerCsv(), offText]) {
           expect(output.toLowerCase(), isNot(contains('worked')));
+          expect(output, isNot(contains('Greenhouse contract')));
+          expect(output, isNot(contains('Purpose')));
         }
         if (scope == Place.unitedStates) return;
         final on = build(true);
         expect(on.toCsv(), contains('Days worked'));
+        expect(on.toCsv(), contains('Greenhouse contract'));
+        expect(
+          buildRecordText(on, strings: _en, localeName: 'en'),
+          contains('Purpose of this stay: Work'),
+        );
         expect(on.toLedgerCsv(), contains('Worked in'));
         expect(
           buildRecordText(on, strings: _en, localeName: 'en'),

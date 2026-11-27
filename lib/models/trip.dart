@@ -24,6 +24,15 @@ import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
 //     planifiés peuvent être inclus ou exclus des totaux selon la vue.
 enum TripStatus { actual, planned }
 
+// EN: Why a stay happened (WRK-7), optional and only offered while days worked
+//     are on. A purpose never changes any count: being somewhere "for work"
+//     does not make a single day a worked day (WRK-2).
+// FR: Pourquoi un séjour a eu lieu (WRK-7), facultatif et proposé seulement
+//     quand les jours travaillés sont activés. Un but ne change aucun compte :
+//     être quelque part « pour le travail » ne fait d'aucun jour un jour
+//     travaillé (WRK-2).
+enum StayPurpose { personal, work, transit, other }
+
 class Trip {
   final String id;
   final DateTime arrivalDate;
@@ -93,6 +102,14 @@ class Trip {
   //     WorkPlan).
   final WorkPlan? work;
 
+  // EN: Optional purpose and job or contract label (WRK-7). Both are work
+  //     details: never in an export unless days worked are added to it (WRK-8).
+  // FR: But et étiquette d'emploi ou de contrat facultatifs (WRK-7). Ce sont
+  //     des détails de travail : jamais dans un export sauf si les jours
+  //     travaillés y sont ajoutés (WRK-8).
+  final StayPurpose? purpose;
+  final String? label;
+
   // EN: Direct constructor — prefer Trip.create() for new trips (it generates a
   //     UUID and strips time components). Use this constructor only when
   //     round-tripping from storage (Trip.fromJson) or in tests with fixed IDs.
@@ -112,6 +129,8 @@ class Trip {
     this.place = Place.unitedStates,
     this.placeName,
     this.work,
+    this.purpose,
+    this.label,
   });
 
   // EN: Factory constructor for creating brand-new trips at runtime. Generates a
@@ -132,6 +151,8 @@ class Trip {
     Place place = Place.unitedStates,
     String? placeName,
     WorkPlan? work,
+    StayPurpose? purpose,
+    String? label,
   }) {
     if (departureDate == null && status == TripStatus.planned) {
       throw ArgumentError('A planned trip needs a departureDate.');
@@ -158,6 +179,8 @@ class Trip {
       place: place,
       placeName: _placeNameFor(place, placeName),
       work: _workFor(work, arrivalDate, departureDate),
+      purpose: purpose,
+      label: _capText(label, InputLimits.maxStayLabelLength),
     );
   }
 
@@ -253,6 +276,8 @@ class Trip {
     Place? place,
     Object? placeName = _sentinel,
     Object? work = _sentinel,
+    Object? purpose = _sentinel,
+    Object? label = _sentinel,
   }) {
     final nextPlace = place ?? this.place;
     return Trip(
@@ -293,6 +318,10 @@ class Trip {
             ? this.departureDate
             : departureDate as DateTime?,
       ),
+      purpose: purpose == _sentinel ? this.purpose : purpose as StayPurpose?,
+      label: label == _sentinel
+          ? this.label
+          : _capText(label as String?, InputLimits.maxStayLabelLength),
     );
   }
 
@@ -321,6 +350,8 @@ class Trip {
         'place': place.code,
         if (placeName != null) 'placeName': placeName,
         if (work != null) 'work': work!.toJson(),
+        if (purpose != null) 'purpose': purpose!.name,
+        if (label != null) 'label': label,
         if (name != null) 'name': name,
         if (notes != null) 'notes': notes,
         // EN: Only write crossing details that carry something. isNotEmpty is
@@ -459,6 +490,14 @@ class Trip {
         _dateOnly(arrival),
         departure == null ? null : _dateOnly(departure),
       ),
+      // EN: An unknown purpose (from a newer version) is dropped, not fatal:
+      //     it changes no count.
+      // FR: Un but inconnu (d'une version plus récente) est ignoré, sans
+      //     erreur : il ne change aucun compte.
+      purpose: StayPurpose.values
+          .where((p) => p.name == json['purpose'])
+          .firstOrNull,
+      label: _capText(readText('label'), InputLimits.maxStayLabelLength),
     );
   }
 

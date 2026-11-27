@@ -23,8 +23,10 @@ Created and maintained by teagarden.net
 - **Notifications:** created on the device, only for alerts you set up. An alert's name and
   the place it watches can appear on your lock screen.
 - **Permissions:** notifications, if you create an alert. On Android, also restoring alerts
-  after a restart, and vibration. The app does not use your location: you choose every
-  place yourself.
+  after a restart, and vibration. If you turn on the app lock, the phone's own face,
+  fingerprint or code check: the phone does the check and tells the app only whether it
+  passed; no biometric data reaches the app. The app does not use your location: you
+  choose every place yourself.
 - **Links:** the buttons on the About screen open teagarden.net, or the source code on
   GitHub, in your browser, and only when you tap them. The app passes the language it is
   using and nothing else. What you send or pay on those sites is covered by their own
@@ -64,8 +66,11 @@ Créé et maintenu par teagarden.net
   Le nom d'une alerte et le lieu qu'elle surveille peuvent apparaître sur l'écran
   verrouillé.
 - **Permissions :** les notifications, si vous créez une alerte. Sur Android, aussi le
-  rétablissement des alertes après un redémarrage et la vibration. L'appli n'utilise pas
-  votre position : vous choisissez vous-même chaque lieu.
+  rétablissement des alertes après un redémarrage et la vibration. Si vous activez le
+  verrouillage, la vérification du téléphone par visage, empreinte ou code : c'est le
+  téléphone qui vérifie et il indique seulement à l'appli si elle a réussi ; aucune donnée
+  biométrique n'atteint l'appli. L'appli n'utilise pas votre position : vous choisissez
+  vous-même chaque lieu.
 - **Liens :** les boutons de l'écran « À propos » ouvrent teagarden.net, ou le code source
   sur GitHub, dans votre navigateur, et seulement quand vous les touchez. L'appli transmet
   la langue utilisée et rien d'autre. Ce que vous envoyez ou payez sur ces sites relève de

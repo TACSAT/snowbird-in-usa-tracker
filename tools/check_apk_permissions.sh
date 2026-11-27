@@ -7,6 +7,14 @@
 #     permission pendant le build. Une liste permise attrape aussi les permissions que
 #     personne n'avait pensé à interdire.
 #
+# EN: USE_BIOMETRIC and USE_FINGERPRINT come with the optional app lock (WRK-11,
+#     local_auth); USE_FINGERPRINT is how Android 7 and 8 allow fingerprint. Both
+#     check the phone owner on the device and involve no network.
+# FR: USE_BIOMETRIC et USE_FINGERPRINT viennent avec le verrouillage facultatif
+#     (WRK-11, local_auth) ; USE_FINGERPRINT est la forme qu'exigent Android 7 et 8
+#     pour l'empreinte. Les deux vérifient le propriétaire sur l'appareil, sans
+#     aucun réseau.
+#
 # Usage: tools/check_apk_permissions.sh path/to/app-release.apk
 set -euo pipefail
 
@@ -18,6 +26,8 @@ aapt2="$(find "$sdk/build-tools" -name aapt2 -type f | sort -V | tail -1)"
 expected="$(sort <<'LIST'
 android.permission.POST_NOTIFICATIONS
 android.permission.RECEIVE_BOOT_COMPLETED
+android.permission.USE_BIOMETRIC
+android.permission.USE_FINGERPRINT
 android.permission.VIBRATE
 ca.veidimadur.snowbird_in_usa_tracker.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 LIST

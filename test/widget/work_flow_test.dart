@@ -100,6 +100,8 @@ void main() {
       expect(find.text('Days worked'), findsNothing);
       expect(find.text('Usually worked on'), findsNothing);
       expect(find.text('Worked there that day'), findsNothing);
+      expect(find.text('Purpose of this stay'), findsNothing);
+      expect(find.text('Job or contract (optional)'), findsNothing);
     }
   });
 

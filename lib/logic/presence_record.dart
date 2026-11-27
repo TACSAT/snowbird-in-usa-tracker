@@ -428,7 +428,7 @@ class PresenceRecord {
         'Country',
         'Region code',
         'Region',
-        if (includeWork) 'Days worked',
+        if (includeWork) ...['Days worked', 'Purpose', 'Job or contract'],
       ],
     ];
     for (final entry in entries) {
@@ -459,7 +459,11 @@ class PresenceRecord {
           _safeText(exit?.carrier ?? ''),
           _safeText(t.notes ?? ''),
           ..._placeColumns(t.place, t.placeName),
-          if (includeWork) '${workedInStay(t)}',
+          if (includeWork) ...[
+            '${workedInStay(t)}',
+            _purposeText(t.purpose),
+            _safeText(t.label ?? ''),
+          ],
         ]);
       } else if (v != null) {
         rows.add([
@@ -470,7 +474,7 @@ class PresenceRecord {
           '1',
           for (var i = 0; i < 11; i++) '',
           ..._placeColumns(v.place, null),
-          if (includeWork) v.worked ? '1' : '0',
+          if (includeWork) ...[v.worked ? '1' : '0', '', ''],
         ]);
       }
     }
@@ -670,6 +674,14 @@ class PresenceRecord {
         place.isCountry ? '' : place.code,
         place.isCountry ? '' : _en.placeName(place.code.replaceAll('-', '_')),
       ];
+
+  static String _purposeText(StayPurpose? p) => switch (p) {
+        null => '',
+        StayPurpose.personal => 'Personal',
+        StayPurpose.work => 'Work',
+        StayPurpose.transit => 'Transit',
+        StayPurpose.other => 'Other',
+      };
 
   static String _conventionText(CountingConvention c) => switch (c) {
         CountingConvention.anyPart =>

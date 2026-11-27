@@ -1343,4 +1343,74 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get referenceGeneralTitle => 'Tous les lieux';
+
+  @override
+  String get workPurposeLabel => 'But de ce séjour';
+
+  @override
+  String get purposeNotSet => 'Non précisé';
+
+  @override
+  String get purposePersonal => 'Personnel';
+
+  @override
+  String get purposeWork => 'Travail';
+
+  @override
+  String get purposeTransit => 'Transit';
+
+  @override
+  String get purposeOther => 'Autre';
+
+  @override
+  String get workLabelField => 'Emploi ou contrat (facultatif)';
+
+  @override
+  String whatIfStop(int number) {
+    return 'Étape $number';
+  }
+
+  @override
+  String get whatIfAddStop => 'Ajouter une étape';
+
+  @override
+  String get whatIfRemoveStop => 'Retirer cette étape';
+
+  @override
+  String whatIfWorkedYear(String year, String date) {
+    return 'Jours travaillés, année civile $year, jusqu\'au $date';
+  }
+
+  @override
+  String whatIfWorkedLast365(String date) {
+    return 'Jours travaillés, 365 jours se terminant le $date';
+  }
+
+  @override
+  String get lockSetting => 'Verrouiller par visage, empreinte ou code';
+
+  @override
+  String lockSettingHelper(String appName) {
+    return 'Demande le déverrouillage du téléphone à chaque ouverture de $appName. C\'est le téléphone qui vérifie ; rien n\'en sort.';
+  }
+
+  @override
+  String get lockUnavailable =>
+      'Ce téléphone n\'a aucun visage, empreinte ni code configuré.';
+
+  @override
+  String lockTitle(String appName) {
+    return '$appName est verrouillée';
+  }
+
+  @override
+  String get lockUnlock => 'Déverrouiller';
+
+  @override
+  String lockReason(String appName) {
+    return 'Déverrouiller $appName';
+  }
+
+  @override
+  String get lockFailed => 'Non déverrouillée. Vous pouvez réessayer.';
 }
