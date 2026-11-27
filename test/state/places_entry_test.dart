@@ -155,6 +155,8 @@ void main() {
         place: Place.canada,
         name: 'Summer',
         departureInfo: CrossingInfo.fromInput(location: 'Beaver Creek'),
+        purpose: StayPurpose.work,
+        label: 'Fire crew',
       );
       await repo.addTrip(stay);
       final before = DayCounter.countDaysInCalendarYear(
@@ -181,6 +183,8 @@ void main() {
       expect(second.departureDate, DateTime(2026, 9, 30));
       expect(second.departureInfo?.location, 'Beaver Creek');
       expect(second.name, 'Summer');
+      expect(second.purpose, StayPurpose.work);
+      expect(second.label, 'Fire crew');
       expect(
         DayCounter.countDaysInCalendarYear(
           trips: parts,

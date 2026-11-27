@@ -286,6 +286,8 @@ class TripRepository extends ChangeNotifier {
         placeName: stored.placeName,
         departureInfo: stored.departureInfo,
         work: stored.work,
+        purpose: stored.purpose,
+        label: stored.label,
       );
       return [...list]
         ..[index] = first

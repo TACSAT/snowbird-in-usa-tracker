@@ -34,10 +34,18 @@ import 'package:snowbird_in_usa_tracker/state/settings_controller.dart';
 //     `flutter pub get && flutter gen-l10n` une fois.
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 
+import 'package:snowbird_in_usa_tracker/screens/app_lock_gate.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_list_screen.dart';
+import 'package:snowbird_in_usa_tracker/services/device_auth.dart';
 
 class SnowBirdApp extends StatelessWidget {
-  const SnowBirdApp({super.key});
+  // EN: The phone's unlock check for the optional app lock (WRK-11); tests
+  //     pass a fake.
+  // FR: La vérification de déverrouillage du téléphone pour le verrouillage
+  //     facultatif (WRK-11) ; les tests passent une imitation.
+  final DeviceAuth deviceAuth;
+
+  const SnowBirdApp({super.key, this.deviceAuth = const LocalDeviceAuth()});
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +125,10 @@ class SnowBirdApp extends StatelessWidget {
             boldText: media.boldText || settings.highContrast,
             textScaler: TextScaler.linear(wanted > ceiling ? ceiling : wanted),
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: AppLockGate(
+            auth: deviceAuth,
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
 

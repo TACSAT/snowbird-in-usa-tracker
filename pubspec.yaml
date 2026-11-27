@@ -80,6 +80,16 @@ dependencies:
   #     deux vérifiés contre le manifeste de release.
   package_info_plus: ^10.2.0
   url_launcher: ^6.3.2
+  # EN: The optional app lock (WRK-11): asks the phone's own face, fingerprint or
+  #     code check, on the device. Adds USE_BIOMETRIC and USE_FINGERPRINT on
+  #     Android (allowed in tools/check_apk_permissions.sh), no INTERNET. Needs
+  #     FlutterFragmentActivity, AppCompat themes and NSFaceIDUsageDescription.
+  # FR: Le verrouillage facultatif (WRK-11) : demande la vérification du
+  #     téléphone (visage, empreinte ou code), sur l'appareil. Ajoute
+  #     USE_BIOMETRIC et USE_FINGERPRINT sur Android (permises dans
+  #     tools/check_apk_permissions.sh), pas INTERNET. Exige
+  #     FlutterFragmentActivity, des thèmes AppCompat et NSFaceIDUsageDescription.
+  local_auth: ^3.0.2
 
 dev_dependencies:
   flutter_test:

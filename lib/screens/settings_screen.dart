@@ -17,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
+import 'package:snowbird_in_usa_tracker/screens/app_lock_gate.dart';
 import 'package:snowbird_in_usa_tracker/screens/places_settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/state/settings_controller.dart';
@@ -47,6 +49,33 @@ class SettingsScreen extends StatelessWidget {
                 builder: (_) => const PlacesSettingsScreen(),
               ),
             ),
+          ),
+          // EN: The app lock (WRK-11). Turning it on or off asks the phone's
+          //     own check first, so someone else holding the phone cannot
+          //     simply switch it off.
+          // FR: Le verrouillage (WRK-11). L'activer ou le désactiver demande
+          //     d'abord la vérification du téléphone, afin qu'une autre
+          //     personne qui le tient ne puisse pas simplement l'éteindre.
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            secondary: const Icon(Icons.lock_outline),
+            title: Text(strings.lockSetting),
+            subtitle: Text(strings.lockSettingHelper(AppIdentity.name)),
+            value: settings.appLock,
+            onChanged: (on) async {
+              final auth = AppLockScope.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final controller = context.read<SettingsController>();
+              if (on && !await auth.isAvailable()) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(strings.lockUnavailable)),
+                );
+                return;
+              }
+              if (await auth.check(strings.lockReason(AppIdentity.name))) {
+                await controller.setAppLock(on);
+              }
+            },
           ),
           const Divider(height: 32),
           _sectionLabel(context, strings.settingsLanguage),

@@ -141,6 +141,11 @@ abstract final class InputLimits {
   // FR: Le nom facultatif d'un pays « Ailleurs » (PLC-5) : assez long pour le nom
   //     de n'importe quel pays, assez court pour tenir dans une ligne de tableau.
   static const int maxPlaceNameLength = 80;
+  // EN: The optional job or contract label of a stay (WRK-7): a short tag, not
+  //     a description.
+  // FR: L'étiquette facultative d'emploi ou de contrat d'un séjour (WRK-7) :
+  //     une courte marque, pas une description.
+  static const int maxStayLabelLength = 80;
   static const int maxLocationLength = 120;
   static const int maxMeansOfTravelLength = 60;
   static const int maxCarrierLength = 120;

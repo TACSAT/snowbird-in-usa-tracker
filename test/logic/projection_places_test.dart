@@ -200,4 +200,70 @@ void main() {
       }
     });
   });
+
+  group('several stops (FEA-2) and days worked (WRK-10)', () {
+    final florida = WhatIfStop(
+      place: _fl,
+      arrival: DateTime(2027, 1, 5),
+      departure: DateTime(2027, 2, 1),
+    );
+    final sonora = WhatIfStop(
+      place: Place.parse('MX-SON'),
+      arrival: DateTime(2027, 2, 1),
+      departure: DateTime(2027, 2, 28),
+      work: WorkPlan(weekdays: {1, 2, 3, 4, 5}),
+    );
+
+    test('every stop\'s places, in any order, with the SPT for the US stop',
+        () {
+      for (final stops in [
+        [florida, sonora],
+        [sonora, florida],
+      ]) {
+        final r = PlaceWhatIf.computeStops(stays: const [], stops: stops);
+        expect(
+          r.places.map((p) => p.place),
+          [Place.unitedStates, Place.mexico],
+        );
+        expect(r.asOf, DateTime(2027, 2, 28));
+        final us = r.places.first;
+        final mx = r.places.last;
+        expect(us.years.single.days.including, 28);
+        expect(mx.years.single.days.including, 28);
+        expect(r.spt, isNotNull);
+      }
+    });
+
+    test('days worked come only from the stops\' patterns', () {
+      final r = PlaceWhatIf.computeStops(
+        stays: const [],
+        stops: [florida, sonora],
+      );
+      // EN: February 2027 weekdays from Monday 1 to Friday 26: 20.
+      // FR: Jours ouvrables de février 2027, du lundi 1er au vendredi 26 : 20.
+      expect(r.places.last.worked365.including, 20);
+      expect(r.places.last.worked365.without, 0);
+      expect(r.places.first.worked365.including, 0);
+    });
+
+    test('a stop that ends before it starts is refused', () {
+      expect(
+        () => PlaceWhatIf.computeStops(
+          stays: const [],
+          stops: [
+            WhatIfStop(
+              place: _fl,
+              arrival: DateTime(2027, 3, 2),
+              departure: DateTime(2027, 3, 1),
+            ),
+          ],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => PlaceWhatIf.computeStops(stays: const [], stops: const []),
+        throwsArgumentError,
+      );
+    });
+  });
 }

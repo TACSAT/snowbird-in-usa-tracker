@@ -102,6 +102,13 @@ the app never judges, but it computes any published formula the user could do by
   convention / measure`; any-part presence stays on `DayCounter`, the rest goes through
   `logic/alert_math.dart`. By-place ranges and what-if: `PlaceRangeCount`, `PlaceWhatIf` in
   `logic/projection.dart` (the US `RangeCount` / `WhatIf` remain, unchanged).
+- App lock (WRK-11, off by default): `screens/app_lock_gate.dart` wraps every route from
+  `MaterialApp.builder`; it locks at start and on `paused`/`hidden` (never `inactive`, which the
+  prompt itself causes). `services/device_auth.dart` is the interface (`LocalDeviceAuth` real,
+  tests pass a fake through `SnowBirdApp(deviceAuth:)`). Android needs `FlutterFragmentActivity`
+  and AppCompat themes; the APK permission allowlist includes USE_BIOMETRIC and USE_FINGERPRINT.
+- What-if: `PlaceWhatIf.computeStops` (several stops, each with an optional `WorkPlan`);
+  `compute` is the one-stop case. Weekday chips are shared: `screens/weekday_chips.dart`.
 - Counting reads `TripRepository.countedStays` (stays plus each day visit as a one-day
   stay); lists and editors read `trips` / `visits`.
 - Localization: `l10n.yaml` + `lib/l10n/*.arb` → generated `AppLocalizations`

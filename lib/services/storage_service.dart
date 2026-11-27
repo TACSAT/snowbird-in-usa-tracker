@@ -105,6 +105,11 @@ class StorageService {
   static const _kThemeModeKey = 'snowbird.settings.themeMode.v1';
   static const _kTextScaleKey = 'snowbird.settings.textScale.v1';
   static const _kHighContrastKey = 'snowbird.settings.highContrast.v1';
+  // EN: Whether the optional app lock is on (WRK-11). Only the switch is
+  //     stored: no biometric data ever reaches the app.
+  // FR: Si le verrouillage facultatif est activé (WRK-11). Seul l'interrupteur
+  //     est enregistré : aucune donnée biométrique n'atteint jamais l'appli.
+  static const _kAppLockKey = 'snowbird.settings.appLock.v1';
   // EN: Days present table preferences and the home base (sections 6 and 9).
   //     Plain JSON under their own keys: an older build ignores them, and a
   //     damaged value only falls back to the default (automatic table, home
@@ -372,6 +377,11 @@ class StorageService {
       _prefs.setString(_kThemeModeKey, name);
 
   bool get highContrast => _prefs.getBool(_kHighContrastKey) ?? false;
+
+  bool get appLock => _prefs.getBool(_kAppLockKey) ?? false;
+
+  Future<void> setAppLock(bool value) =>
+      _write(() => _prefs.setBool(_kAppLockKey, value));
 
   String? get trackedPlacesJson => _prefs.getString(_kTrackedPlacesKey);
 

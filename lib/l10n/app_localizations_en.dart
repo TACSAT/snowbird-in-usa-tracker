@@ -1331,4 +1331,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get referenceGeneralTitle => 'All places';
+
+  @override
+  String get workPurposeLabel => 'Purpose of this stay';
+
+  @override
+  String get purposeNotSet => 'Not set';
+
+  @override
+  String get purposePersonal => 'Personal';
+
+  @override
+  String get purposeWork => 'Work';
+
+  @override
+  String get purposeTransit => 'Transit';
+
+  @override
+  String get purposeOther => 'Other';
+
+  @override
+  String get workLabelField => 'Job or contract (optional)';
+
+  @override
+  String whatIfStop(int number) {
+    return 'Stop $number';
+  }
+
+  @override
+  String get whatIfAddStop => 'Add a stop';
+
+  @override
+  String get whatIfRemoveStop => 'Remove this stop';
+
+  @override
+  String whatIfWorkedYear(String year, String date) {
+    return 'Days worked, calendar year $year, through $date';
+  }
+
+  @override
+  String whatIfWorkedLast365(String date) {
+    return 'Days worked, 365 days ending $date';
+  }
+
+  @override
+  String get lockSetting => 'Lock with face, fingerprint or code';
+
+  @override
+  String lockSettingHelper(String appName) {
+    return 'Asks for the phone\'s own unlock each time you open $appName. The phone does the check; nothing leaves it.';
+  }
+
+  @override
+  String get lockUnavailable =>
+      'This phone has no face, fingerprint or code set up.';
+
+  @override
+  String lockTitle(String appName) {
+    return '$appName is locked';
+  }
+
+  @override
+  String get lockUnlock => 'Unlock';
+
+  @override
+  String lockReason(String appName) {
+    return 'Unlock $appName';
+  }
+
+  @override
+  String get lockFailed => 'Not unlocked. You can try again.';
 }

@@ -11,6 +11,8 @@ import 'package:intl/intl.dart';
 
 import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
 import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
+import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart'
+    show purposeName;
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
@@ -145,8 +147,12 @@ String buildRecordText(
       if (entry.isNotEmpty) strings.recordEntryLabel(entry),
       if (exit.isNotEmpty) strings.recordExitLabel(exit),
       if (trip.notes != null) line(strings.recordNotes, trip.notes!),
-      if (record.includeWork)
+      if (record.includeWork) ...[
         strings.rangeWorked(strings.daysCount(record.workedInStay(trip))),
+        if (trip.purpose != null)
+          line(strings.workPurposeLabel, purposeName(strings, trip.purpose!)),
+        if (trip.label != null) line(strings.workLabelField, trip.label!),
+      ],
     ]);
   }
   if (record.visits.isNotEmpty) {
