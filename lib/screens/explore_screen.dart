@@ -141,7 +141,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
-    final trips = context.watch<TripRepository>().trips;
+    final repo = context.watch<TripRepository>();
+    final trips = repo.trips;
+    // EN: Counts include day visits (as one-day stays); the list checks below
+    //     (open stay, stale plans) look at stays only.
+    // FR: Les comptes incluent les visites d'un jour (comme séjours d'un jour) ;
+    //     les vérifications ci-dessous (séjour ouvert, plans périmés) ne
+    //     regardent que les séjours.
+    final counted = repo.countedStays;
     final dates = DateFormat.yMMMMd(strings.localeName);
     String shown(DateTime? d) =>
         d == null ? strings.optionalNotSet : dates.format(d);
@@ -150,7 +157,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final count = bounds == null
         ? null
         : RangeCount.compute(
-            trips: trips,
+            trips: counted,
             start: bounds.$1,
             end: bounds.$2,
             today: _today,
@@ -243,7 +250,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           if (arrival != null && departure != null) ...[
             _WhatIfCard(
               result: WhatIf.compute(
-                trips: trips,
+                trips: counted,
                 arrival: arrival,
                 departure: departure,
               ),

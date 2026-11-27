@@ -29,13 +29,26 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
+import 'package:snowbird_in_usa_tracker/models/day_visit.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 
 // EN: Why a trip was refused. The UI turns these into localised, neutral messages.
 // FR: Pourquoi un séjour a été refusé. L'interface en fait des messages neutres et
 //     localisés.
-enum TripProblem { overlap, futureArrival, tooMany }
+// EN: Why a change was refused. moveBeforeArrival: "I have moved" dated before
+//     the current stay began. splitDate: a split date outside the stay.
+// FR: Pourquoi un changement a été refusé. moveBeforeArrival : « J'ai changé de
+//     lieu » daté d'avant le début du séjour actuel. splitDate : une date de
+//     division hors du séjour.
+enum TripProblem {
+  overlap,
+  futureArrival,
+  tooMany,
+  moveBeforeArrival,
+  splitDate,
+}
 
 class TripValidationException implements Exception {
   final TripProblem problem;
@@ -52,6 +65,11 @@ class TripRepository extends ChangeNotifier {
   //     externe reçoit une vue non modifiable et triée via le getter [trips] afin
   //     qu'il y ait exactement un seul chemin de code pouvant modifier la liste.
   final List<Trip> _trips = [];
+
+  // EN: Day visits (WRK-5), kept apart from stays and saved under their own key.
+  // FR: Visites d'un jour (WRK-5), gardées à part des séjours et enregistrées
+  //     sous leur propre clé.
+  final List<DayVisit> _visits = [];
 
   // EN: Injectable clock, so "today" is deterministic in tests.
   // FR: Horloge injectable, pour un « aujourd'hui » déterministe dans les tests.
@@ -71,6 +89,48 @@ class TripRepository extends ChangeNotifier {
     //     initialisation asynchrone (terminée dans main() avant que ce constructeur
     //     s'exécute), donc il n'y a pas de latence d'E/S ici.
     _trips.addAll(_storage.loadTrips());
+    _visits.addAll(_storage.loadVisits());
+  }
+
+  // EN: Day visits, newest first, unmodifiable (same contract as [trips]).
+  // FR: Visites d'un jour, de la plus récente à la plus ancienne, non
+  //     modifiables (même contrat que [trips]).
+  List<DayVisit> get visits => List.unmodifiable(
+        List<DayVisit>.from(_visits)..sort((a, b) => b.date.compareTo(a.date)),
+      );
+
+  // EN: Everything that counts as presence by "any part of the day": the stays,
+  //     plus each day visit as a one-day stay (DayVisit.asStay). Every figure
+  //     built on DayCounter (summary, record, explore, alerts) reads this, so a
+  //     visit to Detroit counts as a US day exactly as a same-day trip would.
+  //     Lists and editors read [trips] and [visits] instead.
+  // FR: Tout ce qui compte comme présence selon « toute partie du jour » : les
+  //     séjours, plus chaque visite d'un jour sous forme de séjour d'un jour
+  //     (DayVisit.asStay). Chaque chiffre fondé sur DayCounter (résumé, relevé,
+  //     exploration, alertes) lit ceci ; une visite à Détroit compte donc comme
+  //     un jour aux États-Unis exactement comme un aller-retour dans la journée.
+  //     Les listes et les éditeurs lisent plutôt [trips] et [visits].
+  List<Trip> get countedStays => List.unmodifiable([
+        ..._trips,
+        for (final visit in _visits) visit.asStay(),
+      ]);
+
+  // EN: Places used most recently first (stays and visits), at most [limit]:
+  //     offered first in the chooser (PLC-9), so a regular route is one tap.
+  // FR: Les lieux utilisés le plus récemment en premier (séjours et visites), au
+  //     plus [limit] : proposés en tête du sélecteur (PLC-9), pour qu'un trajet
+  //     habituel ne demande qu'un toucher.
+  List<Place> recentPlaces({int limit = 5}) {
+    final dated = [
+      for (final t in _trips) (t.arrivalDate, t.place),
+      for (final v in _visits) (v.date, v.place),
+    ]..sort((a, b) => b.$1.compareTo(a.$1));
+    final seen = <Place>[];
+    for (final (_, place) in dated) {
+      if (!seen.contains(place)) seen.add(place);
+      if (seen.length == limit) break;
+    }
+    return seen;
   }
 
   // EN: All trips, sorted newest-first (by arrival date). Returns an unmodifiable
@@ -129,6 +189,152 @@ class TripRepository extends ChangeNotifier {
         final kept = current.where((t) => t.id != id).toList();
         return kept.length == current.length ? null : kept;
       });
+
+  // EN: "I have moved to..." (STY-3): close the ongoing [current] stay on [date]
+  //     and open the next one, in [place], on the same date, in ONE saved step,
+  //     so a crash between the two can never leave the user nowhere or in two
+  //     places. The shared date is the crossing day: by "any part of the day" it
+  //     counts in both places, as a crossing must. Returns the new stay.
+  // FR: « J'ai changé de lieu... » (STY-3) : fermer le séjour en cours
+  //     [current] à [date] et ouvrir le suivant, dans [place], à la même date, en
+  //     UNE seule étape enregistrée, afin qu'une panne entre les deux ne puisse
+  //     jamais laisser l'utilisateur nulle part ou à deux endroits. La date
+  //     partagée est le jour du passage : selon « toute partie du jour », elle
+  //     compte dans les deux lieux, comme il se doit. Retourne le nouveau séjour.
+  Future<Trip> moveOn(
+    Trip current,
+    DateTime date,
+    Place place, {
+    String? placeName,
+  }) async {
+    final day = DateTime(date.year, date.month, date.day);
+    late final Trip next;
+    await _mutate((list) {
+      final index = list.indexWhere((t) => t.id == current.id);
+      final stored = index == -1 ? null : list[index];
+      if (stored == null ||
+          stored.status != TripStatus.actual ||
+          stored.departureDate != null) {
+        throw ArgumentError.value(current, 'current', 'not an ongoing stay');
+      }
+      if (list.length >= InputLimits.maxTrips) {
+        throw const TripValidationException(TripProblem.tooMany);
+      }
+      if (day.isBefore(stored.arrivalDate)) {
+        throw const TripValidationException(TripProblem.moveBeforeArrival);
+      }
+      final closed = stored.copyWith(departureDate: day);
+      next = Trip.create(
+        arrivalDate: day,
+        departureDate: null,
+        status: TripStatus.actual,
+        place: place,
+        placeName: placeName,
+      );
+      final updated = [...list]..[index] = closed;
+      final result = [...updated, next];
+      _validate(next, result);
+      return result;
+    });
+    return next;
+  }
+
+  // EN: Refine a stay into two places of the SAME country without retyping it
+  //     (STY-9): [stay] becomes [before] up to [at], and a new stay in [after]
+  //     starts on [at] and keeps the rest (its departure, exit details). Because
+  //     both parts are in one country and share [at], no date of the country is
+  //     added or lost: its total cannot change (section 18, tested).
+  // FR: Préciser un séjour en deux lieux du MÊME pays sans le retaper (STY-9) :
+  //     [stay] devient [before] jusqu'à [at], et un nouveau séjour dans [after]
+  //     commence à [at] et garde le reste (son départ, les détails de sortie).
+  //     Comme les deux parties sont dans un même pays et partagent [at], aucune
+  //     date du pays n'est ajoutée ni perdue : son total ne peut pas changer
+  //     (section 18, testé).
+  Future<void> splitStay(
+    Trip stay,
+    DateTime at, {
+    required Place before,
+    required Place after,
+  }) {
+    final day = DateTime(at.year, at.month, at.day);
+    final country = stay.place.country;
+    if (before.country != country || after.country != country) {
+      throw ArgumentError('Both parts must stay in ${country.code}.');
+    }
+    return _mutate((list) {
+      final index = list.indexWhere((t) => t.id == stay.id);
+      if (index == -1) return null;
+      if (list.length >= InputLimits.maxTrips) {
+        throw const TripValidationException(TripProblem.tooMany);
+      }
+      final stored = list[index];
+      final end = stored.departureDate ?? _dateOnly(_now());
+      if (day.isBefore(stored.arrivalDate) || day.isAfter(end)) {
+        throw const TripValidationException(TripProblem.splitDate);
+      }
+      final first = stored.copyWith(
+        departureDate: day,
+        place: before,
+        departureInfo: null,
+      );
+      final second = Trip.create(
+        arrivalDate: day,
+        departureDate: stored.departureDate,
+        status: stored.status,
+        name: stored.name,
+        place: after,
+        placeName: stored.placeName,
+        departureInfo: stored.departureInfo,
+      );
+      return [...list]
+        ..[index] = first
+        ..add(second);
+    });
+  }
+
+  // EN: Add a day visit. An actual visit cannot be in the future, like an
+  //     actual arrival. Visits never conflict with stays: being somewhere else
+  //     for part of a day is their very point.
+  // FR: Ajouter une visite d'un jour. Une visite réelle ne peut pas être dans le
+  //     futur, comme une arrivée réelle. Les visites n'entrent jamais en conflit
+  //     avec les séjours : être ailleurs une partie de la journée est leur raison
+  //     d'être.
+  Future<void> addVisit(DayVisit visit) => _mutateVisits((current) {
+        if (current.length >= InputLimits.maxVisits) {
+          throw const TripValidationException(TripProblem.tooMany);
+        }
+        if (visit.status == TripStatus.actual &&
+            visit.date.isAfter(_dateOnly(_now()))) {
+          throw const TripValidationException(TripProblem.futureArrival);
+        }
+        return [...current, visit];
+      });
+
+  Future<void> deleteVisit(String id) => _mutateVisits((current) {
+        final kept = current.where((v) => v.id != id).toList();
+        return kept.length == current.length ? null : kept;
+      });
+
+  // EN: The same queue as _mutate, so a visit and a stay change never race.
+  // FR: La même file que _mutate, afin qu'un changement de visite et un de
+  //     séjour ne se concurrencent jamais.
+  Future<void> _mutateVisits(
+    List<DayVisit>? Function(List<DayVisit> current) change,
+  ) {
+    final result = _tail.then((_) async {
+      final next = change(List.unmodifiable(_visits));
+      if (next == null) return;
+      await _storage.saveVisits(next);
+      _visits
+        ..clear()
+        ..addAll(next);
+      notifyListeners();
+    });
+    _tail = result.catchError((Object _) {});
+    return result;
+  }
+
+  static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
   // EN: Planned trips are free to overlap: comparing alternatives is their purpose.
   //     An actual trip must have begun and must not conflict with another one. A

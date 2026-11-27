@@ -32,7 +32,12 @@ import 'package:provider/provider.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
+import 'package:snowbird_in_usa_tracker/screens/move_flow.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_picker_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/split_stay_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/labeled_field.dart';
 import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
@@ -45,7 +50,28 @@ class TripEditScreen extends StatefulWidget {
   // FR: Null → création d'un nouveau séjour ; non-null → modification de ce
   //     séjour existant.
   final Trip? existing;
-  const TripEditScreen({super.key, this.existing});
+
+  // EN: Starting values for a NEW stay. "Add next stop" (STY-2) passes the
+  //     previous stay's departure as [initialArrival], so a border crossing is
+  //     entered once, not twice. [initialPlace] defaults to the most recently
+  //     used place: a user who only ever tracks one country chooses it once
+  //     (section 18).
+  // FR: Valeurs de départ d'un NOUVEAU séjour. « Ajouter l'étape suivante »
+  //     (STY-2) passe le départ du séjour précédent comme [initialArrival], afin
+  //     qu'un passage de frontière soit saisi une fois, pas deux. [initialPlace]
+  //     vaut par défaut le dernier lieu utilisé : un utilisateur qui ne suit
+  //     qu'un pays le choisit une seule fois (section 18).
+  final DateTime? initialArrival;
+  final TripStatus? initialStatus;
+  final Place? initialPlace;
+
+  const TripEditScreen({
+    super.key,
+    this.existing,
+    this.initialArrival,
+    this.initialStatus,
+    this.initialPlace,
+  });
 
   @override
   State<TripEditScreen> createState() => _TripEditScreenState();
@@ -67,6 +93,16 @@ class _TripEditScreenState extends State<TripEditScreen> {
   // FR: « Encore aux É.-U. » (FR-2). N'a de sens que pour un séjour réel ; c'est un
   //     choix explicite pour qu'un départ oublié ne soit jamais lu comme ouvert.
   bool _stillInUs = false;
+
+  // EN: The stay's place (PLC-1: required) and, for Elsewhere, its optional
+  //     name. Null only for a brand-new user's first stay, until chosen.
+  // FR: Le lieu du séjour (PLC-1 : obligatoire) et, pour Ailleurs, son nom
+  //     facultatif. Null seulement pour le premier séjour d'un nouvel
+  //     utilisateur, jusqu'à ce qu'il soit choisi.
+  Place? _place;
+  late final TextEditingController _placeName;
+  String? _placeError;
+  final _placeKey = GlobalKey();
   // EN: Problem with the dates, shown under the row concerned until it changes.
   // FR: Problème de dates, affiché sous la rangée concernée jusqu'à modification.
   String? _arrivalError;
@@ -128,7 +164,15 @@ class _TripEditScreenState extends State<TripEditScreen> {
       _arrival = e.arrivalDate;
       _departure = e.departureDate;
       _stillInUs = e.departureDate == null;
+    } else {
+      _arrival = widget.initialArrival;
+      _status = widget.initialStatus ?? TripStatus.actual;
     }
+    final recent = context.read<TripRepository>().recentPlaces(limit: 1);
+    _place = e?.place ??
+        widget.initialPlace ??
+        (recent.isEmpty ? null : recent.first);
+    _placeName = TextEditingController(text: e?.placeName ?? '');
 
     _entryTz = TextEditingController(text: e?.arrivalInfo?.timeZone ?? '');
     _entryLocation =
@@ -152,6 +196,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
     for (final c in [
       _name,
       _notes,
+      _placeName,
       _entryTz,
       _entryLocation,
       _entryMeans,
@@ -226,6 +271,21 @@ class _TripEditScreenState extends State<TripEditScreen> {
                 }),
               ),
               const SizedBox(height: 16),
+              ValueRow(
+                key: _placeKey,
+                label: strings.fieldPlace,
+                value: _place == null
+                    ? strings.optionalNotSet
+                    : placeFullName(strings, _place!),
+                error: _placeError,
+                onTap: _pickPlace,
+              ),
+              if (_place == Place.elsewhere)
+                LabeledField(
+                  controller: _placeName,
+                  maxLength: InputLimits.maxPlaceNameLength,
+                  label: strings.fieldElsewhereName,
+                ),
 
               // EN: The two mandatory dates.
               // FR: Les deux dates obligatoires.
@@ -310,6 +370,47 @@ class _TripEditScreenState extends State<TripEditScreen> {
                 onPressed: _save,
                 child: Text(strings.save),
               ),
+              // EN: Quick steps from a saved stay (section 5). They act on the
+              //     stay as saved, so they are offered only when editing.
+              // FR: Étapes rapides depuis un séjour enregistré (section 5).
+              //     Elles portent sur le séjour tel qu'enregistré ; elles ne
+              //     sont donc offertes qu'en modification.
+              if (widget.existing case final stay?) ...[
+                const SizedBox(height: 16),
+                if (stay.departureDate != null)
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.east),
+                    label: Text(strings.addNextStop),
+                    onPressed: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute<void>(
+                        builder: (_) => TripEditScreen(
+                          initialArrival: stay.departureDate,
+                          initialStatus: stay.status,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (stay.status == TripStatus.actual &&
+                    stay.departureDate == null)
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.moving),
+                    label: Text(strings.movedOn),
+                    onPressed: () async {
+                      final navigator = Navigator.of(context);
+                      if (await startMove(context, stay)) navigator.pop();
+                    },
+                  ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.call_split),
+                  label: Text(strings.splitStay),
+                  onPressed: () => Navigator.of(context).pushReplacement(
+                    MaterialPageRoute<void>(
+                      builder: (_) => SplitStayScreen(stay: stay),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -342,6 +443,20 @@ class _TripEditScreenState extends State<TripEditScreen> {
       } else {
         _departure = picked;
       }
+    });
+  }
+
+  // EN: Recently used places first (PLC-9). Choosing clears the place error.
+  // FR: Les lieux récents d'abord (PLC-9). Choisir efface l'erreur de lieu.
+  Future<void> _pickPlace() async {
+    final picked = await pickPlace(
+      context,
+      recent: context.read<TripRepository>().recentPlaces(),
+    );
+    if (picked == null) return;
+    setState(() {
+      _place = picked;
+      _placeError = null;
     });
   }
 
@@ -385,6 +500,17 @@ class _TripEditScreenState extends State<TripEditScreen> {
       return;
     }
 
+    // EN: Checked after the dates, so date errors keep their order; the field
+    //     is scrolled into view either way.
+    // FR: Vérifié après les dates, afin que les erreurs de date gardent leur
+    //     ordre ; le champ est ramené à l'écran dans les deux cas.
+    final place = _place;
+    if (place == null) {
+      setState(() => _placeError = strings.errorPlaceRequired);
+      final target = _placeKey.currentContext;
+      if (target != null) Scrollable.ensureVisible(target);
+      return;
+    }
     final entryInfo = CrossingInfo.fromInput(
       timeMinutes: _fromTimeOfDay(_entryTime),
       timeZone: _entryTz.text,
@@ -416,6 +542,8 @@ class _TripEditScreenState extends State<TripEditScreen> {
             notes: _notes.text,
             arrivalInfo: entryInfo,
             departureInfo: exitInfo,
+            place: place,
+            placeName: _placeName.text,
           ),
         );
       } else {
@@ -428,6 +556,8 @@ class _TripEditScreenState extends State<TripEditScreen> {
             notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
             arrivalInfo: entryInfo,
             departureInfo: exitInfo,
+            place: place,
+            placeName: _placeName.text,
           ),
         );
       }
@@ -443,7 +573,10 @@ class _TripEditScreenState extends State<TripEditScreen> {
         arrival: switch (e.problem) {
           TripProblem.overlap => strings.errorTripOverlap,
           TripProblem.futureArrival => strings.errorFutureArrival,
-          TripProblem.tooMany => null,
+          TripProblem.tooMany ||
+          TripProblem.moveBeforeArrival ||
+          TripProblem.splitDate =>
+            null,
         },
       );
       return;

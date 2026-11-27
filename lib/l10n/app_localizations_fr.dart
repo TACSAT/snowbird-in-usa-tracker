@@ -449,7 +449,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get tripStillInUs => 'Je suis encore aux É.-U.';
+  String get tripStillInUs => 'J\'y suis encore';
 
   @override
   String get tripStillInUsHelper =>
@@ -661,4 +661,238 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aboutPrivacyPolicy => 'Politique de confidentialité';
+
+  @override
+  String placeName(String code) {
+    String _temp0 = intl.Intl.selectLogic(
+      code,
+      {
+        'CA': 'Canada',
+        'US': 'États-Unis',
+        'MX': 'Mexique',
+        'PM': 'Saint-Pierre-et-Miquelon',
+        'PR': 'Porto Rico',
+        'VI': 'Îles Vierges des États-Unis',
+        'GU': 'Guam',
+        'AS': 'Samoa américaines',
+        'MP': 'Îles Mariannes du Nord',
+        'ZZ': 'Ailleurs',
+        'CA_AB': 'Alberta',
+        'CA_BC': 'Colombie-Britannique',
+        'CA_MB': 'Manitoba',
+        'CA_NB': 'Nouveau-Brunswick',
+        'CA_NL': 'Terre-Neuve-et-Labrador',
+        'CA_NS': 'Nouvelle-Écosse',
+        'CA_NT': 'Territoires du Nord-Ouest',
+        'CA_NU': 'Nunavut',
+        'CA_ON': 'Ontario',
+        'CA_PE': 'Île-du-Prince-Édouard',
+        'CA_QC': 'Québec',
+        'CA_SK': 'Saskatchewan',
+        'CA_YT': 'Yukon',
+        'US_AL': 'Alabama',
+        'US_AK': 'Alaska',
+        'US_AZ': 'Arizona',
+        'US_AR': 'Arkansas',
+        'US_CA': 'Californie',
+        'US_CO': 'Colorado',
+        'US_CT': 'Connecticut',
+        'US_DE': 'Delaware',
+        'US_DC': 'District de Columbia',
+        'US_FL': 'Floride',
+        'US_GA': 'Géorgie',
+        'US_HI': 'Hawaï',
+        'US_ID': 'Idaho',
+        'US_IL': 'Illinois',
+        'US_IN': 'Indiana',
+        'US_IA': 'Iowa',
+        'US_KS': 'Kansas',
+        'US_KY': 'Kentucky',
+        'US_LA': 'Louisiane',
+        'US_ME': 'Maine',
+        'US_MD': 'Maryland',
+        'US_MA': 'Massachusetts',
+        'US_MI': 'Michigan',
+        'US_MN': 'Minnesota',
+        'US_MS': 'Mississippi',
+        'US_MO': 'Missouri',
+        'US_MT': 'Montana',
+        'US_NE': 'Nebraska',
+        'US_NV': 'Nevada',
+        'US_NH': 'New Hampshire',
+        'US_NJ': 'New Jersey',
+        'US_NM': 'Nouveau-Mexique',
+        'US_NY': 'New York',
+        'US_NC': 'Caroline du Nord',
+        'US_ND': 'Dakota du Nord',
+        'US_OH': 'Ohio',
+        'US_OK': 'Oklahoma',
+        'US_OR': 'Oregon',
+        'US_PA': 'Pennsylvanie',
+        'US_RI': 'Rhode Island',
+        'US_SC': 'Caroline du Sud',
+        'US_SD': 'Dakota du Sud',
+        'US_TN': 'Tennessee',
+        'US_TX': 'Texas',
+        'US_UT': 'Utah',
+        'US_VT': 'Vermont',
+        'US_VA': 'Virginie',
+        'US_WA': 'Washington',
+        'US_WV': 'Virginie-Occidentale',
+        'US_WI': 'Wisconsin',
+        'US_WY': 'Wyoming',
+        'MX_AGU': 'Aguascalientes',
+        'MX_BCN': 'Basse-Californie',
+        'MX_BCS': 'Basse-Californie-du-Sud',
+        'MX_CAM': 'Campeche',
+        'MX_CHH': 'Chihuahua',
+        'MX_CHP': 'Chiapas',
+        'MX_CMX': 'Mexico (ville)',
+        'MX_COA': 'Coahuila',
+        'MX_COL': 'Colima',
+        'MX_DUR': 'Durango',
+        'MX_GRO': 'Guerrero',
+        'MX_GUA': 'Guanajuato',
+        'MX_HID': 'Hidalgo',
+        'MX_JAL': 'Jalisco',
+        'MX_MEX': 'État de Mexico',
+        'MX_MIC': 'Michoacán',
+        'MX_MOR': 'Morelos',
+        'MX_NAY': 'Nayarit',
+        'MX_NLE': 'Nuevo León',
+        'MX_OAX': 'Oaxaca',
+        'MX_PUE': 'Puebla',
+        'MX_QUE': 'Querétaro',
+        'MX_ROO': 'Quintana Roo',
+        'MX_SIN': 'Sinaloa',
+        'MX_SLP': 'San Luis Potosí',
+        'MX_SON': 'Sonora',
+        'MX_TAB': 'Tabasco',
+        'MX_TAM': 'Tamaulipas',
+        'MX_TLA': 'Tlaxcala',
+        'MX_VER': 'Veracruz',
+        'MX_YUC': 'Yucatán',
+        'MX_ZAC': 'Zacatecas',
+        'other': '$code',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String placeInCountry(String region, String country) {
+    return '$region, $country';
+  }
+
+  @override
+  String placeElsewhereNamed(String name) {
+    return 'Ailleurs ($name)';
+  }
+
+  @override
+  String placeWholeCountry(String country) {
+    return '$country, région non précisée';
+  }
+
+  @override
+  String get fieldPlace => 'Lieu';
+
+  @override
+  String get errorPlaceRequired => 'Choisissez un lieu.';
+
+  @override
+  String get fieldElsewhereName => 'Nom du pays (facultatif)';
+
+  @override
+  String get placePickerTitle => 'Choisir un lieu';
+
+  @override
+  String get placeSearchHint => 'Rechercher par nom';
+
+  @override
+  String get placeRecent => 'Récents';
+
+  @override
+  String get placeCountries => 'Pays';
+
+  @override
+  String get placeNoMatch => 'Aucun lieu ne correspond à ce nom.';
+
+  @override
+  String get placeChooseRegion => 'Province, territoire ou État';
+
+  @override
+  String tripPlaceSubtitle(String place, String rest) {
+    return '$place · $rest';
+  }
+
+  @override
+  String get addNextStop => 'Ajouter l\'étape suivante';
+
+  @override
+  String get movedOn => 'J\'ai changé de lieu…';
+
+  @override
+  String moveConfirmTitle(String place) {
+    return 'Nouveau lieu : $place';
+  }
+
+  @override
+  String get moveDateLabel => 'Date du changement';
+
+  @override
+  String moveExplain(String from, String to) {
+    return 'Le séjour actuel ($from) se termine à cette date, et un nouveau séjour ($to) commence le même jour. Ce jour compte dans les deux lieux.';
+  }
+
+  @override
+  String get errorMoveBeforeArrival =>
+      'Le changement ne peut pas précéder le début du séjour actuel.';
+
+  @override
+  String get splitStay => 'Diviser en deux lieux';
+
+  @override
+  String get splitTitle => 'Diviser ce séjour';
+
+  @override
+  String get splitDateLabel => 'Second lieu à partir du';
+
+  @override
+  String get splitBeforeLabel => 'Lieu avant cette date';
+
+  @override
+  String get splitAfterLabel => 'Lieu à partir de cette date';
+
+  @override
+  String splitExplain(String country) {
+    return 'Les deux parties restent dans le pays ($country) ; son total ne change donc pas. La date choisie termine la première partie et commence la seconde ; elle compte donc dans les deux lieux.';
+  }
+
+  @override
+  String get errorSplitDate => 'Choisissez une date comprise dans le séjour.';
+
+  @override
+  String get visitsTitle => 'Visites d\'un jour';
+
+  @override
+  String get visitsExplain =>
+      'Une visite d\'un jour est une partie de journée passée dans un autre lieu, sans y déménager : travail, courses ou rendez-vous. Elle compte comme un jour de présence dans ce lieu, sans séjour aller ni séjour retour.';
+
+  @override
+  String get visitsEmpty => 'Aucune visite d\'un jour enregistrée.';
+
+  @override
+  String get addVisit => 'Ajouter une visite d\'un jour';
+
+  @override
+  String get deleteVisit => 'Supprimer la visite d\'un jour';
+
+  @override
+  String get fieldVisitDate => 'Date de la visite';
+
+  @override
+  String errorTooManyVisits(int max) {
+    return 'Vous avez atteint la limite de $max visites d\'un jour.';
+  }
 }

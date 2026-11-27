@@ -131,7 +131,7 @@ class AlertRepository extends ChangeNotifier {
   List<ScheduledAlert> computeSchedule() {
     final now = _now();
     final today = DateTime(now.year, now.month, now.day);
-    final trips = _tripRepository.trips;
+    final trips = _tripRepository.countedStays;
 
     final schedule = <ScheduledAlert>[];
     for (final alert in _alerts) {
@@ -163,7 +163,7 @@ class AlertRepository extends ChangeNotifier {
     final now = _now();
     return _reachDate(
       alert,
-      _tripRepository.trips,
+      _tripRepository.countedStays,
       DateTime(now.year, now.month, now.day),
     );
   }
@@ -176,7 +176,7 @@ class AlertRepository extends ChangeNotifier {
   bool isReached(DayAlert alert) {
     final now = _now();
     final today = DateTime(now.year, now.month, now.day);
-    final trips = _tripRepository.trips;
+    final trips = _tripRepository.countedStays;
     switch (alert.kind) {
       case AlertKind.dayCountThreshold:
         return DayCounter.countDaysInLastDays(

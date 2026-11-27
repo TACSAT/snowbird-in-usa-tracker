@@ -49,6 +49,25 @@ class DayVisit {
   }) =>
       DayVisit(id: const Uuid().v4(), date: date, place: place, status: status);
 
+  // EN: The visit as a one-day stay, for counting by "any part of the day". A
+  //     visit and a stay arriving and leaving on its date count exactly the
+  //     same way there, so DayCounter (the US figures, the SPT, alerts) counts
+  //     visits without a second set of rules. The id is prefixed so it can never
+  //     be mistaken for, or edited as, a real stay.
+  // FR: La visite sous forme de séjour d'un jour, pour compter selon « toute
+  //     partie du jour ». Une visite et un séjour arrivant et repartant à sa date
+  //     comptent exactement de la même façon ; DayCounter (les chiffres des
+  //     États-Unis, le critère de présence substantielle, les alertes) compte
+  //     donc les visites sans second jeu de règles. L'identifiant est préfixé
+  //     afin de ne jamais être pris pour un vrai séjour, ni modifié comme tel.
+  Trip asStay() => Trip(
+        id: 'visit:$id',
+        arrivalDate: date,
+        departureDate: date,
+        status: status,
+        place: place,
+      );
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'date': '${date.year.toString().padLeft(4, '0')}-'

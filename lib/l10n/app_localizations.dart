@@ -839,7 +839,7 @@ abstract class AppLocalizations {
   /// No description provided for @tripStillInUs.
   ///
   /// In en, this message translates to:
-  /// **'I am still in the US'**
+  /// **'I am still here'**
   String get tripStillInUs;
 
   /// No description provided for @tripStillInUsHelper.
@@ -1159,6 +1159,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy policy'**
   String get aboutPrivacyPolicy;
+
+  /// Official name of a place, from its ISO 3166 code with '-' replaced by '_'. 'other' shows the code itself, for a code from a newer version (PLC-8).
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, CA{Canada} US{United States} MX{Mexico} PM{Saint Pierre and Miquelon} PR{Puerto Rico} VI{U.S. Virgin Islands} GU{Guam} AS{American Samoa} MP{Northern Mariana Islands} ZZ{Elsewhere} CA_AB{Alberta} CA_BC{British Columbia} CA_MB{Manitoba} CA_NB{New Brunswick} CA_NL{Newfoundland and Labrador} CA_NS{Nova Scotia} CA_NT{Northwest Territories} CA_NU{Nunavut} CA_ON{Ontario} CA_PE{Prince Edward Island} CA_QC{Quebec} CA_SK{Saskatchewan} CA_YT{Yukon} US_AL{Alabama} US_AK{Alaska} US_AZ{Arizona} US_AR{Arkansas} US_CA{California} US_CO{Colorado} US_CT{Connecticut} US_DE{Delaware} US_DC{District of Columbia} US_FL{Florida} US_GA{Georgia} US_HI{Hawaii} US_ID{Idaho} US_IL{Illinois} US_IN{Indiana} US_IA{Iowa} US_KS{Kansas} US_KY{Kentucky} US_LA{Louisiana} US_ME{Maine} US_MD{Maryland} US_MA{Massachusetts} US_MI{Michigan} US_MN{Minnesota} US_MS{Mississippi} US_MO{Missouri} US_MT{Montana} US_NE{Nebraska} US_NV{Nevada} US_NH{New Hampshire} US_NJ{New Jersey} US_NM{New Mexico} US_NY{New York} US_NC{North Carolina} US_ND{North Dakota} US_OH{Ohio} US_OK{Oklahoma} US_OR{Oregon} US_PA{Pennsylvania} US_RI{Rhode Island} US_SC{South Carolina} US_SD{South Dakota} US_TN{Tennessee} US_TX{Texas} US_UT{Utah} US_VT{Vermont} US_VA{Virginia} US_WA{Washington} US_WV{West Virginia} US_WI{Wisconsin} US_WY{Wyoming} MX_AGU{Aguascalientes} MX_BCN{Baja California} MX_BCS{Baja California Sur} MX_CAM{Campeche} MX_CHH{Chihuahua} MX_CHP{Chiapas} MX_CMX{Mexico City} MX_COA{Coahuila} MX_COL{Colima} MX_DUR{Durango} MX_GRO{Guerrero} MX_GUA{Guanajuato} MX_HID{Hidalgo} MX_JAL{Jalisco} MX_MEX{State of Mexico} MX_MIC{Michoacán} MX_MOR{Morelos} MX_NAY{Nayarit} MX_NLE{Nuevo León} MX_OAX{Oaxaca} MX_PUE{Puebla} MX_QUE{Querétaro} MX_ROO{Quintana Roo} MX_SIN{Sinaloa} MX_SLP{San Luis Potosí} MX_SON{Sonora} MX_TAB{Tabasco} MX_TAM{Tamaulipas} MX_TLA{Tlaxcala} MX_VER{Veracruz} MX_YUC{Yucatán} MX_ZAC{Zacatecas} other{{code}}}'**
+  String placeName(String code);
+
+  /// A region with its country, e.g. "Ontario, Canada". No preposition, so it reads correctly in French.
+  ///
+  /// In en, this message translates to:
+  /// **'{region}, {country}'**
+  String placeInCountry(String region, String country);
+
+  /// A stay Elsewhere with the country name the user typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Elsewhere ({name})'**
+  String placeElsewhereNamed(String name);
+
+  /// Chooser entry for the whole country, with no province, territory or state.
+  ///
+  /// In en, this message translates to:
+  /// **'{country}, region not recorded'**
+  String placeWholeCountry(String country);
+
+  /// Label of the place field on the stay screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Place'**
+  String get fieldPlace;
+
+  /// Shown when a stay is saved with no place.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a place.'**
+  String get errorPlaceRequired;
+
+  /// Optional name for a stay Elsewhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Country name (optional)'**
+  String get fieldElsewhereName;
+
+  /// Title of the place chooser.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a place'**
+  String get placePickerTitle;
+
+  /// Hint of the search field in the place chooser.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name'**
+  String get placeSearchHint;
+
+  /// Heading of recently used places in the chooser.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get placeRecent;
+
+  /// Heading of the list of countries in the chooser.
+  ///
+  /// In en, this message translates to:
+  /// **'Countries'**
+  String get placeCountries;
+
+  /// Chooser search with no result.
+  ///
+  /// In en, this message translates to:
+  /// **'No place matches that name.'**
+  String get placeNoMatch;
+
+  /// Heading of the list of regions of one country.
+  ///
+  /// In en, this message translates to:
+  /// **'Province, territory or state'**
+  String get placeChooseRegion;
+
+  /// Stay list subtitle: place, then dates or days.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} · {rest}'**
+  String tripPlaceSubtitle(String place, String rest);
+
+  /// Starts a new stay beginning on the day this one ends (STY-2).
+  ///
+  /// In en, this message translates to:
+  /// **'Add next stop'**
+  String get addNextStop;
+
+  /// Closes the ongoing stay and opens the next one on the same date (STY-3).
+  ///
+  /// In en, this message translates to:
+  /// **'I have moved…'**
+  String get movedOn;
+
+  /// Title of the move confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'New place: {place}'**
+  String moveConfirmTitle(String place);
+
+  /// Date field of the move confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of the move'**
+  String get moveDateLabel;
+
+  /// Body of the move confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'The current stay ({from}) ends on this date, and a new stay ({to}) starts the same day. That day counts in both places.'**
+  String moveExplain(String from, String to);
+
+  /// Move date before the ongoing stay arrival.
+  ///
+  /// In en, this message translates to:
+  /// **'The move cannot be before the current stay began.'**
+  String get errorMoveBeforeArrival;
+
+  /// Action: split a stay into two regions without retyping it (STY-9).
+  ///
+  /// In en, this message translates to:
+  /// **'Split into two places'**
+  String get splitStay;
+
+  /// Title of the split screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Split this stay'**
+  String get splitTitle;
+
+  /// Date where the second part begins.
+  ///
+  /// In en, this message translates to:
+  /// **'Second place from'**
+  String get splitDateLabel;
+
+  /// Place of the first part.
+  ///
+  /// In en, this message translates to:
+  /// **'Place before that date'**
+  String get splitBeforeLabel;
+
+  /// Place of the second part.
+  ///
+  /// In en, this message translates to:
+  /// **'Place from that date'**
+  String get splitAfterLabel;
+
+  /// Explanation on the split screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Both parts stay in {country}, so its total does not change. The date you choose ends the first part and starts the second, so it counts in both places.'**
+  String splitExplain(String country);
+
+  /// Split date outside the stay.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date within the stay.'**
+  String get errorSplitDate;
+
+  /// Title of the day visits screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Day visits'**
+  String get visitsTitle;
+
+  /// Explanation at the top of the day visits screen.
+  ///
+  /// In en, this message translates to:
+  /// **'A day visit is part of a day in another place, without moving there: work, shopping or an appointment. It counts as a day present there, without a stay out and a stay back.'**
+  String get visitsExplain;
+
+  /// Empty day visits list.
+  ///
+  /// In en, this message translates to:
+  /// **'No day visits recorded.'**
+  String get visitsEmpty;
+
+  /// Button to add a day visit.
+  ///
+  /// In en, this message translates to:
+  /// **'Add day visit'**
+  String get addVisit;
+
+  /// Tooltip to delete a day visit.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete day visit'**
+  String get deleteVisit;
+
+  /// Date field of a day visit.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of the visit'**
+  String get fieldVisitDate;
+
+  /// Day visit limit reached.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the limit of {max} day visits.'**
+  String errorTooManyVisits(int max);
 }
 
 class _AppLocalizationsDelegate
