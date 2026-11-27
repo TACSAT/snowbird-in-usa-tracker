@@ -1139,4 +1139,145 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterApply => 'Afficher';
+
+  @override
+  String get recordHeadingAll => 'Fiche de présence';
+
+  @override
+  String recordHeadingPlace(String place) {
+    return 'Fiche de présence : $place';
+  }
+
+  @override
+  String get recordSummaryTitleAll => 'Jours de présence (réels)';
+
+  @override
+  String recordCountedBy(String convention) {
+    return 'Compté selon : $convention';
+  }
+
+  @override
+  String recordAssumedLine(String year, String last) {
+    return 'Présumés au domicile, non enregistrés : $year cette année civile, $last au cours des 365 derniers jours';
+  }
+
+  @override
+  String recordPlannedLine(String year, String days) {
+    return 'Planifiés pour le reste de $year : $days';
+  }
+
+  @override
+  String recordWorkedLine(String year, String last) {
+    return 'Jours travaillés : $year cette année civile, $last au cours des 365 derniers jours';
+  }
+
+  @override
+  String get recordVisit => 'Visite d\'un jour';
+
+  @override
+  String get exportScopeHeading => 'Ce que couvre la fiche';
+
+  @override
+  String get exportScopeAll => 'Tous les lieux';
+
+  @override
+  String exportScopeOnly(String place) {
+    return '$place seulement';
+  }
+
+  @override
+  String get exportIncludeWork => 'Ajouter les jours travaillés à cet export';
+
+  @override
+  String get exportIncludeWorkHelper =>
+      'Désactivé à chaque ouverture de cet écran : ce que l\'on fait dans un pays peut compter pour le droit d\'y être.';
+
+  @override
+  String get exportPreviewHeading => 'Cet export contient';
+
+  @override
+  String exportPreviewPlaces(String places) {
+    return 'Lieux : $places';
+  }
+
+  @override
+  String exportPreviewDates(String from, String to) {
+    return 'Dates : du $from au $to';
+  }
+
+  @override
+  String exportPreviewStays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count séjours',
+      one: '1 séjour',
+      zero: 'Aucun séjour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewVisits(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count visites d\'un jour',
+      one: '1 visite d\'un jour',
+      zero: 'Aucune visite d\'un jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewNames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Les noms de $count séjours',
+      one: 'Le nom d\'un séjour',
+      zero: 'Aucun nom de séjour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewNotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Les notes de $count séjours',
+      one: 'Les notes d\'un séjour',
+      zero: 'Aucune note',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewCrossings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Les détails de passage de $count séjours',
+      one: 'Les détails de passage d\'un séjour',
+      zero: 'Aucun détail de passage',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exportPreviewWorkYes => 'Jours travaillés : inclus';
+
+  @override
+  String get exportPreviewWorkNo => 'Jours travaillés : non inclus';
+
+  @override
+  String get exportPreviewHome =>
+      'Jours présumés au domicile : inclus, affichés à part';
+
+  @override
+  String get exportFormatsHeading => 'Partager ou imprimer';
+
+  @override
+  String get exportAsLedger => 'Registre jour par jour (CSV)';
 }

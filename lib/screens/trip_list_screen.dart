@@ -20,11 +20,11 @@ import 'package:provider/provider.dart';
 import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
-import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/explore_screen.dart';
+import 'package:snowbird_in_usa_tracker/screens/export_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/move_flow.dart';
 import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
 import 'package:snowbird_in_usa_tracker/screens/presence_table_card.dart';
@@ -32,13 +32,8 @@ import 'package:snowbird_in_usa_tracker/screens/visits_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/reference_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_edit_screen.dart';
-import 'package:snowbird_in_usa_tracker/services/record_exporter.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
-
-// EN: The ways to export the US Presence Record (FR-8).
-// FR: Les façons d'exporter la fiche de présence (FR-8).
-enum _ExportChoice { pdf, text, image, csv, print }
 
 // EN: Overflow-menu destinations (FR-14/15/20).
 // FR: Destinations du menu de débordement (FR-14/15/20).
@@ -185,18 +180,6 @@ class _TripListScreenState extends State<TripListScreen> {
     if (applied != null && mounted) setState(() => _filter = applied);
   }
 
-  // EN: Locates the export button on screen, where an iPad anchors its share popover.
-  // FR: Situe le bouton d'export à l'écran, où l'iPad ancre sa bulle de partage.
-  final _exportButtonKey = GlobalKey();
-
-  Rect _shareOrigin() {
-    final box = _exportButtonKey.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) {
-      return const Rect.fromLTWH(0, 0, 1, 1);
-    }
-    return box.localToGlobal(Offset.zero) & box.size;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -287,107 +270,21 @@ class _TripListScreenState extends State<TripListScreen> {
   //     l'OS (feuille de partage ou boîte d'impression). Tous les objets liés au
   //     contexte sont capturés avant les await. Tout échec s'affiche en barre
   //     neutre plutôt que de planter.
+  // EN: Exporting opens its own screen: scope, the work opt-in and a preview
+  //     come before any format (section 11).
+  // FR: L'export ouvre son propre écran : la portée, l'option travail et un
+  //     aperçu viennent avant tout format (section 11).
   Future<void> _openExportSheet() async {
     final strings = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final trips = context.read<TripRepository>().trips;
-    final localeName = strings.localeName;
-
-    if (trips.isEmpty) {
+    final repo = context.read<TripRepository>();
+    if (repo.trips.isEmpty && repo.visits.isEmpty) {
       messenger.showSnackBar(SnackBar(content: Text(strings.exportEmpty)));
       return;
     }
-
-    // EN: The record's figures include day visits, as one-day stays, so they
-    //     match the summary on screen.
-    // FR: Les chiffres du relevé incluent les visites d'un jour, comme séjours
-    //     d'un jour, afin de concorder avec le résumé à l'écran.
-    final record = PresenceRecord.build(
-      trips: context.read<TripRepository>().countedStays,
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const ExportScreen()),
     );
-
-    final choice = await showModalBottomSheet<_ExportChoice>(
-      context: context,
-      // EN: Scrolls and may use the full height, or large text would push the last
-      //     choices off screen.
-      // FR: Défile et peut prendre toute la hauteur, sinon le grand texte pousserait
-      //     les derniers choix hors de l'écran.
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (ctx) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.picture_as_pdf_outlined),
-                title: Text(strings.exportAsPdf),
-                onTap: () => Navigator.pop(ctx, _ExportChoice.pdf),
-              ),
-              ListTile(
-                leading: const Icon(Icons.notes),
-                title: Text(strings.exportAsText),
-                onTap: () => Navigator.pop(ctx, _ExportChoice.text),
-              ),
-              ListTile(
-                leading: const Icon(Icons.image_outlined),
-                title: Text(strings.exportAsImage),
-                onTap: () => Navigator.pop(ctx, _ExportChoice.image),
-              ),
-              ListTile(
-                leading: const Icon(Icons.table_chart_outlined),
-                title: Text(strings.exportAsCsv),
-                onTap: () => Navigator.pop(ctx, _ExportChoice.csv),
-              ),
-              ListTile(
-                leading: const Icon(Icons.print_outlined),
-                title: Text(strings.exportPrint),
-                onTap: () => Navigator.pop(ctx, _ExportChoice.print),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (choice == null) return;
-
-    try {
-      switch (choice) {
-        case _ExportChoice.pdf:
-          await RecordExporter.sharePdf(
-            record,
-            strings: strings,
-            localeName: localeName,
-            origin: _shareOrigin(),
-          );
-        case _ExportChoice.text:
-          await RecordExporter.shareText(
-            record,
-            strings: strings,
-            localeName: localeName,
-            origin: _shareOrigin(),
-          );
-        case _ExportChoice.image:
-          await RecordExporter.shareImage(
-            record,
-            strings: strings,
-            localeName: localeName,
-            origin: _shareOrigin(),
-          );
-        case _ExportChoice.csv:
-          await RecordExporter.shareCsv(record, origin: _shareOrigin());
-        case _ExportChoice.print:
-          await RecordExporter.printRecord(
-            record,
-            strings: strings,
-            localeName: localeName,
-          );
-      }
-    } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(strings.exportError(e.toString()))),
-      );
-    }
   }
 
   // EN: Route an overflow-menu selection to its screen.
@@ -458,7 +355,6 @@ class _TripListScreenState extends State<TripListScreen> {
               onPressed: () => _openFilter(trips),
             ),
           IconButton(
-            key: _exportButtonKey,
             icon: const Icon(Icons.ios_share_rounded),
             tooltip: strings.exportRecord,
             onPressed: _openExportSheet,

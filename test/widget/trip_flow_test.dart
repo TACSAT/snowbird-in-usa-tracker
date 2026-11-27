@@ -194,11 +194,26 @@ void main() {
     await tester.tap(find.byIcon(Icons.ios_share_rounded));
     await tester.pumpAndSettle();
 
-    expect(find.text('PDF document'), findsOneWidget);
-    expect(find.text('Plain text (for screen readers)'), findsOneWidget);
-    expect(find.text('Image (PNG)'), findsOneWidget);
-    expect(find.text('Spreadsheet (CSV)'), findsOneWidget);
-    expect(find.text('Print'), findsOneWidget);
+    // EN: A US-only user starts on the US-only record (EXP-1).
+    // FR: Un utilisateur des États-Unis seuls commence sur la fiche des
+    //     États-Unis seuls (EXP-1).
+    expect(find.text('United States only'), findsOneWidget);
+    expect(find.text('This export contains'), findsOneWidget);
+    for (final format in [
+      'PDF document',
+      'Plain text (for screen readers)',
+      'Image (PNG)',
+      'Spreadsheet (CSV)',
+      'Day-by-day ledger (CSV)',
+      'Print',
+    ]) {
+      await tester.scrollUntilVisible(
+        find.text(format),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text(format), findsOneWidget);
+    }
   });
 
   const onboarded = {

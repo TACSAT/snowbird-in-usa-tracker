@@ -9,6 +9,8 @@
 
 import 'package:intl/intl.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/presence_record.dart';
@@ -33,6 +35,26 @@ String crossingText(CrossingInfo? info) {
   ].join(', ');
 }
 
+// EN: The record's title: the original one for the US-only record, otherwise
+//     "Presence Record", with the country when limited to one (EXP-1).
+// FR: Le titre de la fiche : celui d'origine pour les États-Unis seuls, sinon
+//     « Fiche de présence », avec le pays si elle est limitée à un seul (EXP-1).
+String recordHeadingFor(PresenceRecord record, AppLocalizations strings) {
+  final scope = record.scope;
+  if (record.isUnitedStates) return strings.recordHeading;
+  return scope == null
+      ? strings.recordHeadingAll
+      : strings.recordHeadingPlace(placeFullName(strings, scope));
+}
+
+// EN: A counting convention in words, as the settings name it.
+// FR: Une convention de comptage en mots, comme la nomment les paramètres.
+String conventionName(AppLocalizations strings, CountingConvention c) =>
+    switch (c) {
+      CountingConvention.anyPart => strings.conventionAnyPart,
+      CountingConvention.endOfDay => strings.conventionEndOfDay,
+    };
+
 String buildRecordText(
   PresenceRecord record, {
   required AppLocalizations strings,
@@ -43,20 +65,60 @@ String buildRecordText(
   String line(String label, String value) => strings.recordLine(label, value);
   String days(String label, int n) => line(label, strings.daysCount(n));
 
+  // EN: The US-only record keeps every line it always had, in the same order
+  //     (tested against a frozen copy); it only adds how days were counted and
+  //     each stay's place (EXP-2, EXP-3).
+  // FR: La fiche des États-Unis seuls garde chacune de ses lignes, dans le même
+  //     ordre (testé contre une copie figée) ; elle n'ajoute que la façon de
+  //     compter les jours et le lieu de chaque séjour (EXP-2, EXP-3).
   final lines = <String>[
-    strings.recordHeading,
+    recordHeadingFor(record, strings),
     strings.recordAsOf(dates.format(record.asOf)),
     '',
     strings.recordDisclaimer,
     '',
-    strings.recordSummaryTitle,
-    days(strings.windowThisYear, totals.thisCalendarYear),
-    days(strings.windowLast365, totals.rollingLast365),
-    days(strings.windowLastYear, totals.priorCalendarYear),
-    line(strings.recordSptLabel, record.formattedSpt),
-    // EN: Fraction characters are not read reliably; plain digits are.
-    // FR: Les caractères de fraction ne sont pas lus de façon fiable ; les chiffres si.
-    strings.recordSptFormula.replaceAll('⅓', '1/3').replaceAll('⅙', '1/6'),
+    if (record.isUnitedStates) ...[
+      strings.recordSummaryTitle,
+      days(strings.windowThisYear, totals.thisCalendarYear),
+      days(strings.windowLast365, totals.rollingLast365),
+      days(strings.windowLastYear, totals.priorCalendarYear),
+    ] else ...[
+      strings.recordSummaryTitleAll,
+      for (final p in record.places) ...[
+        '',
+        placeFullName(strings, p.place),
+        days(strings.windowThisYear, p.thisCalendarYear),
+        days(strings.windowLast365, p.rollingLast365),
+        days(strings.windowLastYear, p.priorCalendarYear),
+        strings.recordCountedBy(conventionName(strings, p.convention)),
+        if (p.assumedThisYear > 0 || p.assumedLast365 > 0)
+          strings.recordAssumedLine(
+            strings.daysCount(p.assumedThisYear),
+            strings.daysCount(p.assumedLast365),
+          ),
+        if (p.plannedThisYear > 0)
+          strings.recordPlannedLine(
+            '${record.asOf.year}',
+            strings.daysCount(p.plannedThisYear),
+          ),
+        if (record.includeWork)
+          strings.recordWorkedLine(
+            strings.daysCount(p.workedThisYear),
+            strings.daysCount(p.workedLast365),
+          ),
+      ],
+      if (record.showsSpt) '',
+    ],
+    if (record.showsSpt) ...[
+      line(strings.recordSptLabel, record.formattedSpt),
+      // EN: Fraction characters are not read reliably; plain digits are.
+      // FR: Les caractères de fraction ne sont pas lus de façon fiable ; les chiffres si.
+      strings.recordSptFormula.replaceAll('⅓', '1/3').replaceAll('⅙', '1/6'),
+    ],
+    if (record.isUnitedStates)
+      strings.recordCountedBy(
+        conventionName(strings, CountingConvention.anyPart),
+      ),
   ];
 
   for (final (index, trip) in record.trips.indexed) {
@@ -72,6 +134,7 @@ String buildRecordText(
       '',
       strings.recordTripNumber(index + 1, record.trips.length),
       line(strings.recordColStatus, status),
+      line(strings.fieldPlace, stayPlaceName(strings, trip)),
       if (trip.name != null) line(strings.recordTripName, trip.name!),
       line(strings.fieldArrivalDate, dates.format(trip.arrivalDate)),
       line(
@@ -82,7 +145,24 @@ String buildRecordText(
       if (entry.isNotEmpty) strings.recordEntryLabel(entry),
       if (exit.isNotEmpty) strings.recordExitLabel(exit),
       if (trip.notes != null) line(strings.recordNotes, trip.notes!),
+      if (record.includeWork)
+        strings.rangeWorked(strings.daysCount(record.workedInStay(trip))),
     ]);
+  }
+  if (record.visits.isNotEmpty) {
+    lines.addAll(['', strings.visitsTitle]);
+    for (final visit in record.visits) {
+      lines.add(
+        line(
+          dates.format(visit.date),
+          [
+            placeFullName(strings, visit.place),
+            if (visit.status == TripStatus.planned) strings.tripStatusPlanned,
+            if (record.includeWork && visit.worked) strings.tableWorked,
+          ].join(' · '),
+        ),
+      );
+    }
   }
   lines.addAll(['', strings.recordAuthor(AppIdentity.name, AppIdentity.maker)]);
 

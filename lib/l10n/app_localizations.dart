@@ -1765,6 +1765,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show'**
   String get filterApply;
+
+  /// Title of a record covering all places (EXP-1).
+  ///
+  /// In en, this message translates to:
+  /// **'Presence Record'**
+  String get recordHeadingAll;
+
+  /// Title of a record limited to one country other than the United States.
+  ///
+  /// In en, this message translates to:
+  /// **'Presence Record: {place}'**
+  String recordHeadingPlace(String place);
+
+  /// Summary heading of a record that is not the US-only one.
+  ///
+  /// In en, this message translates to:
+  /// **'Days present (actual)'**
+  String get recordSummaryTitleAll;
+
+  /// States the counting convention on a record (EXP-2).
+  ///
+  /// In en, this message translates to:
+  /// **'Counted by: {convention}'**
+  String recordCountedBy(String convention);
+
+  /// Assumed days on a record, apart from recorded ones (HOM-2, EXP-2).
+  ///
+  /// In en, this message translates to:
+  /// **'Assumed at home, not recorded: {year} this calendar year, {last} in the last 365 days'**
+  String recordAssumedLine(String year, String last);
+
+  /// Planned days still ahead this year, apart from actual ones (EXP-2).
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for the rest of {year}: {days}'**
+  String recordPlannedLine(String year, String days);
+
+  /// Days worked on a record, only when added to the export (WRK-8).
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked: {year} this calendar year, {last} in the last 365 days'**
+  String recordWorkedLine(String year, String last);
+
+  /// Status of a day visit in the record list.
+  ///
+  /// In en, this message translates to:
+  /// **'Day visit'**
+  String get recordVisit;
+
+  /// Heading of the scope choice (EXP-1).
+  ///
+  /// In en, this message translates to:
+  /// **'What the record covers'**
+  String get exportScopeHeading;
+
+  /// Scope: every place.
+  ///
+  /// In en, this message translates to:
+  /// **'All places'**
+  String get exportScopeAll;
+
+  /// Scope: one country only.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} only'**
+  String exportScopeOnly(String place);
+
+  /// Opt-in for work details, off each time (WRK-8).
+  ///
+  /// In en, this message translates to:
+  /// **'Add days worked to this export'**
+  String get exportIncludeWork;
+
+  /// Why the work opt-in is never remembered.
+  ///
+  /// In en, this message translates to:
+  /// **'Off each time you open this screen: what someone does in a country can matter to their right to be there.'**
+  String get exportIncludeWorkHelper;
+
+  /// Heading of the export preview (EXP-6).
+  ///
+  /// In en, this message translates to:
+  /// **'This export contains'**
+  String get exportPreviewHeading;
+
+  /// Preview: places in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'Places: {places}'**
+  String exportPreviewPlaces(String places);
+
+  /// Preview: first and last date in the export.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates: {from} to {to}'**
+  String exportPreviewDates(String from, String to);
+
+  /// Preview: number of stays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No stays} =1{1 stay} other{{count} stays}}'**
+  String exportPreviewStays(int count);
+
+  /// Preview: number of day visits.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No day visits} =1{1 day visit} other{{count} day visits}}'**
+  String exportPreviewVisits(int count);
+
+  /// Preview: stay names the user typed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No stay names} =1{The name of 1 stay} other{The names of {count} stays}}'**
+  String exportPreviewNames(int count);
+
+  /// Preview: stays with notes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No notes} =1{Notes from 1 stay} other{Notes from {count} stays}}'**
+  String exportPreviewNotes(int count);
+
+  /// Preview: stays with crossing details.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No crossing details} =1{Crossing details from 1 stay} other{Crossing details from {count} stays}}'**
+  String exportPreviewCrossings(int count);
+
+  /// Preview: work included.
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked: included'**
+  String get exportPreviewWorkYes;
+
+  /// Preview: work left out.
+  ///
+  /// In en, this message translates to:
+  /// **'Days worked: not included'**
+  String get exportPreviewWorkNo;
+
+  /// Preview: the home base figures.
+  ///
+  /// In en, this message translates to:
+  /// **'Days assumed at home: included, shown apart'**
+  String get exportPreviewHome;
+
+  /// Heading above the export formats.
+  ///
+  /// In en, this message translates to:
+  /// **'Share or print'**
+  String get exportFormatsHeading;
+
+  /// Export the day-by-day ledger (EXP-5).
+  ///
+  /// In en, this message translates to:
+  /// **'Day-by-day ledger (CSV)'**
+  String get exportAsLedger;
 }
 
 class _AppLocalizationsDelegate

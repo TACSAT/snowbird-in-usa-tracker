@@ -1129,4 +1129,144 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterApply => 'Show';
+
+  @override
+  String get recordHeadingAll => 'Presence Record';
+
+  @override
+  String recordHeadingPlace(String place) {
+    return 'Presence Record: $place';
+  }
+
+  @override
+  String get recordSummaryTitleAll => 'Days present (actual)';
+
+  @override
+  String recordCountedBy(String convention) {
+    return 'Counted by: $convention';
+  }
+
+  @override
+  String recordAssumedLine(String year, String last) {
+    return 'Assumed at home, not recorded: $year this calendar year, $last in the last 365 days';
+  }
+
+  @override
+  String recordPlannedLine(String year, String days) {
+    return 'Planned for the rest of $year: $days';
+  }
+
+  @override
+  String recordWorkedLine(String year, String last) {
+    return 'Days worked: $year this calendar year, $last in the last 365 days';
+  }
+
+  @override
+  String get recordVisit => 'Day visit';
+
+  @override
+  String get exportScopeHeading => 'What the record covers';
+
+  @override
+  String get exportScopeAll => 'All places';
+
+  @override
+  String exportScopeOnly(String place) {
+    return '$place only';
+  }
+
+  @override
+  String get exportIncludeWork => 'Add days worked to this export';
+
+  @override
+  String get exportIncludeWorkHelper =>
+      'Off each time you open this screen: what someone does in a country can matter to their right to be there.';
+
+  @override
+  String get exportPreviewHeading => 'This export contains';
+
+  @override
+  String exportPreviewPlaces(String places) {
+    return 'Places: $places';
+  }
+
+  @override
+  String exportPreviewDates(String from, String to) {
+    return 'Dates: $from to $to';
+  }
+
+  @override
+  String exportPreviewStays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stays',
+      one: '1 stay',
+      zero: 'No stays',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewVisits(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count day visits',
+      one: '1 day visit',
+      zero: 'No day visits',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewNames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The names of $count stays',
+      one: 'The name of 1 stay',
+      zero: 'No stay names',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewNotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Notes from $count stays',
+      one: 'Notes from 1 stay',
+      zero: 'No notes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exportPreviewCrossings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Crossing details from $count stays',
+      one: 'Crossing details from 1 stay',
+      zero: 'No crossing details',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get exportPreviewWorkYes => 'Days worked: included';
+
+  @override
+  String get exportPreviewWorkNo => 'Days worked: not included';
+
+  @override
+  String get exportPreviewHome => 'Days assumed at home: included, shown apart';
+
+  @override
+  String get exportFormatsHeading => 'Share or print';
+
+  @override
+  String get exportAsLedger => 'Day-by-day ledger (CSV)';
 }
