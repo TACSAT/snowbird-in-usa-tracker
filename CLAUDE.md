@@ -91,6 +91,12 @@ the app never judges, but it computes any published formula the user could do by
   drawn by `screens/presence_table_card.dart`. Table and home-base preferences live in
   `state/presence_settings.dart` (`PresenceSettings`, a provider every widget-test wrapper
   must supply) and `screens/places_settings_screen.dart`.
+- Days worked: `models/work_plan.dart` (weekday pattern + single-day corrections, read only
+  inside the stay) on `Trip.work` and `DayVisit.worked`; the ledger's `workedIn`. Hidden
+  everywhere until `PresenceSettings.workEnabled`. Alerts by place: `DayAlert.place /
+  convention / measure`; any-part presence stays on `DayCounter`, the rest goes through
+  `logic/alert_math.dart`. By-place ranges and what-if: `PlaceRangeCount`, `PlaceWhatIf` in
+  `logic/projection.dart` (the US `RangeCount` / `WhatIf` remain, unchanged).
 - Counting reads `TripRepository.countedStays` (stays plus each day visit as a one-day
   stay); lists and editors read `trips` / `visits`.
 - Localization: `l10n.yaml` + `lib/l10n/*.arb` → generated `AppLocalizations`

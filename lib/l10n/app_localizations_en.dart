@@ -438,7 +438,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String alertNotificationBodySince(String date, int threshold) {
-    return 'As of $date, it has been $threshold days since your last US visit — the target you set.';
+    return 'As of $date, it has been $threshold days since your last visit — the target you set.';
   }
 
   @override
@@ -1014,4 +1014,119 @@ class AppLocalizationsEn extends AppLocalizations {
   String whatsNewBody(String appName) {
     return '$appName now counts days in Canada, the United States, Mexico and Saint-Pierre-et-Miquelon, by province, territory or state if you wish. Your trips are now stays in the United States, and every US count is unchanged. Choose places and an optional home base under Settings.';
   }
+
+  @override
+  String get workHeading => 'Days worked';
+
+  @override
+  String get workSwitch => 'Record days worked';
+
+  @override
+  String get workExplain =>
+      'Optional. Days worked are kept apart from days present and are never guessed from them. No wages, hours or employer details are asked for.';
+
+  @override
+  String get workWeekdaysLabel => 'Usually worked on';
+
+  @override
+  String get workCorrectDays => 'Correct single days';
+
+  @override
+  String workStayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days worked',
+      one: '1 day worked',
+      zero: 'No days worked so far',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get workCalendarHelp => 'Tap a day to mark it worked or not worked.';
+
+  @override
+  String workDayWorked(String date) {
+    return '$date: worked';
+  }
+
+  @override
+  String workDayNotWorked(String date) {
+    return '$date: not worked';
+  }
+
+  @override
+  String get workDone => 'Done';
+
+  @override
+  String get visitWorked => 'Worked there that day';
+
+  @override
+  String get tableWorked => 'Worked';
+
+  @override
+  String tableWorkedSemantics(String year, String last) {
+    return 'worked: $year this calendar year, $last in the last 365 days';
+  }
+
+  @override
+  String alertSummaryAt(String place, String summary) {
+    return '$place: $summary';
+  }
+
+  @override
+  String alertSummaryWorked(int threshold, int window) {
+    return '$threshold days worked within the last $window days';
+  }
+
+  @override
+  String get alertMeasureLabel => 'What to count';
+
+  @override
+  String get alertMeasurePresent => 'Days present';
+
+  @override
+  String get alertMeasureWorked => 'Days worked';
+
+  @override
+  String alertNotificationWithPlace(String place, String body) {
+    return '$place: $body';
+  }
+
+  @override
+  String alertNotificationWorkedPlace(String place, String body) {
+    return '$place, days worked: $body';
+  }
+
+  @override
+  String rangeWorked(String days) {
+    return 'Days worked: $days';
+  }
+
+  @override
+  String get whatIfPlaceLabel => 'Place of this trip';
+
+  @override
+  String get filterTooltip => 'Filter stays';
+
+  @override
+  String get filterYear => 'Year';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String filterShown(int shown, int total) {
+    return '$shown of $total stays shown';
+  }
+
+  @override
+  String get filterClear => 'Clear filter';
+
+  @override
+  String get filterNone => 'No stay matches this filter.';
+
+  @override
+  String get filterApply => 'Show';
 }

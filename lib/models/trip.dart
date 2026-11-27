@@ -14,6 +14,7 @@ import 'package:uuid/uuid.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
 import 'package:snowbird_in_usa_tracker/models/crossing_info.dart';
 import 'package:snowbird_in_usa_tracker/models/place.dart';
+import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
 
 // EN: Distinguishes trips that have already happened from those the user intends
 //     to take. UI and day-counter logic treat them differently — planned trips can
@@ -85,6 +86,13 @@ class Trip {
   //     texte saisi.
   final String? placeName;
 
+  // EN: Days worked during this stay (section 7), or null when none are
+  //     recorded. Read only inside the stay's own dates (see WorkPlan).
+  // FR: Jours travaillés pendant ce séjour (section 7), ou null quand aucun
+  //     n'est noté. Lu seulement à l'intérieur des dates du séjour (voir
+  //     WorkPlan).
+  final WorkPlan? work;
+
   // EN: Direct constructor — prefer Trip.create() for new trips (it generates a
   //     UUID and strips time components). Use this constructor only when
   //     round-tripping from storage (Trip.fromJson) or in tests with fixed IDs.
@@ -103,6 +111,7 @@ class Trip {
     this.departureInfo,
     this.place = Place.unitedStates,
     this.placeName,
+    this.work,
   });
 
   // EN: Factory constructor for creating brand-new trips at runtime. Generates a
@@ -122,6 +131,7 @@ class Trip {
     CrossingInfo? departureInfo,
     Place place = Place.unitedStates,
     String? placeName,
+    WorkPlan? work,
   }) {
     if (departureDate == null && status == TripStatus.planned) {
       throw ArgumentError('A planned trip needs a departureDate.');
@@ -147,6 +157,7 @@ class Trip {
       departureInfo: (departureInfo?.isEmpty ?? true) ? null : departureInfo,
       place: place,
       placeName: _placeNameFor(place, placeName),
+      work: _workFor(work, arrivalDate, departureDate),
     );
   }
 
@@ -241,6 +252,7 @@ class Trip {
     Object? departureInfo = _sentinel,
     Place? place,
     Object? placeName = _sentinel,
+    Object? work = _sentinel,
   }) {
     final nextPlace = place ?? this.place;
     return Trip(
@@ -271,6 +283,16 @@ class Trip {
         nextPlace,
         placeName == _sentinel ? this.placeName : placeName as String?,
       ),
+      // EN: Re-clip to the (possibly new) dates: WRK-3, no worked day outside.
+      // FR: Rebornée aux dates (peut-être nouvelles) : WRK-3, aucun jour
+      //     travaillé hors du séjour.
+      work: _workFor(
+        work == _sentinel ? this.work : work as WorkPlan?,
+        arrivalDate ?? this.arrivalDate,
+        departureDate == _sentinel
+            ? this.departureDate
+            : departureDate as DateTime?,
+      ),
     );
   }
 
@@ -298,6 +320,7 @@ class Trip {
         //     ultérieure pourrait changer.
         'place': place.code,
         if (placeName != null) 'placeName': placeName,
+        if (work != null) 'work': work!.toJson(),
         if (name != null) 'name': name,
         if (notes != null) 'notes': notes,
         // EN: Only write crossing details that carry something. isNotEmpty is
@@ -398,6 +421,18 @@ class Trip {
     final placeRaw = readText('place');
     final place = placeRaw == null ? Place.unitedStates : Place.parse(placeRaw);
 
+    // EN: Days worked: an additive key, absent in older data (no worked day).
+    // FR: Jours travaillés : une clé additive, absente des anciennes données
+    //     (aucun jour travaillé).
+    WorkPlan? parseWork() {
+      final raw = json['work'];
+      if (raw == null) return null;
+      if (raw is! Map<String, dynamic>) {
+        throw const FormatException('Trip JSON "work" must be an object.');
+      }
+      return WorkPlan.fromJson(raw);
+    }
+
     CrossingInfo? parseCrossing(String key) {
       final raw = json[key];
       if (raw == null) return null;
@@ -419,6 +454,11 @@ class Trip {
       departureInfo: parseCrossing('departureInfo'),
       place: place,
       placeName: _placeNameFor(place, readText('placeName')),
+      work: _workFor(
+        parseWork(),
+        _dateOnly(arrival),
+        departure == null ? null : _dateOnly(departure),
+      ),
     );
   }
 
@@ -466,6 +506,13 @@ class Trip {
       place == Place.elsewhere
           ? _capText(raw, InputLimits.maxPlaceNameLength)
           : null;
+
+  // EN: An empty plan is stored as nothing; a real one is clipped to the stay.
+  // FR: Un plan vide est enregistré comme rien ; un vrai est borné au séjour.
+  static WorkPlan? _workFor(WorkPlan? work, DateTime from, DateTime? to) {
+    final clipped = work?.clippedTo(from, to == null ? null : _dateOnly(to));
+    return clipped == null || clipped.isEmpty ? null : clipped;
+  }
 
   static DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 

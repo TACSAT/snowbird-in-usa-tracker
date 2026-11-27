@@ -21,6 +21,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
+import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/screens/about_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/alerts_screen.dart';
@@ -98,7 +100,17 @@ void main() {
   testWidgets(
       'Alert editor hides the window field for the since-last-visit kind',
       (tester) async {
-    await tester.pumpWidget(_host(home: const AlertEditScreen()));
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService(await SharedPreferences.getInstance());
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: TripRepository(storage)),
+          ChangeNotifierProvider.value(value: PresenceSettings(storage)),
+        ],
+        child: _host(home: const AlertEditScreen()),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // EN: Day-count is the default: the rolling-window field is present.

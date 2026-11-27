@@ -107,6 +107,19 @@ class LedgerDay {
   //     (HOM-2).
   final Place? assumed;
 
+  // EN: Places where this date was WORKED (section 7): from a stay's work plan,
+  //     in the stay's place, or from a worked day visit. A separate list from
+  //     [places], never mixed into presence (WRK-2), and the same whatever the
+  //     counting convention: working on a date is not a question of midnight.
+  //     A date worked in two places is listed in both (WRK-6).
+  // FR: Lieux où cette date a été TRAVAILLÉE (section 7) : selon le plan de
+  //     travail d'un séjour, dans le lieu du séjour, ou selon une visite d'un
+  //     jour travaillée. Une liste distincte de [places], jamais mêlée à la
+  //     présence (WRK-2), et identique quelle que soit la convention de
+  //     comptage : travailler à une date n'est pas une question de minuit. Une
+  //     date travaillée dans deux lieux figure dans les deux (WRK-6).
+  final List<Place> worked;
+
   // EN: True for a past date with neither a stay nor a home base to assume.
   // FR: Vrai pour une date passée sans séjour ni lieu de résidence à présumer.
   final bool notRecorded;
@@ -117,18 +130,20 @@ class LedgerDay {
     required this.coveredByStay,
     required this.assumed,
     required this.notRecorded,
+    this.worked = const [],
   });
 }
 
 class PresenceLedger {
-  // EN: The longest range one ledger may cover: a little over 40 years. It bounds
-  //     memory and time whatever a caller passes; the widest window the app uses
-  //     (ten years, InputLimits.maxWindowDays) fits easily.
-  // FR: La plage la plus longue qu'un registre peut couvrir : un peu plus de 40
-  //     ans. Elle borne la mémoire et le temps quoi que passe un appelant ; la
-  //     fenêtre la plus large de l'application (dix ans,
-  //     InputLimits.maxWindowDays) y tient largement.
-  static const int maxRangeDays = 15000;
+  // EN: The longest range one ledger may cover: about 110 years. It bounds
+  //     memory and time whatever a caller passes, and still fits the widest
+  //     custom range Explore offers (from 1950, InputLimits.minTripYear, to ten
+  //     years ahead).
+  // FR: La plage la plus longue qu'un registre peut couvrir : environ 110 ans.
+  //     Elle borne la mémoire et le temps quoi que passe un appelant, et contient
+  //     encore la plus large plage personnalisée qu'offre l'exploration (de
+  //     1950, InputLimits.minTripYear, à dix ans dans l'avenir).
+  static const int maxRangeDays = 40000;
 
   final CountingConvention convention;
   final DateTime from;
@@ -283,6 +298,41 @@ class PresenceLedger {
       }
     }
 
+    // EN: Days worked: inside each stay's "any part" dates (so a worked day is
+    //     always a day present there, section 18), and actual ones only up to
+    //     today, like presence.
+    // FR: Jours travaillés : à l'intérieur des dates « toute partie » de chaque
+    //     séjour (un jour travaillé est donc toujours un jour de présence sur
+    //     place, section 18), et les réels seulement jusqu'à aujourd'hui, comme
+    //     la présence.
+    final worked = List<List<Place>?>.filled(length, null);
+    void markWorked(int d, Place place) {
+      final list = worked[d - first] ??= <Place>[];
+      if (!list.contains(place)) list.add(place);
+    }
+
+    for (final (_, stay) in ordered) {
+      final plan = stay.work;
+      if (plan == null) continue;
+      final start = _dayNumber(stay.arrivalDate);
+      final end = _dayNumber(stay.effectiveEnd(today));
+      for (var d = start > first ? start : first;
+          d <= (end < last ? end : last);
+          d++) {
+        if (plan
+            .isWorked(DateTime(from.year, from.month, from.day + d - first))) {
+          markWorked(d, stay.place);
+        }
+      }
+    }
+    for (final visit in visits) {
+      if (!visit.worked || !includeStatuses.contains(visit.status)) continue;
+      final d = _dayNumber(visit.date);
+      if (d < first || d > last) continue;
+      if (visit.status == TripStatus.actual && d > todayNumber) continue;
+      markWorked(d, visit.place);
+    }
+
     DateTime dateOf(int day) =>
         DateTime(from.year, from.month, from.day + (day - first));
 
@@ -345,6 +395,7 @@ class PresenceLedger {
           coveredByStay: covered,
           assumed: assumed,
           notRecorded: past && !covered && assumed == null,
+          worked: List.unmodifiable(worked[i] ?? const <Place>[]),
         ),
       );
     }
@@ -366,6 +417,13 @@ class PresenceLedger {
   //     voir [assumedIn].
   int daysIn(Place place, {DateTime? start, DateTime? end}) =>
       _count(start, end, (day) => day.places.any(place.contains));
+
+  // EN: Days worked in [place] (a country includes its regions), each date
+  //     once (WRK-6: once in each place). Never added to [daysIn].
+  // FR: Jours travaillés dans [place] (un pays inclut ses régions), chaque date
+  //     une fois (WRK-6 : une fois dans chaque lieu). Jamais ajoutés à [daysIn].
+  int workedIn(Place place, {DateTime? start, DateTime? end}) =>
+      _count(start, end, (day) => day.worked.any(place.contains));
 
   // EN: Days assumed in [place] because it was home and nothing was recorded.
   // FR: Jours présumés dans [place] parce que c'était le lieu de résidence et que

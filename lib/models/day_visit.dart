@@ -32,11 +32,19 @@ class DayVisit {
   //     planifiée ne compte jamais dans un chiffre réel.
   final TripStatus status;
 
+  // EN: True when the visit was to work there (WRK-4, WRK-5): "living in
+  //     Ottawa, working in Gatineau" is a worked day visit to Quebec.
+  // FR: Vrai quand la visite servait à y travailler (WRK-4, WRK-5) : « vivre à
+  //     Ottawa, travailler à Gatineau » est une visite d'un jour travaillée au
+  //     Québec.
+  final bool worked;
+
   DayVisit({
     required this.id,
     required DateTime date,
     required this.place,
     this.status = TripStatus.actual,
+    this.worked = false,
   }) : date = DateTime(date.year, date.month, date.day);
 
   // EN: New visits get a locally generated identifier, like stays (no network).
@@ -46,8 +54,15 @@ class DayVisit {
     required DateTime date,
     required Place place,
     TripStatus status = TripStatus.actual,
+    bool worked = false,
   }) =>
-      DayVisit(id: const Uuid().v4(), date: date, place: place, status: status);
+      DayVisit(
+        id: const Uuid().v4(),
+        date: date,
+        place: place,
+        status: status,
+        worked: worked,
+      );
 
   // EN: The visit as a one-day stay, for counting by "any part of the day". A
   //     visit and a stay arriving and leaving on its date count exactly the
@@ -75,6 +90,7 @@ class DayVisit {
             '${date.day.toString().padLeft(2, '0')}',
         'place': place.code,
         'status': status.name,
+        if (worked) 'worked': true,
       };
 
   // EN: Every field is required and checked: a visit with no date or place is
@@ -107,6 +123,7 @@ class DayVisit {
       date: parsed,
       place: Place.parse(place),
       status: parsedStatus,
+      worked: json['worked'] == true,
     );
   }
 }

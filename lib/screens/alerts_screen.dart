@@ -31,6 +31,11 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
+import 'package:snowbird_in_usa_tracker/screens/place_picker_screen.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/config/app_identity.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
@@ -103,13 +108,26 @@ class _AlertTile extends StatelessWidget {
     //     atteinte » signifie qu'aucun séjour réel n'est enregistré comme point de
     //     départ, pas qu'un compte est insuffisant.
     final isSince = alert.kind == AlertKind.sinceLastVisit;
-    final summary = isSince
+    // EN: Every alert names its place (FEA-1), and says when it counts days
+    //     worked or counts at the end of the day.
+    // FR: Chaque alerte nomme son lieu (FEA-1), et dit quand elle compte les
+    //     jours travaillés ou compte en fin de journée.
+    final counted = isSince
         ? strings.alertSummarySince(alert.thresholdDays)
-        : strings.alertSummary(alert.thresholdDays, alert.windowDays);
+        : alert.measure == AlertMeasure.worked
+            ? strings.alertSummaryWorked(alert.thresholdDays, alert.windowDays)
+            : strings.alertSummary(alert.thresholdDays, alert.windowDays);
+    final endOfDay = !isSince &&
+        alert.measure == AlertMeasure.present &&
+        alert.convention == CountingConvention.endOfDay;
+    final summary = strings.alertSummaryAt(
+      placeFullName(strings, alert.place),
+      endOfDay ? '$counted (${strings.tableEndOfDayTag})' : counted,
+    );
     final hasOpenTrip = context
         .read<TripRepository>()
         .trips
-        .any((t) => t.departureDate == null);
+        .any((t) => t.departureDate == null && alert.place.contains(t.place));
     final noReachText = !isSince
         ? strings.alertNotReached
         : hasOpenTrip
@@ -257,11 +275,26 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
   //     FR-10). Par défaut le type compte de jours d'origine pour une nouvelle alerte.
   AlertKind _kind = AlertKind.dayCountThreshold;
 
+  // EN: The place watched and how its days are counted (FEA-1). A new alert
+  //     starts with the country of the most recently used place, or the
+  //     United States when there is none yet.
+  // FR: Le lieu surveillé et la façon d'en compter les jours (FEA-1). Une
+  //     nouvelle alerte part du pays du dernier lieu utilisé, ou des États-Unis
+  //     s'il n'y en a pas encore.
+  late Place _place;
+  CountingConvention _convention = CountingConvention.anyPart;
+  AlertMeasure _measure = AlertMeasure.present;
+
   @override
   void initState() {
     super.initState();
     final e = widget.existing;
     _kind = e?.kind ?? AlertKind.dayCountThreshold;
+    final recent = context.read<TripRepository>().recentPlaces(limit: 1);
+    _place = e?.place ??
+        (recent.isEmpty ? Place.unitedStates : recent.first.country);
+    _convention = e?.convention ?? CountingConvention.anyPart;
+    _measure = e?.measure ?? AlertMeasure.present;
     _label = TextEditingController(text: e?.label ?? '');
     _threshold =
         TextEditingController(text: e == null ? '' : '${e.thresholdDays}');
@@ -342,6 +375,60 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
                 selected: {_kind},
                 onSelectionChanged: (s) => setState(() => _kind = s.first),
               ),
+              const SizedBox(height: 8),
+              ValueRow(
+                label: strings.fieldPlace,
+                value: placeFullName(strings, _place),
+                onTap: () async {
+                  final picked = await pickPlace(
+                    context,
+                    recent: context.read<TripRepository>().recentPlaces(),
+                  );
+                  if (picked != null) setState(() => _place = picked);
+                },
+              ),
+              if (_kind == AlertKind.dayCountThreshold) ...[
+                if (context.watch<PresenceSettings>().workEnabled ||
+                    _measure == AlertMeasure.worked) ...[
+                  Text(strings.alertMeasureLabel),
+                  const SizedBox(height: 4),
+                  SegmentedButton<AlertMeasure>(
+                    segments: [
+                      ButtonSegment(
+                        value: AlertMeasure.present,
+                        label: Text(strings.alertMeasurePresent),
+                      ),
+                      ButtonSegment(
+                        value: AlertMeasure.worked,
+                        label: Text(strings.alertMeasureWorked),
+                      ),
+                    ],
+                    selected: {_measure},
+                    onSelectionChanged: (s) =>
+                        setState(() => _measure = s.first),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                if (_measure == AlertMeasure.present) ...[
+                  Text(strings.placesConventionLabel),
+                  const SizedBox(height: 4),
+                  SegmentedButton<CountingConvention>(
+                    segments: [
+                      ButtonSegment(
+                        value: CountingConvention.anyPart,
+                        label: Text(strings.conventionAnyPart),
+                      ),
+                      ButtonSegment(
+                        value: CountingConvention.endOfDay,
+                        label: Text(strings.conventionEndOfDay),
+                      ),
+                    ],
+                    selected: {_convention},
+                    onSelectionChanged: (s) =>
+                        setState(() => _convention = s.first),
+                  ),
+                ],
+              ],
               const SizedBox(height: 16),
               LabeledField(
                 controller: _label,
@@ -531,6 +618,11 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
             leadHours: int.parse(_leadHours.text),
             enabled: _enabled,
             kind: _kind,
+            place: _place,
+            convention: _convention,
+            measure: _kind == AlertKind.sinceLastVisit
+                ? AlertMeasure.present
+                : _measure,
             label: _label.text,
           ),
         );
@@ -545,6 +637,11 @@ class _AlertEditScreenState extends State<AlertEditScreen> {
             leadHours: int.parse(_leadHours.text),
             enabled: _enabled,
             kind: _kind,
+            place: _place,
+            convention: _convention,
+            measure: _kind == AlertKind.sinceLastVisit
+                ? AlertMeasure.present
+                : _measure,
             label: _label.text.trim().isEmpty ? null : _label.text,
           ),
         );

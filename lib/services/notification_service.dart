@@ -50,6 +50,7 @@ import 'package:intl/intl.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/models/day_alert.dart';
 import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
@@ -228,7 +229,16 @@ class NotificationService implements AlertScheduler {
       );
     }
 
-    return (title, body);
+    // EN: The place comes first, so an alert for Ontario never reads like one
+    //     for the United States (FEA-1).
+    // FR: Le lieu vient d'abord, afin qu'une alerte pour l'Ontario ne se lise
+    //     jamais comme une alerte pour les États-Unis (FEA-1).
+    final place = placeFullName(strings, alert.place);
+    final placed = alert.measure == AlertMeasure.worked &&
+            alert.kind == AlertKind.dayCountThreshold
+        ? strings.alertNotificationWorkedPlace(place, body)
+        : strings.alertNotificationWithPlace(place, body);
+    return (title, placed);
   }
 
   Future<void> _scheduleOne(ScheduledAlert entry) async {

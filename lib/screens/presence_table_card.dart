@@ -56,6 +56,7 @@ class PresenceTableCard extends StatelessWidget {
         _FigureRow(
           name: placeFullName(strings, entry.row.place),
           figures: entry.row.recorded,
+          worked: settings.workEnabled ? entry.row.worked : null,
           endOfDay: entry.row.convention == CountingConvention.endOfDay,
           large: large,
           expanded: entry.expandable ? expanded : null,
@@ -71,6 +72,7 @@ class PresenceTableCard extends StatelessWidget {
               name: placeShortName(strings, region.place),
               semanticName: placeFullName(strings, region.place),
               figures: region.recorded,
+              worked: settings.workEnabled ? region.worked : null,
               large: large,
               depth: 1,
             ),
@@ -218,6 +220,13 @@ class _FigureRow extends StatelessWidget {
   final bool? expanded;
   final VoidCallback? onTap;
 
+  // EN: Days worked, shown as a SECOND line and never summed with presence
+  //     (TBL-12); null when work is off or the row is not a place.
+  // FR: Jours travaillés, montrés en SECONDE ligne et jamais additionnés à la
+  //     présence (TBL-12) ; null si le travail est désactivé ou si la ligne
+  //     n'est pas un lieu.
+  final WindowFigures? worked;
+
   const _FigureRow({
     required this.name,
     required this.figures,
@@ -227,6 +236,7 @@ class _FigureRow extends StatelessWidget {
     this.endOfDay = false,
     this.expanded,
     this.onTap,
+    this.worked,
   });
 
   @override
@@ -235,13 +245,21 @@ class _FigureRow extends StatelessWidget {
     final theme = Theme.of(context);
     final style =
         depth == 0 ? theme.textTheme.titleMedium : theme.textTheme.bodyMedium;
-    final label = strings.tableRowSemantics(
+    final presence = strings.tableRowSemantics(
       endOfDay
           ? '${semanticName ?? name} (${strings.tableEndOfDayTag})'
           : semanticName ?? name,
       strings.daysCount(figures.thisYear),
       strings.daysCount(figures.last365),
     );
+    final work = worked;
+    final label = work == null
+        ? presence
+        : '$presence; ${strings.tableWorkedSemantics(
+            strings.daysCount(work.thisYear),
+            strings.daysCount(work.last365),
+          )}';
+    final small = theme.textTheme.bodySmall;
     final nameWidget = Row(
       children: [
         if (expanded != null)
@@ -266,13 +284,45 @@ class _FigureRow extends StatelessWidget {
                   Text('${strings.tableColumnLast365}  ${figures.last365}'),
                 ],
               ),
+              if (work != null)
+                Wrap(
+                  spacing: 16,
+                  children: [
+                    Text(strings.tableWorked, style: small),
+                    Text(
+                      '${strings.tableColumnYear}  ${work.thisYear}',
+                      style: small,
+                    ),
+                    Text(
+                      '${strings.tableColumnLast365}  ${work.last365}',
+                      style: small,
+                    ),
+                  ],
+                ),
             ],
           )
-        : Row(
+        : Column(
             children: [
-              Expanded(child: nameWidget),
-              _NumberCell('${figures.thisYear}', style: style),
-              _NumberCell('${figures.last365}', style: style),
+              Row(
+                children: [
+                  Expanded(child: nameWidget),
+                  _NumberCell('${figures.thisYear}', style: style),
+                  _NumberCell('${figures.last365}', style: style),
+                ],
+              ),
+              if (work != null)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 20),
+                        child: Text(strings.tableWorked, style: small),
+                      ),
+                    ),
+                    _NumberCell('${work.thisYear}', style: small),
+                    _NumberCell('${work.last365}', style: small),
+                  ],
+                ),
             ],
           );
     return Semantics(

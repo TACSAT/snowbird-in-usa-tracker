@@ -446,7 +446,7 @@ void main() {
         throwsArgumentError,
       );
       expect(
-        () => _ledger(const [], from: DateTime(1950), to: DateTime(2026)),
+        () => _ledger(const [], from: DateTime(1900), to: DateTime(2026)),
         throwsArgumentError,
       );
     });

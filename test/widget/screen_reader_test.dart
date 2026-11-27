@@ -16,6 +16,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
+import 'package:snowbird_in_usa_tracker/screens/work_calendar_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/places_settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/models/place.dart';
@@ -315,6 +317,11 @@ void main() {
           const VisitsScreen(),
           const VisitEditScreen(),
           const PlacesSettingsScreen(),
+          WorkCalendarScreen(
+            from: DateTime(2026, 3, 2),
+            to: DateTime(2026, 4, 15),
+            plan: WorkPlan(weekdays: const {1, 2, 3, 4, 5}),
+          ),
         ]) {
           await _open(tester, screen);
           final sections = find.byType(ExpansionTile);

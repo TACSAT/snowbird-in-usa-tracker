@@ -21,6 +21,7 @@ import 'package:snowbird_in_usa_tracker/screens/place_names.dart';
 import 'package:snowbird_in_usa_tracker/screens/place_picker_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
 class VisitsScreen extends StatelessWidget {
@@ -99,6 +100,7 @@ class _VisitEditScreenState extends State<VisitEditScreen> {
   Place? _place;
   String? _dateError;
   String? _placeError;
+  bool _worked = false;
 
   @override
   void initState() {
@@ -118,7 +120,12 @@ class _VisitEditScreenState extends State<VisitEditScreen> {
     }
     try {
       await context.read<TripRepository>().addVisit(
-            DayVisit.create(date: _date, place: place, status: _status),
+            DayVisit.create(
+              date: _date,
+              place: place,
+              status: _status,
+              worked: _worked,
+            ),
           );
     } on TripValidationException catch (e) {
       if (e.problem == TripProblem.tooMany) {
@@ -208,6 +215,15 @@ class _VisitEditScreenState extends State<VisitEditScreen> {
                 }
               },
             ),
+            // EN: Only when days worked are turned on (WRK-1).
+            // FR: Seulement si les jours travaillés sont activés (WRK-1).
+            if (context.watch<PresenceSettings>().workEnabled)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(strings.visitWorked),
+                value: _worked,
+                onChanged: (v) => setState(() => _worked = v),
+              ),
             const SizedBox(height: 24),
             FilledButton(onPressed: _save, child: Text(strings.save)),
           ],

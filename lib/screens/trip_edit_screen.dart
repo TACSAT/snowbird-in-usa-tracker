@@ -43,6 +43,9 @@ import 'package:snowbird_in_usa_tracker/screens/pickers.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/screens/value_row.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
+import 'package:snowbird_in_usa_tracker/models/work_plan.dart';
+import 'package:snowbird_in_usa_tracker/screens/work_calendar_screen.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 
 class TripEditScreen extends StatefulWidget {
@@ -101,6 +104,12 @@ class _TripEditScreenState extends State<TripEditScreen> {
   //     utilisateur, jusqu'à ce qu'il soit choisi.
   Place? _place;
   late final TextEditingController _placeName;
+
+  // EN: Days worked during this stay (section 7). Edited only when work is
+  //     turned on; otherwise the saved plan is left exactly as it was.
+  // FR: Jours travaillés pendant ce séjour (section 7). Modifiés seulement si
+  //     le travail est activé ; sinon le plan enregistré reste tel quel.
+  late WorkPlan _work = widget.existing?.work ?? WorkPlan.none;
   String? _placeError;
   final _placeKey = GlobalKey();
   // EN: Problem with the dates, shown under the row concerned until it changes.
@@ -332,6 +341,13 @@ class _TripEditScreenState extends State<TripEditScreen> {
                 label: strings.fieldNotes,
               ),
               const SizedBox(height: 8),
+              if (context.watch<PresenceSettings>().workEnabled)
+                _WorkSection(
+                  plan: _work,
+                  from: _arrival,
+                  to: _workEnd(),
+                  onChanged: (plan) => setState(() => _work = plan),
+                ),
 
               // EN: Optional crossing detail sections, collapsed by default so the
               //     form is short unless the user wants the extra fields.
@@ -544,6 +560,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
             departureInfo: exitInfo,
             place: place,
             placeName: _placeName.text,
+            work: _work,
           ),
         );
       } else {
@@ -558,6 +575,7 @@ class _TripEditScreenState extends State<TripEditScreen> {
             departureInfo: exitInfo,
             place: place,
             placeName: _placeName.text,
+            work: _work,
           ),
         );
       }
@@ -626,6 +644,20 @@ class _TripEditScreenState extends State<TripEditScreen> {
 
   // EN: minutes-of-day ↔ TimeOfDay conversions kept in one place.
   // FR: Conversions minutes-de-la-journée ↔ TimeOfDay regroupées à un endroit.
+  // EN: The last date whose work can be counted: the departure, or today for
+  //     an ongoing or still-running stay (actual days stop at today).
+  // FR: La dernière date dont le travail peut compter : le départ, ou
+  //     aujourd'hui pour un séjour en cours (les jours réels s'arrêtent à
+  //     aujourd'hui).
+  DateTime? _workEnd() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final departure = _isOpen ? null : _departure;
+    if (_status == TripStatus.planned) return departure;
+    if (departure == null || departure.isAfter(today)) return today;
+    return departure;
+  }
+
   static TimeOfDay? _toTimeOfDay(int? minutesOfDay) => minutesOfDay == null
       ? null
       : TimeOfDay(hour: minutesOfDay ~/ 60, minute: minutesOfDay % 60);
@@ -638,6 +670,109 @@ class _TripEditScreenState extends State<TripEditScreen> {
 //     and exit. Kept stateless — it reads/writes the parent's controllers and time.
 // FR: Un bloc repliable de champs facultatifs de passage, réutilisé pour l'entrée
 //     et la sortie. Sans état — il lit/écrit les contrôleurs et l'heure du parent.
+// EN: The weekday pattern (WRK-3, first half), a running count, and the way
+//     into the calendar for single-day corrections (second half).
+// FR: Le motif de jours de semaine (WRK-3, première moitié), un compte à jour,
+//     et l'accès au calendrier pour les corrections de jours isolés (seconde
+//     moitié).
+class _WorkSection extends StatelessWidget {
+  final WorkPlan plan;
+  final DateTime? from;
+  final DateTime? to;
+  final ValueChanged<WorkPlan> onChanged;
+
+  const _WorkSection({
+    required this.plan,
+    required this.from,
+    required this.to,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final locale = strings.localeName;
+    final first = locale.startsWith('en') ? DateTime.sunday : DateTime.monday;
+    final days = [for (var i = 0; i < 7; i++) (first - 1 + i) % 7 + 1];
+    // EN: 2 March 2026 is a Monday: a fixed week to name the days from.
+    // FR: Le 2 mars 2026 est un lundi : une semaine fixe pour nommer les jours.
+    DateTime sample(int weekday) => DateTime(2026, 3, 1 + weekday);
+    final start = from;
+    final end = to;
+    var count = 0;
+    if (start != null && end != null) {
+      for (var d = start;
+          !d.isAfter(end);
+          d = DateTime(d.year, d.month, d.day + 1)) {
+        if (plan.isWorked(d)) count++;
+      }
+    }
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SectionHeading(
+              strings.workHeading,
+              style: theme.textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(strings.workWeekdaysLabel),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final day in days)
+                  Semantics(
+                    label: DateFormat.EEEE(locale).format(sample(day)),
+                    excludeSemantics: true,
+                    toggled: plan.weekdays.contains(day),
+                    button: true,
+                    child: FilterChip(
+                      label: Text(DateFormat.E(locale).format(sample(day))),
+                      selected: plan.weekdays.contains(day),
+                      onSelected: (on) => onChanged(
+                        plan.withWeekdays(
+                          on
+                              ? {...plan.weekdays, day}
+                              : ({...plan.weekdays}..remove(day)),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(strings.workStayCount(count)),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                icon: const Icon(Icons.calendar_month_outlined),
+                label: Text(strings.workCorrectDays),
+                onPressed: start == null || end == null
+                    ? null
+                    : () async {
+                        final corrected = await correctWorkedDays(
+                          context,
+                          from: start,
+                          to: end,
+                          plan: plan,
+                        );
+                        if (corrected != null) onChanged(corrected);
+                      },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _CrossingSection extends StatelessWidget {
   final String title;
   final TimeOfDay? time;
