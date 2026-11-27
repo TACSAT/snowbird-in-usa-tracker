@@ -17,6 +17,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snowbird_in_usa_tracker/logic/day_counter.dart';
 import 'package:snowbird_in_usa_tracker/logic/input_limits.dart';
+import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 
 void main() {
@@ -681,6 +682,97 @@ void main() {
           trips: [actual('2026-01-01', '2026-01-10'), open('2026-11-01')],
         ),
         isNull,
+      );
+    });
+  });
+
+  // EN: Places (REQUIREMENTS-places.md): the counter takes a place, by default
+  //     the United States, and counts only stays inside it. These tests pin
+  //     down that a stay elsewhere can never add to a United States figure, and
+  //     that US territories are not the United States (PLC-3).
+  // FR: Lieux (REQUIREMENTS-places.md) : le compteur prend un lieu, par défaut
+  //     les États-Unis, et ne compte que les séjours qui s'y trouvent. Ces tests
+  //     établissent qu'un séjour ailleurs ne peut jamais s'ajouter à un chiffre
+  //     des États-Unis, et que les territoires américains ne sont pas les
+  //     États-Unis (PLC-3).
+  group('places', () {
+    Trip at(String code, String a, String? d) => Trip(
+          id: '$code$a',
+          arrivalDate: DateTime.parse(a),
+          departureDate: d == null ? null : DateTime.parse(d),
+          status: TripStatus.actual,
+          place: Place.parse(code),
+        );
+    final today = DateTime(2026, 11, 26);
+    final trips = [
+      at('US-FL', '2026-01-01', '2026-01-10'),
+      at('US', '2026-01-10', '2026-01-12'),
+      at('CA-ON', '2026-01-12', '2026-01-20'),
+      at('PR', '2026-02-01', '2026-02-05'),
+      at('MX-SON', '2026-03-01', null),
+    ];
+
+    test('the default place is the United States, regions included', () {
+      expect(
+        DayCounter.countDaysInCalendarYear(
+          trips: trips,
+          year: 2026,
+          asOf: today,
+        ),
+        12,
+      );
+    });
+
+    test('Puerto Rico is not part of the United States count', () {
+      final spt = DayCounter.substantialPresence(trips: trips, asOf: today);
+      expect(spt.currentYearDays, 12);
+      expect(
+        DayCounter.countDaysInCalendarYear(
+          trips: trips,
+          year: 2026,
+          asOf: today,
+          place: Place.parse('PR'),
+        ),
+        5,
+      );
+    });
+
+    test('a region counts only itself; its country counts all of them', () {
+      int count(String code) => DayCounter.countDaysInCalendarYear(
+            trips: trips,
+            year: 2026,
+            asOf: today,
+            place: Place.parse(code),
+          );
+      expect(count('US-FL'), 10);
+      expect(count('CA'), 9);
+      expect(count('CA-QC'), 0);
+    });
+
+    test('an open stay elsewhere does not hide the last US departure', () {
+      expect(DayCounter.lastDeparture(trips: trips), DateTime(2026, 1, 12));
+      expect(DayCounter.lastDeparture(trips: trips, place: Place.mexico), null);
+    });
+
+    test('thresholds count only the chosen place', () {
+      expect(
+        DayCounter.firstDateReachingThreshold(
+          trips: trips,
+          thresholdDays: 13,
+          windowDays: 365,
+          from: DateTime(2026, 1, 1),
+        ),
+        isNull,
+      );
+      expect(
+        DayCounter.firstDateReachingThreshold(
+          trips: trips,
+          thresholdDays: 9,
+          windowDays: 365,
+          from: DateTime(2026, 1, 1),
+          place: Place.canada,
+        ),
+        DateTime(2026, 1, 20),
       );
     });
   });
