@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Version 3. **Approved by the owner 2026-11-25 (decisions in section 17).** Step 0 reported done by the owner 2026-11-26. Step 1 (model, migration, engine) is PR #3 (`places-engine`), 2026-11-26. Step 2 (entry) built on branch `places-entry`, 2026-11-26; STY-4 manual reorder, STY-10 and STY-11 not done. |
+| **Status** | Version 3. **Approved by the owner 2026-11-25 (decisions in section 17).** Step 0 reported done by the owner 2026-11-26. Step 1 (model, migration, engine) is PR #3 (`places-engine`), 2026-11-26. Step 2 (entry) built on branch `places-entry`, 2026-11-26; STY-4 manual reorder, STY-10 and STY-11 not done. Step 3 (table, home base, MIG-4 note) built on branch `places-table`; TBL-11 not done. |
 | **Date** | 2026-11-25 |
 | **Changes** | The app counts days in *any place the user tracks*, not only the United States |
 | **Maker** | teagarden.net |

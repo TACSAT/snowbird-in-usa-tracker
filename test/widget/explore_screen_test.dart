@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/app.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
@@ -37,6 +38,7 @@ Future<TripRepository> _open(
         Provider<StorageService>.value(value: storage),
         ChangeNotifierProvider.value(value: SettingsController(storage)),
         ChangeNotifierProvider.value(value: repo),
+        ChangeNotifierProvider.value(value: PresenceSettings(storage)),
       ],
       child: const SnowBirdApp(),
     ),
@@ -151,6 +153,7 @@ void main() {
           Provider<StorageService>.value(value: storage),
           ChangeNotifierProvider.value(value: SettingsController(storage)),
           ChangeNotifierProvider.value(value: TripRepository(storage)),
+          ChangeNotifierProvider.value(value: PresenceSettings(storage)),
         ],
         child: const SnowBirdApp(),
       ),

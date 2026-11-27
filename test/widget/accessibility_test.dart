@@ -12,6 +12,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/logic/presence_ledger.dart';
+import 'package:snowbird_in_usa_tracker/models/home_base.dart';
+import 'package:snowbird_in_usa_tracker/screens/places_settings_screen.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/models/place.dart';
 import 'package:snowbird_in_usa_tracker/screens/place_picker_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/split_stay_screen.dart';
@@ -54,6 +58,7 @@ class _App {
   late final TripRepository trips;
   late final AlertRepository alerts;
   late final _Scheduler scheduler;
+  late final PresenceSettings places;
 }
 
 Future<_App> _start(
@@ -87,6 +92,7 @@ Future<_App> _start(
   final storage = StorageService(await SharedPreferences.getInstance());
   final result = _App()..scheduler = _Scheduler(granted: granted);
   result.trips = TripRepository(storage);
+  result.places = PresenceSettings(storage);
   result.alerts = AlertRepository(
     storage,
     result.trips,
@@ -98,6 +104,7 @@ Future<_App> _start(
         Provider<StorageService>.value(value: storage),
         ChangeNotifierProvider.value(value: SettingsController(storage)),
         ChangeNotifierProvider.value(value: result.trips),
+        ChangeNotifierProvider.value(value: result.places),
         ChangeNotifierProvider.value(value: result.alerts),
         Provider<AlertScheduler>.value(value: result.scheduler),
       ],
@@ -197,6 +204,7 @@ void main() {
           SplitStayScreen(stay: openTrip),
           const VisitsScreen(),
           const VisitEditScreen(),
+          const PlacesSettingsScreen(),
         ]) {
           await _open(tester, screen);
           final sections = find.byType(ExpansionTile);
@@ -262,6 +270,70 @@ void main() {
         await tester.tap(find.text('Winter in Hallandale Beach'));
         await tester.pumpAndSettle();
         expect(find.byType(TripEditScreen), findsOneWidget);
+      });
+    }
+  }
+
+  // EN: The Days present table at its fullest (regions open, a home row, an
+  //     end-of-day place, the SPT, the notes) must fit on a small phone at the
+  //     largest text, in both languages, with nothing cut off (ACC-1, TBL-10).
+  // FR: Le tableau des jours de présence au plus complet (régions ouvertes, une
+  //     ligne de domicile, un lieu en fin de journée, le critère de présence
+  //     substantielle, les notes) doit tenir sur un petit téléphone au plus
+  //     grand texte, dans les deux langues, sans rien de coupé (ACC-1, TBL-10).
+  for (final locale in ['en', 'fr']) {
+    for (final high in [false, true]) {
+      testWidgets('the full table fits: $locale high=$high', (tester) async {
+        final a = await _start(
+          tester,
+          os: 3.1,
+          app: 1.6,
+          locale: locale,
+          highContrast: high,
+        );
+        final now = DateTime.now();
+        DateTime ago(int n) => DateTime(now.year, now.month, now.day - n);
+        for (final (place, from, to) in [
+          ('US-FL', 120, 90),
+          ('CA-NL', 90, 60),
+          ('CA', 60, 50),
+          ('CA-YT', 50, null),
+        ]) {
+          await a.trips.addTrip(
+            Trip.create(
+              arrivalDate: ago(from),
+              departureDate: to == null ? null : ago(to),
+              status: TripStatus.actual,
+              place: Place.parse(place),
+            ),
+          );
+        }
+        await a.places.addHomePeriod(
+          HomePeriod(place: Place.parse('CA-NL'), from: DateTime(2020)),
+        );
+        await a.places.setAutomatic(
+          false,
+          initial: [Place.canada, Place.unitedStates, Place.mexico],
+        );
+        await a.places.updateTracked(
+          a.places.tracked![1]
+              .copyWith(convention: CountingConvention.endOfDay),
+        );
+        await a.places.setExpanded(Place.canada, true);
+        await tester.pumpAndSettle();
+        expect(find.text('Yukon'), findsOneWidget);
+        expect(_truncated(tester), isEmpty);
+        expect(tester.takeException(), isNull);
+        for (var i = 0; i < 12; i++) {
+          await tester.drag(
+            find.byType(Scrollable).hitTestable().first,
+            const Offset(0, -300),
+            warnIfMissed: false,
+          );
+          await tester.pump();
+        }
+        expect(_truncated(tester), isEmpty);
+        expect(tester.takeException(), isNull);
       });
     }
   }

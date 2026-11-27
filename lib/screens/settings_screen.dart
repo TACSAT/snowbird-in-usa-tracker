@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
+import 'package:snowbird_in_usa_tracker/screens/places_settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/section_heading.dart';
 import 'package:snowbird_in_usa_tracker/state/settings_controller.dart';
 
@@ -33,6 +34,21 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // EN: Places and home first: they change what the main table shows.
+          // FR: Lieux et domicile d'abord : ils changent ce que montre le
+          //     tableau principal.
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.place_outlined),
+            title: Text(strings.placesSettingsTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const PlacesSettingsScreen(),
+              ),
+            ),
+          ),
+          const Divider(height: 32),
           _sectionLabel(context, strings.settingsLanguage),
           // EN: null = follow the phone's language; the two endonyms are shown in
           //     their own language, as is convention for a language picker.

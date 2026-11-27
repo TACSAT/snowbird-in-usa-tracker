@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/app.dart';
 import 'package:snowbird_in_usa_tracker/screens/settings_screen.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_list_screen.dart';
@@ -32,6 +33,7 @@ void main() {
           Provider<StorageService>.value(value: storage),
           ChangeNotifierProvider.value(value: SettingsController(storage)),
           ChangeNotifierProvider.value(value: TripRepository(storage)),
+          ChangeNotifierProvider.value(value: PresenceSettings(storage)),
         ],
         child: const SnowBirdApp(),
       ),
@@ -137,6 +139,8 @@ void main() {
           .state<NavigatorState>(find.byType(Navigator).first)
           .push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()))
           .ignore();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('High contrast and bold text'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('High contrast and bold text'));
       await tester.pumpAndSettle();

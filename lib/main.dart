@@ -42,6 +42,7 @@ import 'package:snowbird_in_usa_tracker/services/alert_scheduler.dart';
 import 'package:snowbird_in_usa_tracker/services/notification_service.dart';
 import 'package:snowbird_in_usa_tracker/services/storage_service.dart';
 import 'package:snowbird_in_usa_tracker/state/alert_repository.dart';
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/state/settings_controller.dart';
 import 'package:snowbird_in_usa_tracker/state/trip_repository.dart';
 import 'package:snowbird_in_usa_tracker/app.dart';
@@ -67,6 +68,7 @@ void main() async {
   //     première image s'affiche dans la locale et le thème choisis, sans
   //     clignotement du mauvais réglage.
   final settingsController = SettingsController(storage);
+  final presenceSettings = PresenceSettings(storage);
 
   // EN: Local notification stack. init() loads the timezone database and the
   //     plugin but requests NO permission — that happens only when the user
@@ -124,6 +126,9 @@ void main() async {
           value: settingsController,
         ),
         ChangeNotifierProvider<TripRepository>.value(value: tripRepository),
+        ChangeNotifierProvider<PresenceSettings>.value(
+          value: presenceSettings,
+        ),
         ChangeNotifierProvider<AlertRepository>.value(value: alertRepository),
         Provider<AlertScheduler>.value(value: notificationService),
       ],

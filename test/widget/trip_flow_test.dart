@@ -19,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:snowbird_in_usa_tracker/state/presence_settings.dart';
 import 'package:snowbird_in_usa_tracker/l10n/app_localizations.dart';
 import 'package:snowbird_in_usa_tracker/models/trip.dart';
 import 'package:snowbird_in_usa_tracker/screens/trip_list_screen.dart';
@@ -30,6 +31,7 @@ Widget _wrap(StorageService storage, TripRepository trips) {
     providers: [
       Provider<StorageService>.value(value: storage),
       ChangeNotifierProvider<TripRepository>.value(value: trips),
+      ChangeNotifierProvider.value(value: PresenceSettings(storage)),
     ],
     child: const MaterialApp(
       localizationsDelegates: [

@@ -20,9 +20,15 @@ Future<DateTime?> pickDate(
   required DateTime initial,
   required DateTime first,
   required DateTime last,
+  // EN: Optional heading for the dialog, when "Select date" would not say
+  //     which date is being chosen.
+  // FR: Titre facultatif de la boîte de dialogue, quand « Choisir une date »
+  //     ne dirait pas quelle date est choisie.
+  String? help,
 }) =>
     showDatePicker(
       context: context,
+      helpText: help,
       initialDate: initial,
       // EN: A stored date outside the usual range must still open, not fail.
       // FR: Une date enregistrée hors de la plage usuelle doit s'ouvrir, pas échouer.
