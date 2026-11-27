@@ -103,7 +103,12 @@ String buildRecordText(
             '${record.asOf.year}',
             strings.daysCount(p.plannedThisYear),
           ),
-        if (record.includeWork)
+        // EN: Only places where something was worked: a row of zeros on a
+        //     record handed to someone says nothing and invites questions.
+        // FR: Seulement les lieux où l'on a travaillé : une ligne de zéros sur
+        //     une fiche remise à quelqu'un ne dit rien et suscite des
+        //     questions.
+        if (record.includeWork && (p.workedThisYear > 0 || p.workedLast365 > 0))
           strings.recordWorkedLine(
             strings.daysCount(p.workedThisYear),
             strings.daysCount(p.workedLast365),
@@ -148,10 +153,14 @@ String buildRecordText(
       if (exit.isNotEmpty) strings.recordExitLabel(exit),
       if (trip.notes != null) line(strings.recordNotes, trip.notes!),
       if (record.includeWork) ...[
-        strings.rangeWorked(strings.daysCount(record.workedInStay(trip))),
+        // EN: Days worked only for a stay that has a work pattern.
+        // FR: Jours travaillés seulement pour un séjour ayant un motif de
+        //     travail.
+        if (trip.work != null)
+          strings.rangeWorked(strings.daysCount(record.workedInStay(trip))),
         if (trip.purpose != null)
           line(strings.workPurposeLabel, purposeName(strings, trip.purpose!)),
-        if (trip.label != null) line(strings.workLabelField, trip.label!),
+        if (trip.label != null) line(strings.recordJobLabel, trip.label!),
       ],
     ]);
   }
@@ -164,7 +173,7 @@ String buildRecordText(
           [
             placeFullName(strings, visit.place),
             if (visit.status == TripStatus.planned) strings.tripStatusPlanned,
-            if (record.includeWork && visit.worked) strings.tableWorked,
+            if (record.includeWork && visit.worked) strings.recordVisitWorked,
           ].join(' · '),
         ),
       );

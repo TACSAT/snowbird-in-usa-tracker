@@ -1401,4 +1401,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lockFailed => 'Not unlocked. You can try again.';
+
+  @override
+  String get recordJobLabel => 'Job or contract';
+
+  @override
+  String get recordVisitWorked => 'Worked there';
 }

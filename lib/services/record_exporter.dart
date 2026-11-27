@@ -418,7 +418,8 @@ abstract final class RecordExporter {
                     strings.daysCount(p.plannedThisYear),
                   ),
                 ),
-              if (record.includeWork)
+              if (record.includeWork &&
+                  (p.workedThisYear > 0 || p.workedLast365 > 0))
                 note(
                   strings.recordWorkedLine(
                     strings.daysCount(p.workedThisYear),
@@ -473,7 +474,7 @@ abstract final class RecordExporter {
           ),
           fonts.printable(placeFullName(strings, visit.place)),
           record.includeWork && visit.worked
-              ? fonts.printable(strings.tableWorked)
+              ? fonts.printable(strings.recordVisitWorked)
               : '',
         ]);
         continue;
@@ -497,16 +498,17 @@ abstract final class RecordExporter {
           [
             _details(trip, strings),
             if (record.includeWork) ...[
-              strings.rangeWorked(
-                strings.daysCount(record.workedInStay(trip)),
-              ),
+              if (trip.work != null)
+                strings.rangeWorked(
+                  strings.daysCount(record.workedInStay(trip)),
+                ),
               if (trip.purpose != null)
                 strings.recordLine(
                   strings.workPurposeLabel,
                   purposeName(strings, trip.purpose!),
                 ),
               if (trip.label != null)
-                strings.recordLine(strings.workLabelField, trip.label!),
+                strings.recordLine(strings.recordJobLabel, trip.label!),
             ],
           ].where((t) => t.isNotEmpty).join('\n'),
         ),

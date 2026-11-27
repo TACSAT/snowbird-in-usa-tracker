@@ -94,6 +94,14 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # EN: Runs the device pass (integration_test/) on simulators, emulators and
+  #     phones: real fonts, real storage, real PDF rendering. Test-only; it is
+  #     never part of the app.
+  # FR: Exécute la vérification sur appareil (integration_test/) sur
+  #     simulateurs, émulateurs et téléphones : vraies polices, vrai stockage,
+  #     vrai rendu PDF. Pour les tests seulement ; jamais dans l'appli.
+  integration_test:
+    sdk: flutter
   flutter_lints: ^4.0.0
   # EN: Already present transitively; listed so tests may fake the share sheet and
   #     the browser.
